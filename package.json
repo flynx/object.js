@@ -1,0 +1,25 @@
+{
+  "name": "object.js",
+  "version": "1.0.0",
+  "description": "",
+  "main": "object.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/flynx/object.js.git"
+  },
+  "keywords": [
+    "javascript",
+    "oop",
+    "metaprograming",
+    "tools"
+  ],
+  "author": "Alex A. Naanou <alex.nanou@gmail.com> (https://github.com/flynx)",
+  "license": "BSD-3-Clause",
+  "bugs": {
+    "url": "https://github.com/flynx/object.js/issues"
+  },
+  "homepage": "https://github.com/flynx/object.js#readme"
+}
