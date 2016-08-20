@@ -1,6 +1,6 @@
 {
-  "name": "object.js",
-  "version": "1.0.0",
+  "name": "ig-object",
+  "version": "1.0.1",
   "description": "",
   "main": "object.js",
   "scripts": {
