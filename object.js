@@ -186,10 +186,10 @@ function makeConstructor(name, a, b){
 				.replace(/Constructor/g, name))
 	}
 
-	// NOTE: we are not assigning to .__proto__ directly to preserve 
-	// 		function metadata like it's name...
-	//_constructor.__proto__ = cls_proto
-	_constructor.__proto__.__proto__ = cls_proto
+	// XXX it turns out we can't directly assign to .constructor.prototype
+	// 		and by assigning directly to .__proto__ we lose some meta 
+	// 		information like function name...
+	_constructor.__proto__ = cls_proto
 	_constructor.prototype = proto
 	_constructor.prototype.constructor = _constructor
 
