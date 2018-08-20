@@ -188,8 +188,7 @@ function makeConstructor(name, a, b){
 
 	// set an informative .toString...
 	// NOTE: do this only if .toString(..) is not defined by user...
-	if(cls_proto 
-			&& cls_proto.toString() == ({}).toString()){
+	if((cls_proto || {}).toString() == ({}).toString()){
 		// XXX is this the right way to go or should we set this openly???
 		Object.defineProperty(_constructor, 'toString', {
 			value: function(){ 
