@@ -10,8 +10,32 @@ function(require){ var module={} // makes module AMD/node compatible...
 
 
 /*********************************************************************/
+// Helpers...
+
+// XXX is this the right place for this???
+// 		...when moving take care that ImageGrid's core.doc uses this...
+var normalizeIndent =
+module.normalizeIndent =
+function(text){
+	var lines = text.split(/\n/)
+	var l = lines 
+		.reduce(function(l, e, i){
+			var indent = e.length - e.trimLeft().length
+			return e.trim().length == 0 
+					// ignore 0 indent of first line...
+					|| (i == 0 && indent == 0) ? l 
+				: l < 0 ? 
+					indent 
+				: Math.min(l, indent)
+		}, -1)
+	return lines
+		.map(function(line, i){ 
+			return i == 0 ? line : line.slice(l) })
+		.join('\n')
+}
 
 
+//---------------------------------------------------------------------
 // Make a JavaScrip object constructor...	
 //
 //
@@ -203,25 +227,7 @@ function makeConstructor(name, a, b){
 						.replace(/[^{]*{/, '{')
 					: '{ .. }'
 
-				// normalize code indent...
-				// NOTE: this repeats ImageGrid's core.doc(..)...
-				var lines = code.split(/\n/)
-				var l = lines 
-					.reduce(function(l, e, i){
-						var indent = e.length - e.trimLeft().length
-						return e.trim().length == 0 
-								// ignore 0 indent of first line...
-								|| (i == 0 && indent == 0) ? l 
-							: l < 0 ? 
-								indent 
-							: Math.min(l, indent)
-					}, -1)
-				code = lines
-					.map(function(line, i){ 
-						return i == 0 ? line : line.slice(l) })
-					.join('\n')
-
-				return `${this.name}(${args})${code}`
+				return `${this.name}(${args})${normalizeIndent(code)}`
 			},
 			enumerable: false,
 		})
