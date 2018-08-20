@@ -186,9 +186,48 @@ function makeConstructor(name, a, b){
 				.replace(/Constructor/g, name))
 	}
 
-	// XXX it turns out we can't directly assign to .constructor.prototype
-	// 		and by assigning directly to .__proto__ we lose some meta 
-	// 		information like function name...
+	// set an informative .toString...
+	// NOTE: do this only if .toString(..) is not defined by user...
+	if(cls_proto 
+			&& cls_proto.toString() == ({}).toString()){
+		// XXX is this the right way to go or should we set this openly???
+		Object.defineProperty(_constructor, 'toString', {
+			value: function(){ 
+				var args = proto.__init__ ?
+					proto.__init__
+						.toString()
+						.split(/\n/)[0].replace(/function\(([^)]*)\){.*/, '$1')
+					: ''
+				var code = proto.__init__ ?
+					proto.__init__
+						.toString()
+						.replace(/[^{]*{/, '{')
+					: '{ .. }'
+
+				// normalize code indent...
+				// NOTE: this repeats ImageGrid's core.doc(..)...
+				var lines = code.split(/\n/)
+				var l = lines 
+					.reduce(function(l, e, i){
+						var indent = e.length - e.trimLeft().length
+						return e.trim().length == 0 
+								// ignore 0 indent of first line...
+								|| (i == 0 && indent == 0) ? l 
+							: l < 0 ? 
+								indent 
+							: Math.min(l, indent)
+					}, -1)
+				code = lines
+					.map(function(line, i){ 
+						return i == 0 ? line : line.slice(l) })
+					.join('\n')
+
+				return `${this.name}(${args})${code}`
+			},
+			enumerable: false,
+		})
+	}
+
 	_constructor.__proto__ = cls_proto
 	_constructor.prototype = proto
 	_constructor.prototype.constructor = _constructor
