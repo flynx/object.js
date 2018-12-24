@@ -257,6 +257,43 @@ function superMethod(cls, meth){
 }
 
 
+//---------------------------------------------------------------------
+
+// super replacement...
+//
+// 	parent(meth, this)
+// 	parent(meth, name, this)
+// 		-> meth
+//
+//
+// XXX move this to object.js
+var parent = 
+module.parent =
+function(meth, name, that){
+	if(arguments.length == 2){
+		that = name
+		name = meth.name
+	}
+	while(!that.hasOwnProperty(name) || that[name] !== meth){
+		that = that.__proto__
+	}
+	return that.__proto__[name]
+}
+
+
+
+//---------------------------------------------------------------------
+
+// XXX move this to object.js
+var mixin = 
+module.mixin = 
+function(root, ...objects){
+	return objects
+		.reduce(function(res, cur){
+			return Object.assign(Object.create(res), cur) }, root) }
+
+
+
 
 /**********************************************************************
 * vim:set ts=4 sw=4 :                               */ return module })
