@@ -35,6 +35,63 @@ function(text){
 }
 
 
+
+//---------------------------------------------------------------------
+
+// Find the next parent method in the prototype chain.
+//
+// 	parent(meth, this)
+// 	parent(meth, name, this)
+// 		-> meth
+//
+//
+// NOTE: there are cases where method.name is not set, so a name can be 
+// 		passed explicitly.
+// NOTE: this is super(..) replacement...
+// NOTE: if method is root (no super method) this will return undefined.
+//
+// XXX should this return the method or the object???
+var parent = 
+module.parent =
+function(method, name, that){
+	if(arguments.length == 2){
+		that = name
+		name = method.name
+	}
+	// find the current method in the prototype chain...
+	while(!that.hasOwnProperty(name) || that[name] !== method){
+		that = that.__proto__
+	}
+	// return the next method...
+	return that.__proto__[name]
+}
+
+
+
+//---------------------------------------------------------------------
+
+// Create an object and mix in sets of methods...
+//
+// 	mixin(root, object, ...)
+// 		-> object
+//
+// This will create a new object per set of methods given and 
+// Object.assign(..) the method set into this object leaving the 
+// original objects intact.
+// 
+// 		root <-- object1_copy <-- .. <-- objectN_copy
+// 				
+//
+var mixin = 
+module.mixin = 
+function(root, ...objects){
+	return objects
+		.reduce(function(res, cur){
+			return Object.assign(Object.create(res), cur) }, root) }
+
+
+
+
 //---------------------------------------------------------------------
 // Make a JavaScrip object constructor...	
 //
@@ -239,58 +296,6 @@ function makeConstructor(name, a, b){
 
 	return _constructor
 }
-
-
-// super equivalent...
-//
-// 	superMethod(<class>, <method-name>).call(this, ...)
-// 		-> <result>
-//
-// This will return a next method in inheritance chain after <class> by
-// its name (<method-name>).
-// In the normal use-case <class> is the current class and <method-name>
-// is the name of the current method.
-var superMethod =
-module.superMethod =
-function superMethod(cls, meth){
-	return cls.prototype.__proto__[meth]
-}
-
-
-//---------------------------------------------------------------------
-
-// super replacement...
-//
-// 	parent(meth, this)
-// 	parent(meth, name, this)
-// 		-> meth
-//
-//
-// XXX move this to object.js
-var parent = 
-module.parent =
-function(meth, name, that){
-	if(arguments.length == 2){
-		that = name
-		name = meth.name
-	}
-	while(!that.hasOwnProperty(name) || that[name] !== meth){
-		that = that.__proto__
-	}
-	return that.__proto__[name]
-}
-
-
-
-//---------------------------------------------------------------------
-
-// XXX move this to object.js
-var mixin = 
-module.mixin = 
-function(root, ...objects){
-	return objects
-		.reduce(function(res, cur){
-			return Object.assign(Object.create(res), cur) }, root) }
 
 
 
