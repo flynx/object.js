@@ -95,6 +95,19 @@ function(root, ...objects){
 			return o }, root) }
 
 
+// Like .mixin(..) but will mixin all the methods/props/attrs directly 
+// (flatly) into root...
+var mixinFlat = 
+module.mixinFlat = 
+function(root, ...objects){
+	return objects
+		.reduce(function(root, cur){
+			Object.keys(cur)
+				.map(function(k){
+					Object.defineProperty(root, k,
+						Object.getOwnPropertyDescriptor(cur, k)) })
+			return root }, root) }
+
 
 
 //---------------------------------------------------------------------
