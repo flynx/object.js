@@ -70,7 +70,7 @@ function(method, name, that){
 
 //---------------------------------------------------------------------
 
-// Create an object and mix in sets of methods...
+// Create an object and mix in sets of methods/props/attrs...
 //
 // 	mixin(root, object, ...)
 // 		-> object
@@ -87,7 +87,12 @@ module.mixin =
 function(root, ...objects){
 	return objects
 		.reduce(function(res, cur){
-			return Object.assign(Object.create(res), cur) }, root) }
+			var o = Object.create(res)
+			Object.keys(cur)
+				.map(function(k){
+					Object.defineProperty(o, k,
+						Object.getOwnPropertyDescriptor(cur, k)) })
+			return o }, root) }
 
 
 
