@@ -97,6 +97,9 @@ function(root, ...objects){
 
 // Like .mixin(..) but will mixin all the methods/props/attrs directly 
 // (flatly) into root...
+//
+// NOTE: essentially this is just like Object.assign(..) but copies 
+// 		properties directly rather than copying property values...
 var mixinFlat = 
 module.mixinFlat = 
 function(root, ...objects){
