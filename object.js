@@ -31,8 +31,7 @@ function(text){
 	return lines
 		.map(function(line, i){ 
 			return i == 0 ? line : line.slice(l) })
-		.join('\n')
-}
+		.join('\n') }
 
 
 
@@ -63,8 +62,7 @@ function(method, name, that){
 		that = that.__proto__
 	}
 	// return the next method...
-	return that.__proto__[name]
-}
+	return that.__proto__[name] }
 
 
 
@@ -118,17 +116,12 @@ function(root, ...objects){
 //
 //
 // 	Make a constructor with an object prototype...
-// 		makeConstructor(<name>, <proto>)
-// 			-> constructor
-//
-// 	Make a constructor with an init function prototype...
-// 		makeConstructor(<name>, <init-func>)
+// 		Constructor(<name>, <proto>)
 // 			-> constructor
 //
 // 	Make a constructor with a prototype (object/function) and a class
 // 	prototype...
-// 		makeConstructor(<name>, <proto>, <class-proto>)
-// 		makeConstructor(<name>, <init-func>, <class-proto>)
+// 		Constructor(<name>, <class-proto>, <proto>)
 // 			-> constructor
 // 			NOTE: the <class-proto> defines a set of class methods and 
 // 					attributes.
@@ -172,16 +165,23 @@ function(root, ...objects){
 // Inheritance:
 // 	A simple way to build C -> B -> A chain would be:
 //
-// 		var A = makeConstructor('A', {})
+// 		// NOTE: new is optional...
+// 		var A = new Constructor('A', {})
 //
 // 		// NOTE: the prototype is an instance and not a constructor,
 // 		//		this is obvious if one considers that in JS there are
 // 		//		no classes and inheritance is done via object prototypes
 // 		//		but this might be a gotcha to people coming from the 
 // 		//		class-object world.
-// 		var B = makeConstructor('B', A())
+// 		// NOTE: we are creating instances here to provide isolation 
+// 		//		between A and B prototypes...
+// 		//		two other ways to do this would be:
+// 		//			Object.create(A.prototype)
+// 		//		or:
+// 		//			{__proto__: A.prototype}
+// 		var B = Constructor('B', A())
 //
-// 		var C = makeConstructor('C', B())
+// 		var C = Constructor('C', {__proto__: B.prototype})
 //
 // 		var c = C()
 //
@@ -219,34 +219,15 @@ function(root, ...objects){
 // 		...mainly for inheritance.
 // 		...would also be helpful in this case to call all the 
 // 		constructors in the chain
-var makeConstructor =
-module.makeConstructor =
-function makeConstructor(name, a, b){
+var Constructor = 
+module.Constructor =
+// shorthand...
+module.C =
+function Constructor(name, a, b){
 	var proto = b == null ? a : b
 	var cls_proto = b == null ? b : a
 
 	var _constructor = function Constructor(){
-		/*
-		// XXX BUG: if the constructor is called from it's instance this will 
-		// 		return the instance and not a new object...
-		// in case this is called as a function (without new)...
-		if(this.constructor !== _constructor){
-			// NOTE: the following does the job of the 'new' operator but
-			// 		with one advantage, we can now pass arbitrary args 
-			// 		in...
-			// 		This is equivalent to:
-			//			return new _constructor(json)
-			var obj = {}
-			obj.__proto__ = _constructor.prototype
-			// XXX for some reason this does not resolve from .__proto__
-			obj.constructor = _constructor
-			//obj.__proto__.constructor = _constructor
-
-		} else {
-			var obj = this
-		}
-		*/
-
 		// NOTE: the following does the job of the 'new' operator but
 		// 		with one advantage, we can now pass arbitrary args 
 		// 		in...
@@ -255,51 +236,32 @@ function makeConstructor(name, a, b){
 		var obj = _constructor.prototype.__new__ instanceof Function ?
 			_constructor.prototype.__new__({}, ...arguments)
 			: {}
+
 		obj.__proto__ = _constructor.prototype
-		// XXX for some reason this does not resolve from .__proto__
-		// XXX this also is a regular attr and not a prop...
-		//obj.constructor = _constructor
 		Object.defineProperty(obj, 'constructor', {
 			value: _constructor,
 			enumerable: false,
 		})
-		//obj.__proto__.constructor = _constructor
-
-		// explicit init...
-		if(proto instanceof Function){
-			proto.apply(obj, arguments)
-		}
 
 		// load initial state...
-		if(obj.__init__ instanceof Function){
-			obj.__init__.apply(obj, arguments)
-		}
+		obj.__init__ instanceof Function
+			&& obj.__init__(...arguments)
 
 		return obj
 	}
 
-	/* XXX for some reason this works for the _constructor but all 
-	 * 		instances get the wrong name resolved...
-	Object.defineProperty(_constructor, 'name', {
-		value: name,
-	})
-	*/
-
 	// just in case the browser refuses to change the name, we'll make it
 	// a different offer ;)
-	if(_constructor.name == 'Constructor'){
-			// skip for chrome app...
-			//&& !(window.chrome && chrome.runtime && chrome.runtime.id)){
-		eval('_constructor = '+ _constructor
+	_constructor.name == 'Constructor'
+		&& eval('_constructor = '+ _constructor
 				.toString()
 				.replace(/Constructor/g, name))
-	}
 
 	// set an informative .toString...
 	// NOTE: do this only if .toString(..) is not defined by user...
-	if((cls_proto || {}).toString() == ({}).toString()){
+	;((cls_proto || {}).toString() == ({}).toString())
 		// XXX is this the right way to go or should we set this openly???
-		Object.defineProperty(_constructor, 'toString', {
+		&& Object.defineProperty(_constructor, 'toString', {
 			value: function(){ 
 				var args = proto.__init__ ?
 					proto.__init__
@@ -316,14 +278,19 @@ function makeConstructor(name, a, b){
 			},
 			enumerable: false,
 		})
-	}
 
 	_constructor.__proto__ = cls_proto
 	_constructor.prototype = proto
-	_constructor.prototype.constructor = _constructor
+	Object.defineProperty(_constructor.prototype, 'constructor', {
+		value: _constructor,
+		enumerable: false,
+	})
 
 	return _constructor
 }
+
+
+
 
 
 
