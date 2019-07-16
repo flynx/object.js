@@ -159,6 +159,8 @@ function(root, ...objects){
 // 	1) the base instance object is created 
 // 	2) if .__new__(..) is defined it is passed to it along with the 
 // 		constructor arguments and the return value is used as base instance.
+// 		NOTE: .__new__(..) is called in the context of the constructor 
+// 			.prototype...
 // 	2) the base instance object is prepared (.__proto__ is set)
 // 	3) if <init-func> is present, then it is called with instance as 
 // 		context and passed the constructor arguments
