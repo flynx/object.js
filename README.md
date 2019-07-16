@@ -70,7 +70,7 @@ var Base = object.Constructor('Base', {
 })
 
 var Item = object.Constructor('Item', {
-    // inherit from BaseItem...
+    // inherit from Base...
     __proto__: Base.prototype,
 
     __init__: function(){
