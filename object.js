@@ -156,10 +156,13 @@ function(root, ...objects){
 //
 //
 // Init protocol:
-// 	1) the base instance object is prepared (.__proto__ is set)
-// 	2) if <init-func> is present, then it is called with instance as 
+// 	1) the base instance object is created 
+// 	2) if .__new__(..) is defined it is passed to it along with the 
+// 		constructor arguments and the return value is used as base instance.
+// 	2) the base instance object is prepared (.__proto__ is set)
+// 	3) if <init-func> is present, then it is called with instance as 
 // 		context and passed the constructor arguments
-// 	3) if <proto>.__init__(..) is present, it is called with the instance
+// 	4) if <proto>.__init__(..) is present, it is called with the instance
 // 		as context and passed the constructor arguments.
 //
 //
@@ -247,7 +250,9 @@ function makeConstructor(name, a, b){
 		// 		in...
 		// 		This is equivalent to:
 		//			return new _constructor(json)
-		var obj = {}
+		var obj = _constructor.prototype.__new__ instanceof Function ?
+			_constructor.prototype.__new__({}, ...arguments)
+			: {}
 		obj.__proto__ = _constructor.prototype
 		// XXX for some reason this does not resolve from .__proto__
 		// XXX this also is a regular attr and not a prop...
@@ -264,7 +269,7 @@ function makeConstructor(name, a, b){
 		}
 
 		// load initial state...
-		if(obj.__init__ != null){
+		if(obj.__init__ instanceof Function){
 			obj.__init__.apply(obj, arguments)
 		}
 
