@@ -57,7 +57,29 @@ c instanceof A // -> true
 ```
 
 ```javascript
-var Base = object.makeConstructor()
+var Base = object.Constructor('Base', {
+    get prop(){
+        return 123 },
+    method: function(){
+        console.log('Base.method()') },
+
+    // initializer...
+    __init__: function(){
+        this.base_attribute = 321
+    },
+})
+
+var Item = object.Constructor('Item', {
+    // inherit from BaseItem...
+    __proto__: Base.prototype,
+
+    __init__: function(){
+        // call the "super" method...
+        object.parent(this.__init__, this).call(this)
+        this.item_attribute = 333
+    },
+})
+
 ```
 
 
@@ -83,10 +105,6 @@ mixinFlat(<root>, <object>, ...)
 makeConstructor(<name>, <prototype>)
 makeConstructor(<name>, <class-prototype>, <prototype>)
     -> <constructor>
-
-makeConstructor(<name>, <init-function>)
-makeConstructor(<name>, <class-prototype>, <init-function>)
-    -> <constructor>
 ```
 
 
@@ -95,7 +113,7 @@ makeConstructor(<name>, <class-prototype>, <init-function>)
 
 [BSD 3-Clause License](./LICENSE)
 
-Copyright (c) 2019, Alex A. Naanou,
+Copyright (c) 2019, Alex A. Naanou,  
 All rights reserved.
 
 <!-- vim:set ts=4 sw=4 spell : -->
