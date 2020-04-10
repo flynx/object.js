@@ -82,6 +82,56 @@ var Item = object.Constructor('Item', {
 
 ```
 
+```javascript
+// callable instance constructor...
+var Action = object.Constructor('Action',
+    // the first argument is allways the external call context, like
+    // normal this, but here we have two contexts:
+    //  - external -- where the instance was called from
+    //  - internal -- the instance (this)
+    // NOTE: if the prototype is explicitly defined as a function then
+    //      it is the user's responsibility to call .__call__(..) method
+    //      (see below)
+    function(context, ...args){
+        // return the instance...
+        return this
+    })
+
+var action = new Action()
+
+action()
+
+
+// a different way to do the above...
+var Action2 = object.Constructor('Action2', {
+    // this is the same as the above but a bit more convenient as we do 
+    // not need to use Object.assign(..) or object.mixinFlat(..) to define
+    // attributes and props...
+    // NOTE: this is not called if a user defines the prototype as a function
+    //      (see above)
+    __call__: function(context, ...args){
+        return this
+    },
+})
+
+```
+
+```javascript
+// low level constructor...
+var LowLevel = object.Constructor('LowLevel', {
+    // Low level instance constructor...
+    // NOTE: if this is defined the return value is used as the instance
+    // NOTE: this is run in the context of the .prototype rather than 
+    //      the instance...
+    // NOTE: this has priority over the callable protocols above, thus
+    //      the user must take care of both the prototype as function and
+    //      prototype.__call__(..)...
+    __new__: function(context, ...args){
+        return {}
+    },
+})
+
+```
 
 ## Components
 
@@ -102,8 +152,8 @@ mixinFlat(<root>, <object>, ...)
 ```
 
 ```
-makeConstructor(<name>, <prototype>)
-makeConstructor(<name>, <class-prototype>, <prototype>)
+Constructor(<name>, <prototype>)
+Constructor(<name>, <class-prototype>, <prototype>)
     -> <constructor>
 ```
 

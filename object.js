@@ -219,6 +219,7 @@ function(root, ...objects){
 // 		...mainly for inheritance.
 // 		...would also be helpful in this case to call all the 
 // 		constructors in the chain
+// XXX need a simple way to make a function constructor...
 var Constructor = 
 module.Constructor =
 // shorthand...
@@ -227,14 +228,44 @@ function Constructor(name, a, b){
 	var proto = b == null ? a : b
 	var cls_proto = b == null ? b : a
 
+	// mirror doc from target to func...
+	var _mirror = function(func, target){
+		Object.defineProperty(func, 'toString', {
+			value: function(...args){
+				return target.toString(...args) },
+			enumerable: false,
+		})
+		return func }
+
+	var __new__ = function(base, ...args){
+
+	}
+
 	var _constructor = function Constructor(){
 		// NOTE: the following does the job of the 'new' operator but
 		// 		with one advantage, we can now pass arbitrary args 
 		// 		in...
 		// 		This is equivalent to:
 		//			return new _constructor(json)
-		var obj = _constructor.prototype.__new__ instanceof Function ?
-			_constructor.prototype.__new__({}, ...arguments)
+		var obj = 
+			// prototype defines .__new__(..)...
+			_constructor.prototype.__new__ instanceof Function ?
+				_constructor.prototype.__new__(this, ...arguments)
+			// prototype is a function...
+			// NOTE: we need to isolate the .prototype from instances...
+			: _constructor.prototype instanceof Function ?
+				_mirror(
+					function(){
+						return _constructor.prototype.call(obj, this, ...arguments) },
+					_constructor.prototype)
+			// prototype defines .__call__(..)...
+			// NOTE: we need to isolate the .__call__ from instances...
+			: _constructor.prototype.__call__ instanceof Function ?
+				_mirror(
+					function(){
+						return _constructor.prototype.__call__.call(obj, this, ...arguments) },
+					_constructor.prototype.__call__)
+			// default object base...
 			: {}
 
 		obj.__proto__ = _constructor.prototype
@@ -257,7 +288,7 @@ function Constructor(name, a, b){
 				.toString()
 				.replace(/Constructor/g, name))
 
-	// set an informative .toString...
+	// set an informative Constructor .toString(..)...
 	// NOTE: do this only if .toString(..) is not defined by user...
 	;((cls_proto || {}).toString() == ({}).toString())
 		// XXX is this the right way to go or should we set this openly???
