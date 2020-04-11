@@ -68,33 +68,11 @@ function(method, name, that){
 
 //---------------------------------------------------------------------
 
-// Create an object and mix in sets of methods/props/attrs...
-//
-// 	mixin(root, object, ...)
-// 		-> object
-//
-// This will create a new object per set of methods given and 
-// Object.assign(..) the method set into this object leaving the 
-// original objects intact.
+// Mix a set of methods/props/attrs into an object...
 // 
-// 		root <-- object1_copy <-- .. <-- objectN_copy
-// 				
-// XXX use .mixinFlat(..) inside...
-var mixin = 
-module.mixin = 
-function(root, ...objects){
-	return objects
-		.reduce(function(res, cur){
-			var o = Object.create(res)
-			Object.keys(cur)
-				.map(function(k){
-					Object.defineProperty(o, k,
-						Object.getOwnPropertyDescriptor(cur, k)) })
-			return o }, root) }
-
-
-// Like .mixin(..) but will mixin all the methods/props/attrs directly 
-// (flatly) into root...
+//	mixinFlat(root, object, ...)
+//		-> root
+//
 //
 // NOTE: essentially this is just like Object.assign(..) but copies 
 // 		properties directly rather than copying property values...
@@ -108,6 +86,26 @@ function(root, ...objects){
 					Object.defineProperty(root, k,
 						Object.getOwnPropertyDescriptor(cur, k)) })
 			return root }, root) }
+
+
+// Mix sets of methods/props/attrs into an object as prototypes...
+//
+// 	mixin(root, object, ...)
+// 		-> root
+//
+//
+// This will create a new object per set of methods given and 
+// mixinFlat(..) the method set into this object leaving the 
+// original objects intact.
+// 
+// 		root <-- object1_copy <-- .. <-- objectN_copy
+// 				
+var mixin = 
+module.mixin = 
+function(root, ...objects){
+	return objects
+		.reduce(function(res, cur){
+			return mixinFlat(Object.create(res), cur) }, root) }
 
 
 
