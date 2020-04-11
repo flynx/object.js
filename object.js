@@ -79,7 +79,7 @@ function(method, name, that){
 // 
 // 		root <-- object1_copy <-- .. <-- objectN_copy
 // 				
-//
+// XXX use .mixinFlat(..) inside...
 var mixin = 
 module.mixin = 
 function(root, ...objects){
