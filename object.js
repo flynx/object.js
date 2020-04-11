@@ -105,7 +105,7 @@ module.mixin =
 function(root, ...objects){
 	return objects
 		.reduce(function(res, cur){
-			return mixinFlat(Object.create(res), cur) }, root) }
+			return module.mixinFlat(Object.create(res), cur) }, root) }
 
 
 
