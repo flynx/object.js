@@ -48,8 +48,6 @@ function(text){
 // 		passed explicitly.
 // NOTE: this is super(..) replacement...
 // NOTE: if method is root (no super method) this will return undefined.
-//
-// XXX should this return the method or the object???
 var parent = 
 module.parent =
 function(method, name, that){
@@ -63,6 +61,30 @@ function(method, name, that){
 	}
 	// return the next method...
 	return that.__proto__[name] }
+
+
+// XXX get a list of prototypes that have an prop name...
+// XXX need a way to stop...
+var defines =
+module.defines =
+function(that, name, callback){
+	var stop
+	var res = []
+	do {
+		if(that.hasOwnProperty(name)){
+			res.push(that)
+			stop = callback
+				&& callback(that)
+			// callback requested a stop...
+			if(stop === false || stop == 'stop'){
+				return that
+			}
+		}
+		that = that.__proto__
+	// XXX revise...
+	} while(that !== null)
+	return res
+}
 
 
 
