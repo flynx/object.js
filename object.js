@@ -74,15 +74,15 @@ function(that, name, callback){
 	do {
 		if(that.hasOwnProperty(name)){
 			res.push(that)
+			// handle callback...
 			stop = callback
 				&& callback(that)
-			// callback requested a stop...
+			// stop requested by callback...
 			if(stop === false || stop == 'stop'){
 				return that
 			}
 		}
 		that = that.__proto__
-	// XXX revise...
 	} while(that !== null)
 	return res
 }
