@@ -65,6 +65,10 @@ function(method, name, that){
 
 // Get a list of prototypes that have a prop/attr defined ...
 //
+// 	defines(obj, name)
+// 	defines(obj, name, callback)
+// 		-> list
+//
 // XXX revise name...
 var defines =
 module.defines =
@@ -79,13 +83,10 @@ function(that, name, callback){
 				&& callback(that)
 			// stop requested by callback...
 			if(stop === false || stop == 'stop'){
-				return that
-			}
-		}
+				return that } }
 		that = that.__proto__
 	} while(that !== null)
-	return res
-}
+	return res }
 
 
 
