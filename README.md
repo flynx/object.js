@@ -56,16 +56,27 @@ c instanceof B // -> true
 c instanceof A // -> true
 ```
 
+
+### Inheritance
 ```javascript
+//
+//    Base
+//     ^
+//     |
+//    Item
+//
 var Base = object.Constructor('Base', {
+    proto_attr: 'prototype attr value',
+
     get prop(){
-        return 123 },
+        return 'propery value' },
+
     method: function(){
         console.log('Base.method()') },
 
     // initializer...
     __init__: function(){
-        this.base_attribute = 321
+        this.instance_attr = 'instance'
     },
 })
 
@@ -76,19 +87,24 @@ var Item = object.Constructor('Item', {
     __init__: function(){
         // call the "super" method...
         object.parent(this.__init__, this).call(this)
-        this.item_attribute = 333
+        this.item_attr = 'instance attribute value'
     },
 })
 
 ```
 
+
+### Callable instances
 ```javascript
 // callable instance constructor...
 var Action = object.Constructor('Action',
-    // the first argument is allways the external call context, like
+    // Define a constructor as a function...
+    //
+    // The first argument is allways the external call context, like
     // normal this, but here we have two contexts:
-    //  - external -- where the instance was called from
-    //  - internal -- the instance (this)
+    //  - internal (this)       -- the instance (this)
+    //  - external (context)    -- call context
+    //
     // NOTE: if the prototype is explicitly defined as a function then
     //      it is the user's responsibility to call .__call__(..) method
     //      (see below)
@@ -104,9 +120,14 @@ action()
 
 // a different way to do the above...
 var Action2 = object.Constructor('Action2', {
-    // this is the same as the above but a bit more convenient as we do 
+    // This is the same as the above but a bit more convenient as we do 
     // not need to use Object.assign(..) or object.mixinFlat(..) to define
-    // attributes and props...
+    // attributes and props.
+    //
+    // Contexts:
+    //  - internal (this)       -- the instance
+    //  - external (context)    -- call context
+    //
     // NOTE: this is not called if a user defines the prototype as a function
     //      (see above)
     __call__: function(context, ...args){
@@ -116,13 +137,16 @@ var Action2 = object.Constructor('Action2', {
 
 ```
 
+### Low level constructor
 ```javascript
-// low level constructor...
 var LowLevel = object.Constructor('LowLevel', {
     // Low level instance constructor...
+    //
+    // Contexts:
+    //  - internal (this)       -- .prototype
+    //  - external (context)    -- call context
+    //
     // NOTE: if this is defined the return value is used as the instance
-    // NOTE: this is run in the context of the .prototype rather than 
-    //      the instance...
     // NOTE: this has priority over the callable protocols above, thus
     //      the user must take care of both the prototype as function and
     //      prototype.__call__(..)...
@@ -134,6 +158,12 @@ var LowLevel = object.Constructor('LowLevel', {
 ```
 
 ## Components
+
+```
+sources(<object>, <name>)
+sources(<object>, <name>, <callback>)
+    -> <list>
+```
 
 ```
 parent(<method>, <this>)

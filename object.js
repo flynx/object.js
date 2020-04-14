@@ -37,6 +37,33 @@ function(text){
 
 //---------------------------------------------------------------------
 
+// Get a list of sources/definitions for a prop/attr...
+//
+// 	sources(obj, name)
+// 	sources(obj, name, callback)
+// 		-> list
+//
+//
+// XXX revise name...
+var sources =
+module.sources =
+function(that, name, callback){
+	var stop
+	var res = []
+	do {
+		if(that.hasOwnProperty(name)){
+			res.push(that)
+			// handle callback...
+			stop = callback
+				&& callback(that)
+			// stop requested by callback...
+			if(stop === false || stop == 'stop'){
+				return that } }
+		that = that.__proto__
+	} while(that !== null)
+	return res }
+
+
 // Find the next parent method in the prototype chain.
 //
 // 	parent(meth, this)
@@ -61,32 +88,6 @@ function(method, name, that){
 	}
 	// return the next method...
 	return that.__proto__[name] }
-
-
-// Get a list of prototypes that have a prop/attr defined ...
-//
-// 	defines(obj, name)
-// 	defines(obj, name, callback)
-// 		-> list
-//
-// XXX revise name...
-var defines =
-module.defines =
-function(that, name, callback){
-	var stop
-	var res = []
-	do {
-		if(that.hasOwnProperty(name)){
-			res.push(that)
-			// handle callback...
-			stop = callback
-				&& callback(that)
-			// stop requested by callback...
-			if(stop === false || stop == 'stop'){
-				return that } }
-		that = that.__proto__
-	} while(that !== null)
-	return res }
 
 
 
@@ -249,6 +250,7 @@ module.C =
 function Constructor(name, a, b){
 	var proto = b == null ? a : b
 	var cls_proto = b == null ? b : a
+	proto = proto || {}
 
 	// mirror doc from target to func...
 	var _mirror = function(func, target){
@@ -259,10 +261,6 @@ function Constructor(name, a, b){
 		})
 		return func }
 
-	var __new__ = function(base, ...args){
-
-	}
-
 	var _constructor = function Constructor(){
 		// NOTE: the following does the job of the 'new' operator but
 		// 		with one advantage, we can now pass arbitrary args 
@@ -271,6 +269,7 @@ function Constructor(name, a, b){
 		//			return new _constructor(json)
 		var obj = 
 			// prototype defines .__new__(..)...
+			// XXX should the context here he _constructor or .prototype (now)???
 			_constructor.prototype.__new__ instanceof Function ?
 				_constructor.prototype.__new__(this, ...arguments)
 			// prototype is a function...
