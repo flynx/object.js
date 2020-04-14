@@ -242,7 +242,6 @@ function(root, ...objects){
 // 		...mainly for inheritance.
 // 		...would also be helpful in this case to call all the 
 // 		constructors in the chain
-// XXX need a simple way to make a function constructor...
 var Constructor = 
 module.Constructor =
 // shorthand...
