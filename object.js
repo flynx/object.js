@@ -44,23 +44,24 @@ function(text){
 // 		-> list
 //
 //
+// XXX should the callback(..) be used to break (current) or filter/map???
 // XXX revise name...
 var sources =
 module.sources =
-function(that, name, callback){
+function(obj, name, callback){
 	var stop
 	var res = []
 	do {
-		if(that.hasOwnProperty(name)){
-			res.push(that)
+		if(obj.hasOwnProperty(name)){
+			res.push(obj)
 			// handle callback...
 			stop = callback
-				&& callback(that)
+				&& callback(obj)
 			// stop requested by callback...
 			if(stop === false || stop == 'stop'){
-				return that } }
-		that = that.__proto__
-	} while(that !== null)
+				return obj } }
+		obj = obj.__proto__
+	} while(obj !== null)
 	return res }
 
 
