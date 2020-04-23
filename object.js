@@ -20,11 +20,9 @@ module.TAB_SIZE = 4
 var normalizeIndent =
 module.normalizeIndent =
 function(text, tab_size){
-	text = TAB_SIZE > 0 ?
-		text.replace(/\t/g, 
-			' '.repeat(tab_size === undefined ? 
-				tab_size 
-				: TAB_SIZE))
+	tab_size = tab_size || TAB_SIZE
+	text = tab_size > 0 ?
+		text.replace(/\t/g, ' '.repeat(tab_size))
 		: text
 	var lines = text.split(/\n/)
 	var l = lines 
