@@ -15,6 +15,16 @@ function(require){ var module={} // makes module AMD/node compatible...
 var TAB_SIZE =
 module.TAB_SIZE = 4
 
+
+// Normalize indent...
+//
+// 	normalizeIndent(text)
+// 		-> text
+//
+// This will remove common indent from each like of text, this is useful 
+// for printing function code of functions that were defined at deep levels 
+// of indent.
+//
 // XXX is this the right place for this???
 // 		...when moving take care that ImageGrid's core.doc uses this...
 var normalizeIndent =
