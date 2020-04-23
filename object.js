@@ -12,11 +12,20 @@ function(require){ var module={} // makes module AMD/node compatible...
 /*********************************************************************/
 // Helpers...
 
+var TAB_SIZE =
+module.TAB_SIZE = 4
+
 // XXX is this the right place for this???
 // 		...when moving take care that ImageGrid's core.doc uses this...
 var normalizeIndent =
 module.normalizeIndent =
-function(text){
+function(text, tab_size){
+	text = TAB_SIZE > 0 ?
+		text.replace(/\t/g, 
+			' '.repeat(tab_size === undefined ? 
+				tab_size 
+				: TAB_SIZE))
+		: text
 	var lines = text.split(/\n/)
 	var l = lines 
 		.reduce(function(l, e, i){
@@ -30,8 +39,11 @@ function(text){
 		}, -1)
 	return lines
 		.map(function(line, i){ 
-			return i == 0 ? line : line.slice(l) })
-		.join('\n') }
+			return i == 0 ? 
+				line 
+				: line.slice(l) })
+		.join('\n')
+		.trim() }
 
 
 
