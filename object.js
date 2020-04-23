@@ -281,6 +281,7 @@ function Constructor(name, a, b){
 					_constructor.prototype)
 			// prototype defines .__call__(..)...
 			// NOTE: we need to isolate the .__call__ from instances...
+			// XXX should this be instanceof Function???
 			: _constructor.prototype.__call__ instanceof Function ?
 				_mirror(
 					function(){
