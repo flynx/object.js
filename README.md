@@ -130,8 +130,8 @@ the two contexts relevant to the callable instance:
 - Internal context (`this`)  
   This always references the instance being called
 - External context (`context`)  
-  This is the object the instance is called from (`window` or `global` by 
-  default), i.e. _the thing before the dot_
+  This is the object the instance is called from, i.e. the call _context_ 
+  (`window` or `global` by default)
 
 If the prototype is explicitly defined as a function then it is the 
 user's responsibility to call .__call__(..) method.
@@ -158,9 +158,9 @@ Contexts:
 - Internal context (`this`)  
   References the `.prototype` of the constructor.
 - External context (`context`)  
-  This is the object the instance is called from (`window` or `global` by 
-  default), i.e. _the thing before the dot_, the same as for function 
-  constructor and `.__call__(..)`.
+  This is the object the instance is called from, i.e. the call _context_ 
+  (`window` or `global` by default), the same as for function constructor 
+  and `.__call__(..)`.
  
 
 The value `.__new__(..)`returns is used as the instance and gets linked 
