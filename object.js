@@ -2,13 +2,11 @@
 * 
 *
 *
+* XXX should this extend Object???
+*
 **********************************************************************/
 ((typeof define)[0]=='u'?function(f){module.exports=f(require)}:define)(
 function(require){ var module={} // makes module AMD/node compatible...
-/*********************************************************************/
-
-
-
 /*********************************************************************/
 // Helpers...
 
@@ -24,6 +22,8 @@ module.TAB_SIZE = 4
 // This will remove common indent from each like of text, this is useful 
 // for printing function code of functions that were defined at deep levels 
 // of indent.
+//
+// NOTE: this will trim out both leading and trailing whitespace.
 //
 // XXX is this the right place for this???
 // 		...when moving take care that ImageGrid's core.doc uses this...
@@ -310,6 +310,7 @@ function Constructor(name, a, b){
 			// default object base...
 			: {}
 
+		// XXX should this be done when .__new__(..) is called???
 		obj.__proto__ = _constructor.prototype
 		Object.defineProperty(obj, 'constructor', {
 			value: _constructor,

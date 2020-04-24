@@ -1,15 +1,15 @@
 # object.js
 
 object.js provides a set of tools for constructing and maintaining object
-constrictors and for managing their inheritance relations.
+constructors and for managing their inheritance relations.
 
 
-This is an elternative to the ES6 `class` syntax in JavaScript and provides 
+This is an alternative to the ES6 `class` syntax in JavaScript and provides 
 several advantages:  
 - simple way to define normal and class methods, properties and attributes,
 - uniform and minimalistic definition syntax based on basic JavaScript 
   object syntax no special cases or special syntax,
-- _transparantly_ based on _JavaScript's_ prototypical inheritance model,
+- _transparently_ based on _JavaScript's_ prototypical inheritance model,
 - more granular instance construction (a-la _Python's_ `.__new__(..)` 
   and `.__init__(..)` methods)
 - less restrictive:
@@ -17,7 +17,7 @@ several advantages:
     - all input components are reusable
 
 Disadvantages compared to the `class` syntax:  
-- no _sytactic sugar_
+- no _syntactic sugar_
 - a slightly more complicated `super` call method
 
 
