@@ -15,13 +15,14 @@ several advantages:
 - less restrictive:
     - `new` is optional
     - all input components are reusable
+	- no artificial restrictions
 
 Disadvantages compared to the `class` syntax:  
 - no _syntactic sugar_
 - slightly more complicated calling of _super_ or `parent` methods
 
 
-## Usage
+## Basic usage
 
 ```javascript
 var object = require('ig-object')
@@ -31,20 +32,18 @@ Create a basic constructor...
 
 ```javascript
 // NOTE: new is optional here...
-var A = new object.Constructor('A', {})
+var A = new object.Constructor('A')
 ```
 
 
 In _JavaScript_ constructor `B` inherits from constructor `A` iff 
-`B.prototypes` is _prototype_ of `A.prototype`. So to implement inheritance 
+`B.prototype` is _prototype_ of `A.prototype`. So to implement inheritance 
 we simply need to _link_ the prototypes of two constructors via `.__proto__`,
 `Object.create(..)` or other means.
 
 ```javascript
-// NOTE: we could simply use A() or new A() here but that would call
-//      the active constructors if they are defined which might not be
-//      desirable at definition time...
 var B = object.Constructor('B', {__proto__: A.prototype})
+
 var C = object.Constructor('C', Object.create(B.prototype))
 ```
 
@@ -87,6 +86,7 @@ var Item = object.Constructor('Item', {
     __init__: function(){
         // call the "super" method...
         object.parent(this.__init__, this).call(this)
+
         this.item_attr = 'instance attribute value'
     },
 })
@@ -97,7 +97,6 @@ var Item = object.Constructor('Item', {
 ### Callable instances
 
 ```javascript
-// callable instance constructor...
 var Action = object.Constructor('Action',
     // constructor as a function...
     function(context, ...args){
@@ -107,6 +106,7 @@ var Action = object.Constructor('Action',
 
 var action = new Action()
 
+// the instance now is a function...
 action()
 
 
@@ -127,9 +127,9 @@ var Action2 = object.Constructor('Action2', {
 In the above cases both the base function and the `.__call__(..)` method
 receive a `context` argument in addition to `this` context, those represent 
 the two contexts relevant to the callable instance:
-- Internal context (`this`)
+- Internal context (`this`)  
   This always references the instance being called
-- External context (`context`)
+- External context (`context`)  
   This is the object the instance is called from (`window` or `global` by 
   default), i.e. _the thing before the dot_
 
@@ -155,9 +155,9 @@ references the `.prototype` object.
 The external context is the same as above.
 
 Contexts:
-- Internal context (`this`)
+- Internal context (`this`)  
   References the `.prototype` of the constructor.
-- External context (`context`)
+- External context (`context`)  
   This is the object the instance is called from (`window` or `global` by 
   default), i.e. _the thing before the dot_, the same as for function 
   constructor and `.__call__(..)`.
