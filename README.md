@@ -134,7 +134,7 @@ the two contexts relevant to the callable instance:
   (`window` or `global` by default)
 
 If the prototype is explicitly defined as a function then it is the 
-user's responsibility to call .__call__(..) method.
+user's responsibility to call `.__call__(..)` method.
 
 
 ### Low level constructor
