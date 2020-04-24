@@ -209,6 +209,24 @@ Constructor(<name>, <class-prototype>, <prototype>)
     -> <constructor>
 ```
 
+Shorthand to `Constructor(..)`
+```
+C(<name>, ..)
+    -> <constructor>
+```
+
+
+## Utilities
+
+Align text to shortest leading whitespace
+```
+normalizeIndent(<text>)
+normalizeIndent(<text>, <tab-size>)
+	-> <text>
+```
+
+This is used to format `.toString(..)` return values for nested functions
+to make source printing in console more pleasant to read.
 
 
 ## License
