@@ -124,9 +124,9 @@ var Action2 = object.Constructor('Action2', {
 
 ```
 
-In the above cases both the base function and the `.__call__(..)` method
-receive a `context` argument in addition to `this` context, those represent 
-the two contexts relevant to the callable instance:
+In the above cases both the _function constructor_ and the `.__call__(..)` 
+method receive a `context` argument in addition to `this` context, those 
+represent the two contexts relevant to the callable instance:
 - Internal context (`this`)  
   This always references the instance being called
 - External context (`context`)  
@@ -148,9 +148,9 @@ var LowLevel = object.Constructor('LowLevel', {
 
 ```
 
-Like function constructor and `.__call__(..)` this also has two contexts,
+Like _function constructor_ and `.__call__(..)` this also has two contexts,
 but the internal context is different -- as it is the job of `.__new__(..)`
-to create an instance at time of call the instance does not exist and `this`
+to create an instance, at time of call the instance does not exist and `this`
 references the `.prototype` object.
 The external context is the same as above.
 
@@ -167,7 +167,7 @@ The value `.__new__(..)`returns is used as the instance and gets linked
 in the prototype chain.
 
 This has priority over the callable protocols above, thus the user must
-take care of both the _prototype as function_ and `prototype.__call__(..)` 
+take care of both the _function constructor_ and `prototype.__call__(..)` 
 handling.
 
 
