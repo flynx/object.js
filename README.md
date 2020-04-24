@@ -59,10 +59,7 @@ c instanceof A // -> true
 ### Inheritance
 ```javascript
 //
-//    Base
-//     ^
-//     |
-//    Item
+//    Base <--- Item
 //
 var Base = object.Constructor('Base', {
     proto_attr: 'prototype attr value',
