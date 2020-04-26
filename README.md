@@ -25,13 +25,22 @@ Disadvantages compared to the `class` syntax:
 - Slightly more complicated calling of `parent` (_super_) methods
 
 
-## Basic usage
+
+## Installation
 
 ```bash
 $ npm install ig-object
 
 ```
 
+Or just download and drop _object.js_ into your code.
+
+
+## Basic usage
+
+
+Include the code, this is compatible with both [node's](https://nodejs.org/) and
+[RequireJS'](https://requirejs.org/) `require(..)`
 ```javascript
 var object = require('ig-object')
 ```
