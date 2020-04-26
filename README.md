@@ -167,6 +167,9 @@ This has priority over the callable protocols above, thus the user must
 take care of both the _function constructor_ and `prototype.__call__(..)` 
 handling.
 
+**Notes:** 
+- this now is a instance method, in the future this may move to a class method...
+
 
 ## Components
 
@@ -203,6 +206,8 @@ Make a raw instance
 makeRawInstance(<context>, <constructor>, ...)
 	-> <object>
 ```
+
+_EXPERIMENTAL: a shorthand to this is defined as `Constructor.__rawinstance__(..)`_
 
 Define an object constructor
 ```
