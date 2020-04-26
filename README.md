@@ -168,7 +168,8 @@ take care of both the _function constructor_ and `prototype.__call__(..)`
 handling.
 
 **Notes:** 
-- this now is a instance method, in the future this may move to a class method...
+- this now is an instance method, in the future this may (or may not) 
+move to being a class method...
 
 
 ## Components
