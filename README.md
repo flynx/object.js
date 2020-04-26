@@ -208,6 +208,14 @@ parent(<method>, <name>, <this>)
     -> <parent-method>
 ```
 
+Get parent method and call it
+```
+parentCall(<method>, <this>)
+parentCall(<method>, <name>, <this>)
+    -> <result>
+```
+
+
 Mixin objects into a prototype chain
 ```
 mixin(<root>, <object>, ...)

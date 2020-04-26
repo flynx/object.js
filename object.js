@@ -88,9 +88,9 @@ function(obj, name, callback){
 
 // Find the next parent method in the prototype chain.
 //
-// 	parent(meth, this)
-// 	parent(meth, name, this)
-// 		-> meth
+// 	parent(<meth>, <this>)
+// 	parent(<meth>, <name>, <this>)
+// 		-> <meth>
 //
 //
 // NOTE: there are cases where method.name is not set, so a name can be 
@@ -110,6 +110,26 @@ function(method, name, that){
 	}
 	// return the next method...
 	return that.__proto__[name] }
+
+
+// Find the next parent method and call it...
+//
+// 	parentCall(<meth>, <this>, ...)
+// 	parentCall(<meth>, <name>, this>, ...)
+// 		-> <res>
+//
+// NOTE: this is just like parent(..) but will call the retrieved method,
+// 		essentially this is a shorthand to:
+// 			parent(method, name, this).call(this, ...)
+// 		or:
+// 			parent(method, this).call(this, ...)
+// NOTE: for more docs see parent(..)
+var parentCall =
+module.parentCall =
+function(method, name, that, ...args){
+	return typeof(name) == typeof('str') ?
+		parent(method, name, that).call(that, ...args)
+		: parent(method, that).call(that, ...args) }
 
 
 
@@ -182,9 +202,11 @@ function(root, ...objects){
 // 			var O = function(){}
 // 			// new is optional...
 // 			var o = new makeRawInstance(null, O)
-//
-// XXX Q: should .__new__(..) be a class method???
-// 		...in a prototype model I'm not sure...
+// NOTE: .__new__(..) is intentionaly an instance method (contary to 
+// 		Python) this is done because there are no classes in JS and 
+// 		adding and instance constructor as a class method would create 
+// 		unneccessary restrictions both on the "class" object and the 
+// 		instance...
 var makeRawInstance = 
 module.makeRawInstance =
 function(context, constructor, ...args){
