@@ -98,6 +98,7 @@ function(obj, name, callback){
 // 		passed explicitly.
 // NOTE: this is super(..) replacement...
 // NOTE: if method is root (no super method) this will return undefined.
+// NOTE: for
 var parent = 
 module.parent =
 function(method, name, that){
