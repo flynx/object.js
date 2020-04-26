@@ -1,6 +1,6 @@
 # object.js
 
-[object.js](.) provides a set of tools for making and maintaining object
+_object.js_ provides a set of tools for making and maintaining object
 constructors and for managing their inheritance relations.
 
 
