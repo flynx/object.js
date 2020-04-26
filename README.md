@@ -33,7 +33,7 @@ $ npm install ig-object
 
 ```
 
-Or just download and drop _object.js_ into your code.
+Or just download and drop [object.js](object.js) into your code.
 
 
 ## Basic usage
