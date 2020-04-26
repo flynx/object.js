@@ -175,13 +175,19 @@ function(root, ...objects){
 //
 // This will not call .__init__(..)
 //
-// XXX Q: should this be a class method or a utility???
+// NOTE: as this simply an extension to the base JavaScript protocol this
+// 		can be used to construct using any object...
+// 		Example:
+// 			var O = function(){}
+// 			// new is optional...
+// 			var o = new makeRawInstance(null, O)
+//
 // XXX Q: should .__new__(..) be a class method???
+// 		...in a prototype model I'm not sure...
 var makeRawInstance = 
 module.makeRawInstance =
 function(context, constructor, ...args){
-	var _mirror_doc = 
-	function(func, target){
+	var _mirror_doc = function(func, target){
 		Object.defineProperty(func, 'toString', {
 			value: function(...args){
 				return target.toString(...args) },
@@ -324,7 +330,6 @@ function(context, constructor, ...args){
 //
 // XXX Q: should the context in .__new__(..) be _constructor or .prototype???
 // 		...currently it's .prototype...
-// XXX Q: should we add a wrapper to .makeRawInstance(..) as a class method here???
 var Constructor = 
 module.Constructor =
 // shorthand...
