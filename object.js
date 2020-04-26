@@ -131,7 +131,7 @@ module.parentCall =
 function(method, name, that, ...args){
 	return typeof(name) == typeof('str') ?
 		parent(method, name, that).call(that, ...args)
-		: parent(method, that).call(that, ...args) }
+		: parent(method, name).call(name, ...[that, ...args]) }
 
 
 

@@ -99,7 +99,7 @@ var Item = object.Constructor('Item', {
 
     __init__: function(){
         // call the "super" method...
-        object.parent(this.__init__, this).call(this)
+        object.parentCall(this.__init__, this)
 
         this.item_attr = 'instance attribute value'
     },
