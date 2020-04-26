@@ -334,9 +334,15 @@ function Constructor(name, a, b){
 	var cls_proto = b == null ? b : a
 	proto = proto || {}
 
+	// XXX EXPERIMENTAL...
+	var _rawinstance = function(){
+		return (_constructor.__proto__ || {}).__rawinstance__ ?
+			_constructor.__proto__.__rawinstance__.call(this, ...arguments)
+			: makeRawInstance(this, _constructor, ...arguments) }
+
 	// the actual constructor...
 	var _constructor = function Constructor(){
-		var obj = makeRawInstance(this, _constructor, ...arguments)
+		var obj = _rawinstance.call(this, ...arguments)
 		obj.__init__ instanceof Function
 			&& obj.__init__(...arguments)
 		return obj }
@@ -350,8 +356,7 @@ function Constructor(name, a, b){
 		&& eval('_constructor = '+ _constructor
 				.toString()
 				.replace(/Constructor/g, name))
-
-	// set an informative Constructor .toString(..)...
+	// set .toString(..)...
 	// NOTE: do this only if .toString(..) is not defined by user...
 	;((cls_proto || {}).toString() == ({}).toString())
 		// XXX is this the right way to go or should we set this openly???
@@ -370,17 +375,11 @@ function Constructor(name, a, b){
 				return `${this.name}(${args})${normalizeIndent(code)}` },
 			enumerable: false,
 		})
-
 	_constructor.__proto__ = cls_proto
 	_constructor.prototype = proto
-	// XXX EXPERIMENTAL...
-	// wrapper to makeRawInstance(..)...
-	_constructor.__rawinstance__ = function(...args){
-		return (_constructor.__proto__ || {}).__rawinstance__ ? 
-			// XXX revise / test...
-			// XXX should we hardcode cls_proto here???
-			_constructor.__proto__.__rawinstance__.call(this, ...args)
-			: makeRawInstance(this, _constructor, ...args) }
+	_constructor.__rawinstance__ = _rawinstance 
+
+	// set .prototype.constructor
 	Object.defineProperty(_constructor.prototype, 'constructor', {
 		value: _constructor,
 		enumerable: false,
