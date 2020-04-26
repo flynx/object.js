@@ -168,8 +168,11 @@ take care of both the _function constructor_ and `prototype.__call__(..)`
 handling.
 
 **Notes:** 
-- this now is an instance method, in the future this may (or may not) 
-move to being a class method...
+- `.__new__(..)` is an instance method, contrary to _Python_ that served 
+  as an inspiration for this protocol. This is done intentionally as in
+  JavaScript there is no distinction between an instance and a class and
+  defining `.__new__(..)` in the class would both add complexity as well 
+  as restrict the use-cases for the constructor.
 
 
 ## Components
@@ -202,7 +205,7 @@ mixinFlat(<root>, <object>, ...)
 This is like `Object.assign(..)` but copies property objects rather than
 property values.
 
-Make a raw instance
+Make a raw (un-initialized) instance
 ```
 makeRawInstance(<context>, <constructor>, ...)
 	-> <object>
