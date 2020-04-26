@@ -1,28 +1,36 @@
 # object.js
 
-object.js provides a set of tools for making and maintaining object
+_object.js_ provides a set of tools for making and maintaining object
 constructors and for managing their inheritance relations.
 
 
 This is an alternative to the ES6 `class` syntax in JavaScript and provides 
 several advantages:  
-- simple way to define normal and class methods, properties and attributes,
-- uniform and minimalistic definition syntax based on basic JavaScript 
-  object syntax no special cases or special syntax,
-- _transparently_ based on _JavaScript's_ prototypical inheritance model,
-- more granular instance construction (a-la _Python's_ `.__new__(..)` 
+- Simple way to define instance and "class" methods, properties and attributes,
+- Uniform and minimalistic definition syntax based on basic JavaScript 
+  object syntax, no special cases, special syntax or _"the same but slightly 
+  different"_ ways to do things,
+- _Transparently_ based on JavaScript's prototypical inheritance model,
+- Granular instance construction (a-la _Python's_ `.__new__(..)` 
   and `.__init__(..)` methods)
-- less restrictive:
+- Simple way to define callable instances (including a-la _Python's_ 
+  `.__call__(..)`)
+- Less restrictive:
     - `new` is optional
     - all input components are reusable
 	- no artificial restrictions
 
 Disadvantages compared to the `class` syntax:  
-- no _syntactic sugar_
-- slightly more complicated calling of _super_ or `parent` methods
+- No _syntactic sugar_
+- Slightly more complicated calling of `parent` (_super_) methods
 
 
 ## Basic usage
+
+```bash
+$ npm install ig-object
+
+```
 
 ```javascript
 var object = require('ig-object')
@@ -168,8 +176,8 @@ take care of both the _function constructor_ and `prototype.__call__(..)`
 handling.
 
 **Notes:** 
-- `.__new__(..)` is an instance method, contrary to _Python_ that served 
-  as an inspiration for this protocol. This is done intentionally as in
+- `.__new__(..)` is an instance method, contrary to _Python_ (the 
+  inspiration for this protocol). This is done intentionally as in
   JavaScript there is no distinction between an instance and a class and
   defining `.__new__(..)` in the class would both add complexity as well 
   as restrict the use-cases for the constructor.
