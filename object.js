@@ -156,8 +156,72 @@ function(root, ...objects){
 
 
 //---------------------------------------------------------------------
-// Make a JavaScrip object constructor...	
+// Make/get the base instance object...
 //
+// 	makeRawInstance(context, constructor, ...args)
+// 		-> instance
+//
+//
+// This will:
+// 	- construct an object
+// 		- if .__new__(..) is defined
+// 			-> call and use its return value
+//		- if prototype is a function or if .__call__(..) is defined
+//			-> use a wrapper function
+//		- else
+//			-> use {}
+// 	- link the object into the prototype chain
+//
+//
+// This will not call .__init__(..)
+//
+// XXX Q: should this be a class method or a utility???
+// XXX Q: should .__new__(..) be a class method???
+var makeRawInstance = 
+module.makeRawInstance =
+function(context, constructor, ...args){
+	var _mirror_doc = 
+	function(func, target){
+		Object.defineProperty(func, 'toString', {
+			value: function(...args){
+				return target.toString(...args) },
+			enumerable: false,
+		})
+		return func }
+
+	var obj =
+		// prototype defines .__new__(..)...
+		constructor.prototype.__new__ instanceof Function ?
+			constructor.prototype.__new__(context, ...args)
+		// callable instance -- prototype is a function...
+		// NOTE: we need to isolate the .prototype from instances...
+		: constructor.prototype instanceof Function ?
+			_mirror_doc(
+				function(){
+					return constructor.prototype.call(obj, this, ...arguments) },
+				constructor.prototype)
+		// callable instance -- prototype defines .__call__(..)...
+		// NOTE: we need to isolate the .__call__ from instances...
+		: constructor.prototype.__call__ instanceof Function ?
+			_mirror_doc(
+				function(){
+					return constructor.prototype.__call__.call(obj, this, ...arguments) },
+				constructor.prototype.__call__)
+		// default object base...
+		: {} 
+
+	// link to prototype chain...
+	obj.__proto__ = constructor.prototype
+	Object.defineProperty(obj, 'constructor', {
+		value: constructor,
+		enumerable: false,
+	})
+
+	return obj }
+
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// Make a JavaScrip object constructor...	
 //
 // 	Make a constructor with an object prototype...
 // 		Constructor(<name>, <proto>)
@@ -258,11 +322,9 @@ function(root, ...objects){
 // 		not reusable, to use the same prototype for multiple objects clone
 // 		it via. Object.create(..) or copy it...
 //
-// XXX might be a good idea to be able to make an instance without 
-// 		initializing it...
-// 		...mainly for inheritance.
-// 		...would also be helpful in this case to call all the 
-// 		constructors in the chain
+// XXX Q: should the context in .__new__(..) be _constructor or .prototype???
+// 		...currently it's .prototype...
+// XXX Q: should we add a wrapper to .makeRawInstance(..) as a class method here???
 var Constructor = 
 module.Constructor =
 // shorthand...
@@ -272,61 +334,19 @@ function Constructor(name, a, b){
 	var cls_proto = b == null ? b : a
 	proto = proto || {}
 
-	// mirror doc from target to func...
-	var _mirror = function(func, target){
-		Object.defineProperty(func, 'toString', {
-			value: function(...args){
-				return target.toString(...args) },
-			enumerable: false,
-		})
-		return func }
-
+	// the actual constructor...
 	var _constructor = function Constructor(){
-		// NOTE: the following does the job of the 'new' operator but
-		// 		with one advantage, we can now pass arbitrary args 
-		// 		in...
-		// 		This is equivalent to:
-		//			return new _constructor(json)
-		var obj = 
-			// prototype defines .__new__(..)...
-			// XXX should the context here he _constructor or .prototype (now)???
-			_constructor.prototype.__new__ instanceof Function ?
-				_constructor.prototype.__new__(this, ...arguments)
-			// prototype is a function...
-			// NOTE: we need to isolate the .prototype from instances...
-			: _constructor.prototype instanceof Function ?
-				_mirror(
-					function(){
-						return _constructor.prototype.call(obj, this, ...arguments) },
-					_constructor.prototype)
-			// prototype defines .__call__(..)...
-			// NOTE: we need to isolate the .__call__ from instances...
-			// XXX should this be instanceof Function???
-			: _constructor.prototype.__call__ instanceof Function ?
-				_mirror(
-					function(){
-						return _constructor.prototype.__call__.call(obj, this, ...arguments) },
-					_constructor.prototype.__call__)
-			// default object base...
-			: {}
-
-		// XXX should this be done when .__new__(..) is called???
-		obj.__proto__ = _constructor.prototype
-		Object.defineProperty(obj, 'constructor', {
-			value: _constructor,
-			enumerable: false,
-		})
-
-		// load initial state...
+		var obj = makeRawInstance(this, _constructor, ...arguments)
 		obj.__init__ instanceof Function
 			&& obj.__init__(...arguments)
+		return obj }
 
-		return obj
-	}
-
-	// just in case the browser refuses to change the name, we'll make it
-	// a different offer ;)
+	_constructor.name = name
+	// just in case the browser refuses to change the name, we'll make
+	// it a different offer ;)
 	_constructor.name == 'Constructor'
+		// NOTE: this eval(..) should not be a risk as its inputs are
+		// 		static and never infuenced by external inputs...
 		&& eval('_constructor = '+ _constructor
 				.toString()
 				.replace(/Constructor/g, name))
@@ -347,14 +367,20 @@ function Constructor(name, a, b){
 						.toString()
 						.replace(/[^{]*{/, '{')
 					: '{ .. }'
-
-				return `${this.name}(${args})${normalizeIndent(code)}`
-			},
+				return `${this.name}(${args})${normalizeIndent(code)}` },
 			enumerable: false,
 		})
 
 	_constructor.__proto__ = cls_proto
 	_constructor.prototype = proto
+	// XXX EXPERIMENTAL...
+	// wrapper to makeRawInstance(..)...
+	_constructor.__rawinstance__ = function(...args){
+		return (_constructor.__proto__ || {}).__rawinstance__ ? 
+			// XXX revise / test...
+			// XXX should we hardcode cls_proto here???
+			_constructor.__proto__.__rawinstance__.call(this, ...args)
+			: makeRawInstance(this, _constructor, ...args) }
 	Object.defineProperty(_constructor.prototype, 'constructor', {
 		value: _constructor,
 		enumerable: false,
@@ -362,7 +388,6 @@ function Constructor(name, a, b){
 
 	return _constructor
 }
-
 
 
 

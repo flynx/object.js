@@ -198,6 +198,11 @@ mixinFlat(<root>, <object>, ...)
 This is like `Object.assign(..)` but copies property objects rather than
 property values.
 
+Make a raw instance
+```
+makeRawInstance(<context>, <constructor>, ...)
+	-> <object>
+```
 
 Define an object constructor
 ```
