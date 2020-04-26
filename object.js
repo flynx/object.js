@@ -20,6 +20,7 @@ module.TAB_SIZE = 4
 // 	normalizeIndent(text)
 // 		-> text
 //
+//
 // This will remove common indent from each like of text, this is useful 
 // for printing function code of functions that were defined at deep levels 
 // of indent.
@@ -117,6 +118,7 @@ function(method, name, that){
 // 	parentCall(<meth>, <this>, ...)
 // 	parentCall(<meth>, <name>, this>, ...)
 // 		-> <res>
+//
 //
 // NOTE: this is just like parent(..) but will call the retrieved method,
 // 		essentially this is a shorthand to:
@@ -264,7 +266,6 @@ function(context, constructor, ...args){
 // 					attributes.
 //
 //
-//
 // The resulting constructor can produce objects in one of these ways:
 //
 // 	Basic constructor use...
@@ -303,22 +304,15 @@ function(context, constructor, ...args){
 // 	A simple way to build C -> B -> A chain would be:
 //
 // 		// NOTE: new is optional...
-// 		var A = new Constructor('A', {})
+// 		var A = new Constructor('A')
 //
-// 		// NOTE: the prototype is an instance and not a constructor,
-// 		//		this is obvious if one considers that in JS there are
-// 		//		no classes and inheritance is done via object prototypes
-// 		//		but this might be a gotcha to people coming from the 
-// 		//		class-object world.
-// 		// NOTE: we are creating instances here to provide isolation 
-// 		//		between A and B prototypes...
-// 		//		two other ways to do this would be:
-// 		//			Object.create(A.prototype)
-// 		//		or:
-// 		//			{__proto__: A.prototype}
-// 		var B = Constructor('B', A())
+// 		// NOTE: in a prototype chain the prototypes are "inherited"
+// 		// NOTE: JS has no classes and the prototype is just another 
+// 		//		object, the only difference is that it's used by the 
+// 		//		constructor to link other objects i.e. "instances" to...
+// 		var B = Constructor('B', {__proto__: A.prototype})
 //
-// 		var C = Constructor('C', {__proto__: B.prototype})
+// 		var C = Constructor('C', Objec.create(B.prototype))
 //
 // 		var c = C()
 //
@@ -347,10 +341,11 @@ function(context, constructor, ...args){
 // 		- easy refactoring without touching the client code
 //
 //
-// NOTE: this sets the proto's .constructor attribute, this rendering it
+// NOTE: this sets the proto's .constructor attribute, thus rendering it
 // 		not reusable, to use the same prototype for multiple objects clone
 // 		it via. Object.create(..) or copy it...
 //
+// XXX EXPERIMENTAL: calling .__rawinstance__(..) to create an instance...
 // XXX Q: should the context in .__new__(..) be _constructor or .prototype???
 // 		...currently it's .prototype...
 var Constructor = 
