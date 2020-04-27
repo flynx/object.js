@@ -320,16 +320,16 @@ function(context, constructor, ...args){
 //
 // The resulting constructor can produce objects in one of these ways:
 //
-// 	Basic constructor use...
-// 		constructor()
+// 	Create instance...
+// 		constructor(..)
 // 		new constructor
-// 		new constructor()
+// 		new constructor(..)
 // 			-> instance
 //
-// 	Pass arguments to the constructor...
-// 		constructor(arg[, ...])
-// 		new constructor(arg[, ...])
-// 			-> instance
+//	Create raw/uninitialized instance...
+//		constructor.__rawinstance__(..)
+//		makeRawInstance(null, constructor, ..)
+//			-> raw-instance
 //
 //
 // All produced objects are instances of the constructor
@@ -338,27 +338,49 @@ function(context, constructor, ...args){
 //
 //
 //
-// Init protocol:
+// Create and initialization protocol:
 // 	1) raw instance is created:
 // 		a) constructor.__rawinstance__(..) / makeRawInstance(..) called:
-// 			- call .__new__(..) if defined and get return value as instance, or
-// 			- if .__call__(..) defined or prototype is a function, wrap it and
-// 				use the wrapper function as instance, or
+// 			- call .__new__(..) if defined and get return value as 
+// 				instance, or
+// 			- if .__call__(..) defined or prototype is a function, wrap 
+// 				it and use the wrapper function as instance, or
 // 			- create an empty object
 // 		b) instance linked to prototype chain
 // 			set .__proto__ to constructor.prototype
 // 	2) instance is initialized: 
 // 		call .__init__(..) if defined
 // 
+//
 // 
 // Special methods (constructor):
+//
+//  Handle uninitialized instance construction
 // 	.__rawinstance__(context, ...)
+// 		-> instance
+// 		NOTE: This is a shorthand to makeRawInstance(..) see it for 
+// 			details.
 // 
 // 
 // Special methods (.prototype):
+//
+// 	Create new instance object...
 // 	.__new__(context, ..)
+// 		-> object
+//
+// 	Handle instance call...
 // 	.__call__(context, ..)
+// 		-> ..
+//
+// 	Initialize instance object...
 // 	.__init__(..)
+// 		-> ..
+//
+//
+// NOTE: raw instance creation is defined by makeRawInstance(..) so see 
+// 		it for more info.
+// NOTE: raw instance creation can be completely overloaded by defining
+// 		.__rawinstance__(..) on the constructor. (XXX EXPERIMENTAL)
 //
 //
 //
@@ -406,11 +428,10 @@ function(context, constructor, ...args){
 // NOTE: this sets the proto's .constructor attribute, thus rendering it
 // 		not reusable, to use the same prototype for multiple objects clone
 // 		it via. Object.create(..) or copy it...
-//
-// XXX EXPERIMENTAL: calling .__rawinstance__(..) to create an instance...
 // NOTE: to disable .__rawinstance__(..) handling set it to false in the 
-// 		class prototype...
+// 		class prototype... (XXX EXPERIMENTAL)
 // 
+// XXX EXPERIMENTAL: calling .__rawinstance__(..) to create an instance...
 // XXX Q: should the context in .__new__(..) be _constructor or .prototype???
 // 		...currently it's .prototype...
 var Constructor = 
