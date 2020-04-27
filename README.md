@@ -241,7 +241,7 @@ makeRawInstance(<context>, <constructor>, ...)
 	-> <object>
 ```
 
-_EXPERIMENTAL: a shorthand to this is defined as `Constructor.__rawinstance__(..)`_
+_EXPERIMENTAL: a shorthand to this is defined as `Constructor.__rawinstance__(context, ..)`_
 
 Define an object constructor
 ```

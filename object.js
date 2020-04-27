@@ -138,7 +138,7 @@ function(proto, name, that){
 		var method = proto
 		proto = that = name
 		name = method.name
-		// skip until we get to the method...
+		// skip until we get to the current method...
 		while(proto.__proto__ && proto[name] !== method){
 			proto = proto.__proto__
 		}
@@ -168,6 +168,11 @@ function(proto, name, that){
 // 		or:
 // 			parent(method, this).call(this, ...)
 // NOTE: for more docs see parent(..)
+//
+// XXX should we rename this to parent.call(..) ???
+// 		...this does not care about context so there is no reason to keep
+// 		the default call, but this lowers discoverability and might be 
+// 		confusing...
 var parentCall =
 module.parentCall =
 function(proto, name, that, ...args){
@@ -244,6 +249,7 @@ function(root, ...objects){
 //
 // This will not call .__init__(..)
 //
+// NOTE: context is only passed to .__new__(..) if defined...
 // NOTE: as this simply an extension to the base JavaScript protocol this
 // 		can be used to construct using any object...
 // 		Example:
@@ -403,15 +409,13 @@ function Constructor(name, a, b){
 	var cls_proto = b == null ? b : a
 	proto = proto || {}
 
-	// XXX EXPERIMENTAL...
-	var _rawinstance = function(){
-		return (_constructor.__proto__ || {}).__rawinstance__ ?
-			_constructor.__proto__.__rawinstance__.call(this, ...arguments)
-			: makeRawInstance(this, _constructor, ...arguments) }
-
 	// the actual constructor...
 	var _constructor = function Constructor(){
-		var obj = _rawinstance.call(this, ...arguments)
+		// create raw instance...
+		var obj = _constructor.__rawinstance__ ? 
+			_constructor.__rawinstance__(this, ...arguments)
+			: makeRawInstance(this, _constructor, ...arguments)
+		// initialize...
 		obj.__init__ instanceof Function
 			&& obj.__init__(...arguments)
 		return obj }
@@ -446,7 +450,12 @@ function Constructor(name, a, b){
 		})
 	_constructor.__proto__ = cls_proto
 	_constructor.prototype = proto
-	_constructor.__rawinstance__ = _rawinstance 
+	// XXX EXPERIMENTAL...
+	// generic raw instance constructor...
+	_constructor.__rawinstance__
+		|| (_constructor.__rawinstance__ = 
+			function(context, ...args){
+				return makeRawInstance(context, this, ...args) })
 
 	// set .prototype.constructor
 	Object.defineProperty(_constructor.prototype, 'constructor', {
