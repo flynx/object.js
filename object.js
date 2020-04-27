@@ -90,13 +90,13 @@ function(obj, name, callback){
 // Find the next parent attribute in the prototype chain.
 //
 // 	Get parent attribute value...
-// 	parent(<value>, <name>, <this>)
-// 		-> <value>
+// 	parent(value, name, this)
+// 		-> value>
 // 		-> undefined
 //
 // 	Get parent method...
-// 	parent(<meth>, <this>)
-// 		-> <meth>
+// 	parent(meth, this)
+// 		-> meth
 // 		-> undefined
 //
 //
@@ -153,9 +153,9 @@ function(proto, name, that){
 
 // Find the next parent method and call it...
 //
-// 	parentCall(<meth>, <this>, ...)
-// 	parentCall(<proto>, <name>, this>, ...)
-// 		-> <res>
+// 	parentCall(meth, this, ...)
+// 	parentCall(proto, name, this, ...)
+// 		-> res
 // 		-> undefined
 //
 //
@@ -232,7 +232,7 @@ function(root, ...objects){
 //---------------------------------------------------------------------
 // Make/get the base instance object...
 //
-// 	makeRawInstance(context, constructor, ...args)
+// 	makeRawInstance(context, constructor, ...)
 // 		-> instance
 //
 //
@@ -307,12 +307,12 @@ function(context, constructor, ...args){
 // Make a JavaScrip object constructor...	
 //
 // 	Make a constructor with an object prototype...
-// 		Constructor(<name>, <proto>)
+// 		Constructor(name, proto)
 // 			-> constructor
 //
 // 	Make a constructor with a prototype (object/function) and a class
 // 	prototype...
-// 		Constructor(<name>, <class-proto>, <proto>)
+// 		Constructor(name, class-proto, proto)
 // 			-> constructor
 // 			NOTE: the <class-proto> defines a set of class methods and 
 // 					attributes.
@@ -327,8 +327,8 @@ function(context, constructor, ...args){
 // 			-> instance
 //
 // 	Pass arguments to the constructor...
-// 		constructor(<arg>[, ...])
-// 		new constructor(<arg>[, ...])
+// 		constructor(arg[, ...])
+// 		new constructor(arg[, ...])
 // 			-> instance
 //
 //
