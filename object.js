@@ -398,6 +398,9 @@ function(context, constructor, ...args){
 // 		it via. Object.create(..) or copy it...
 //
 // XXX EXPERIMENTAL: calling .__rawinstance__(..) to create an instance...
+// NOTE: to disable .__rawinstance__(..) handling set it to false in the 
+// 		class prototype...
+// 
 // XXX Q: should the context in .__new__(..) be _constructor or .prototype???
 // 		...currently it's .prototype...
 var Constructor = 
@@ -413,7 +416,7 @@ function Constructor(name, a, b){
 	var _constructor = function Constructor(){
 		// create raw instance...
 		var obj = _constructor.__rawinstance__ ? 
-			_constructor.__rawinstance__(this, ...arguments)
+				_constructor.__rawinstance__(this, ...arguments)
 			: makeRawInstance(this, _constructor, ...arguments)
 		// initialize...
 		obj.__init__ instanceof Function
@@ -432,7 +435,6 @@ function Constructor(name, a, b){
 	// set .toString(..)...
 	// NOTE: do this only if .toString(..) is not defined by user...
 	;((cls_proto || {}).toString() == ({}).toString())
-		// XXX is this the right way to go or should we set this openly???
 		&& Object.defineProperty(_constructor, 'toString', {
 			value: function(){ 
 				var args = proto.__init__ ?
@@ -452,7 +454,7 @@ function Constructor(name, a, b){
 	_constructor.prototype = proto
 	// XXX EXPERIMENTAL...
 	// generic raw instance constructor...
-	_constructor.__rawinstance__
+	_constructor.__rawinstance__ instanceof Function
 		|| (_constructor.__rawinstance__ = 
 			function(context, ...args){
 				return makeRawInstance(context, this, ...args) })
