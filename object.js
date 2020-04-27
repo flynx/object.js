@@ -87,39 +87,80 @@ function(obj, name, callback){
 	return res }
 
 
-// Find the next parent method in the prototype chain.
+// Find the next parent attribute in the prototype chain.
 //
+// 	Get parent attribute value...
+// 	parent(<value>, <name>, <this>)
+// 		-> <value>
+// 		-> undefined
+//
+// 	Get parent method...
 // 	parent(<meth>, <this>)
-// 	parent(<meth>, <name>, <this>)
 // 		-> <meth>
+// 		-> undefined
 //
 //
-// NOTE: there are cases where method.name is not set, so a name can be 
-// 		passed explicitly.
+// Example:
+// 		var X = object.Constructor('X', {
+//			__proto__: Y.prototype,
+//
+//			attr: 123,
+//
+// 			method: function(){
+// 				// get attribute...
+// 				var a = object.parent(X.prototype.attr, 'attr', this)
+//
+// 				// get method...
+// 				var ret = object.parent(X.prototype.method, this).call(this, ...arguments)
+//
+// 				// ...
+// 			}
+// 		})
+//
+//
 // NOTE: this is super(..) replacement...
-// NOTE: if method is root (no super method) this will return undefined.
-// NOTE: for
+// NOTE: the two forms differ only in that in the first case a method 
+// 		usually has a .name attribute so it is not always necessary to
+// 		explicitly state a name...
+// NOTE: there are cases where method.name is not set (e.g. anonymous 
+// 		function), so a name should be passed explicitly...
+// NOTE: when passing a method it is recommended to pass an explicit 
+// 		reference to it relative to the constructor, i.e. 
+// 		Constructor.prototype.method, this will avoid relative resolution 
+// 		loops, for example, this.method deep in a chain will resolve to 
+// 		the first .method value visible from 'this', i.e. the top most 
+// 		value and not the value visible from that particular level...
 var parent = 
 module.parent =
-function(method, name, that){
+function(proto, name, that){
+	// special case: method...
 	if(arguments.length == 2){
-		that = name
+		var method = proto
+		proto = that = name
 		name = method.name
+		// skip until we get to the method...
+		while(proto.__proto__ && proto[name] !== method){
+			proto = proto.__proto__
+		}
 	}
-	// find the current method in the prototype chain...
-	while(!that.hasOwnProperty(name) || that[name] !== method){
-		that = that.__proto__
+	// skip till next name occurrence...
+	while(proto.__proto__ && !proto.hasOwnProperty(name)){
+		proto = proto.__proto__
 	}
-	// return the next method...
-	return that.__proto__[name] }
+	// get next value...
+	return proto.__proto__[name] }
 
 
 // Find the next parent method and call it...
 //
 // 	parentCall(<meth>, <this>, ...)
-// 	parentCall(<meth>, <name>, this>, ...)
+// 	parentCall(<proto>, <name>, this>, ...)
 // 		-> <res>
+// 		-> undefined
 //
+//
+// This also gracefully handles the case when no higher level definition 
+// is found, i.e. the corresponding parent(..) call will return undefined.
 //
 // NOTE: this is just like parent(..) but will call the retrieved method,
 // 		essentially this is a shorthand to:
@@ -129,10 +170,14 @@ function(method, name, that){
 // NOTE: for more docs see parent(..)
 var parentCall =
 module.parentCall =
-function(method, name, that, ...args){
-	return typeof(name) == typeof('str') ?
-		parent(method, name, that).call(that, ...args)
-		: parent(method, name).call(name, ...[that, ...args]) }
+function(proto, name, that, ...args){
+	var [p, c] = typeof(name) == typeof('str') ?
+		[ [proto, name, that], [...arguments].slice(2)]
+		: [ [proto, name],  [...arguments].slice(1)]
+	var meth = parent(...p)
+	return meth instanceof Function ?
+		meth.call(...c)
+		: undefined }
 
 
 

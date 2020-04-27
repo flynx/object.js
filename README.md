@@ -204,15 +204,20 @@ sources(<object>, <name>, <callback>)
 Get parent method
 ```
 parent(<method>, <this>)
-parent(<method>, <name>, <this>)
     -> <parent-method>
+	-> undefined
+
+parent(<prototype>, <name>, <this>)
+	-> <parent-value>
+	-> undefined
 ```
 
 Get parent method and call it
 ```
 parentCall(<method>, <this>)
-parentCall(<method>, <name>, <this>)
+parentCall(<prototype>, <name>, <this>)
     -> <result>
+	-> undefined
 ```
 
 
