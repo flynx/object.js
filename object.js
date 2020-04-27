@@ -339,16 +339,26 @@ function(context, constructor, ...args){
 //
 //
 // Init protocol:
-// 	1) the base instance object is created 
-// 	2) if .__new__(..) is defined it is passed to it along with the 
-// 		constructor arguments and the return value is used as base instance.
-// 		NOTE: .__new__(..) is called in the context of the constructor 
-// 			.prototype...
-// 	2) the base instance object is prepared (.__proto__ is set)
-// 	3) if <init-func> is present, then it is called with instance as 
-// 		context and passed the constructor arguments
-// 	4) if <proto>.__init__(..) is present, it is called with the instance
-// 		as context and passed the constructor arguments.
+// 	1) raw instance is created:
+// 		a) constructor.__rawinstance__(..) / makeRawInstance(..) called:
+// 			- call .__new__(..) if defined and get return value as instance, or
+// 			- if .__call__(..) defined or prototype is a function, wrap it and
+// 				use the wrapper function as instance, or
+// 			- create an empty object
+// 		b) instance linked to prototype chain
+// 			set .__proto__ to constructor.prototype
+// 	2) instance is initialized: 
+// 		call .__init__(..) if defined
+// 
+// 
+// Special methods (constructor):
+// 	.__rawinstance__(context, ...)
+// 
+// 
+// Special methods (.prototype):
+// 	.__new__(context, ..)
+// 	.__call__(context, ..)
+// 	.__init__(..)
 //
 //
 //
