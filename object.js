@@ -132,7 +132,7 @@ function(obj, name, callback){
 // 		the first .method value visible from 'this', i.e. the top most 
 // 		value and not the value visible from that particular level...
 //
-// XXX need to add a way to work with props...
+// XXX need to add a way to work with props... (???)
 var parent =
 module.parent =
 function(proto, name){
@@ -155,8 +155,8 @@ function(proto, name){
 
 // Find the next parent method and call it...
 //
-// 	parentCall(meth, this, ...)
 // 	parentCall(proto, name, this, ...)
+// 	parentCall(meth, this, ...)
 // 		-> res
 // 		-> undefined
 //
@@ -170,20 +170,14 @@ function(proto, name){
 // 		or:
 // 			parent(method, this).call(this, ...)
 // NOTE: for more docs see parent(..)
-//
-// XXX should we rename this to parent.call(..) ???
-// 		...this does not care about context so there is no reason to keep
-// 		the default call, but this lowers discoverability and might be 
-// 		confusing...
 var parentCall =
 module.parentCall =
 function(proto, name, that, ...args){
-	var [p, c] = typeof(name) == typeof('str') ?
-		[ [proto, name, that], [...arguments].slice(2)]
-		: [ [proto, name],  [...arguments].slice(1)]
-	var meth = parent(...p)
+	var meth = parent(proto, name)
 	return meth instanceof Function ?
-		meth.call(...c)
+		meth.call(...( typeof(name) == typeof('str') ?
+			[...arguments].slice(2)
+			: [...arguments].slice(1) ))
 		: undefined }
 
 

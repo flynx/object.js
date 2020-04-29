@@ -214,8 +214,8 @@ parent(<method>, <this>)
 
 Get parent method and call it
 ```
-parentCall(<method>, <this>)
 parentCall(<prototype>, <name>, <this>)
+parentCall(<method>, <this>)
     -> <result>
 	-> undefined
 ```
