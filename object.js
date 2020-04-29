@@ -6,8 +6,8 @@
 * 		...if yes then it would also be logical to move Object.run(..) here
 *
 **********************************************************************/
-((typeof define)[0]=='u'?function(f){module.exports=f(require)}:define)(
-function(require){ var module={} // makes module AMD/node compatible...
+((typeof define)[0]=='u'?function(f){module.exports=f(require)}:define)
+(function(require){ var module={} // make module AMD/node compatible...
 /*********************************************************************/
 // Helpers...
 
@@ -496,8 +496,7 @@ function Constructor(name, a, b){
 		enumerable: false,
 	})
 
-	return _constructor
-}
+	return _constructor }
 
 
 
