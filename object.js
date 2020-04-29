@@ -149,6 +149,7 @@ function(proto, name){
 			function(obj){ return 'stop' })
 		.pop() 
 	return res ?
+		// get next value...
 		res.__proto__[name] 
 		: undefined }
 
@@ -162,7 +163,8 @@ function(proto, name){
 //
 //
 // This also gracefully handles the case when no higher level definition 
-// is found, i.e. the corresponding parent(..) call will return undefined.
+// is found, i.e. the corresponding parent(..) call will return undefined
+// or a non-callable.
 //
 // NOTE: this is just like parent(..) but will call the retrieved method,
 // 		essentially this is a shorthand to:

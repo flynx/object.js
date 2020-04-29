@@ -212,9 +212,19 @@ parent(<method>, <this>)
 	-> undefined
 ```
 
+_Edge case: The `parent(<method>, ..)` has one flaw -- it can't distinguish 
+between two references to the same method in a chain and will always 
+return the first, so the first case is preferable. This issue can't be 
+resolved as this case has no information on the prototype containing the 
+reference, but these cases should not be very common._
+
+
 Get parent method and call it
 ```
 parentCall(<prototype>, <name>, <this>)
+    -> <result>
+	-> undefined
+
 parentCall(<method>, <this>)
     -> <result>
 	-> undefined
