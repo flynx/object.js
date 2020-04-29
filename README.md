@@ -212,11 +212,10 @@ parent(<method>, <this>)
 	-> undefined
 ```
 
-_Edge case: The `parent(<method>, ..)` has one flaw -- it can't distinguish 
-between two references to the same method in a chain and will always 
-return the first, so the first case is preferable. This issue can't be 
-resolved as this case has no information on the prototype containing the 
-reference, but these cases should not be very common._
+_Edge case: The `parent(<method>, ..)` has one flaw -- in the rare case 
+where a prototype chain contains two or more references to the same 
+method under the same name, `parent(..)` can't distinguish between these 
+references and will always return the first one._
 
 
 Get parent method and call it
