@@ -215,7 +215,7 @@ parent(<method>, <this>)
 _Edge case: The `parent(<method>, ..)` has one potential pitfall -- in 
 the rare case where a prototype chain contains two or more references 
 to the same method under the same name, `parent(..)` can't distinguish 
-between these references and will always return the first one._
+between these references and will always return the second one._
 
 
 Get parent method and call it
