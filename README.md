@@ -201,14 +201,14 @@ sources(<object>, <name>, <callback>)
     -> <list>
 ```
 
-Get parent method
+Get parent attribute value or method
 ```
-parent(<method>, <this>)
-    -> <parent-method>
+parent(<prototype>, <name>)
+	-> <parent-value>
 	-> undefined
 
-parent(<prototype>, <name>, <this>)
-	-> <parent-value>
+parent(<method>, <this>)
+    -> <parent-method>
 	-> undefined
 ```
 

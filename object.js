@@ -75,13 +75,14 @@ function(obj, name, callback){
 	var res = []
 	do {
 		if(obj.hasOwnProperty(name)){
-			res.push(obj)
+			res.push(obj) 
 			// handle callback...
 			stop = callback
 				&& callback(obj)
 			// stop requested by callback...
-			if(stop === false || stop == 'stop'){
-				return obj } }
+			if(stop === true || stop == 'stop'){
+				return res } 
+		}
 		obj = obj.__proto__
 	} while(obj !== null)
 	return res }
@@ -90,7 +91,7 @@ function(obj, name, callback){
 // Find the next parent attribute in the prototype chain.
 //
 // 	Get parent attribute value...
-// 	parent(value, name, this)
+// 	parent(proto, name)
 // 		-> value>
 // 		-> undefined
 //
@@ -108,7 +109,7 @@ function(obj, name, callback){
 //
 // 			method: function(){
 // 				// get attribute...
-// 				var a = object.parent(X.prototype.attr, 'attr', this)
+// 				var a = object.parent(X.prototype, 'attr')
 //
 // 				// get method...
 // 				var ret = object.parent(X.prototype.method, this).call(this, ...arguments)
@@ -130,25 +131,26 @@ function(obj, name, callback){
 // 		loops, for example, this.method deep in a chain will resolve to 
 // 		the first .method value visible from 'this', i.e. the top most 
 // 		value and not the value visible from that particular level...
-var parent = 
+//
+// XXX need to add a way to work with props...
+var parent =
 module.parent =
-function(proto, name, that){
+function(proto, name){
 	// special case: method...
-	if(arguments.length == 2){
-		var method = proto
-		proto = that = name
-		name = method.name
-		// skip until we get to the current method...
-		while(proto.__proto__ && proto[name] !== method){
-			proto = proto.__proto__
-		}
-	}
-	// skip till next name occurrence...
-	while(proto.__proto__ && !proto.hasOwnProperty(name)){
-		proto = proto.__proto__
-	}
-	// get next value...
-	return proto.__proto__[name] }
+	if(typeof(name) != typeof('str')){
+		that = name
+		name = proto.name
+		// get first matching source...
+		proto = sources(that, name, 
+				function(obj){ return obj[name] === proto })
+			.pop() }
+	// get first source...
+	var res = sources(proto, name, 
+			function(obj){ return 'stop' })
+		.pop() 
+	return res ?
+		res.__proto__[name] 
+		: undefined }
 
 
 // Find the next parent method and call it...
