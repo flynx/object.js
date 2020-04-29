@@ -300,6 +300,8 @@ function(context, constructor, ...args){
 		enumerable: false,
 	})
 
+	// there is explicitly no initialization here...
+
 	return obj }
 
 
