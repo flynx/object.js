@@ -201,6 +201,7 @@ sources(<object>, <name>, <callback>)
     -> <list>
 ```
 
+
 Get parent attribute value or method
 ```
 parent(<prototype>, <name>)
@@ -216,6 +217,15 @@ _Edge case: The `parent(<method>, ..)` has one potential pitfall -- in
 the rare case where a prototype chain contains two or more references 
 to the same method under the same name, `parent(..)` can't distinguish 
 between these references and will always return the second one._
+
+
+Get parent property descriptor
+
+```
+parentProperty(<prototype>, <name>)
+	-> <prop-descriptor>
+	-> undefined
+```
 
 
 Get parent method and call it
@@ -236,6 +246,7 @@ mixin(<root>, <object>, ...)
     -> <object>
 ```
 
+
 Mixin contents of objects into one
 ```
 mixinFlat(<root>, <object>, ...)
@@ -243,6 +254,7 @@ mixinFlat(<root>, <object>, ...)
 ```
 This is like `Object.assign(..)` but copies property objects rather than
 property values.
+
 
 Make a raw (un-initialized) instance
 ```
@@ -252,12 +264,14 @@ makeRawInstance(<context>, <constructor>, ...)
 
 _EXPERIMENTAL: a shorthand to this is defined as `Constructor.__rawinstance__(context, ..)`_
 
+
 Define an object constructor
 ```
 Constructor(<name>, <prototype>)
 Constructor(<name>, <class-prototype>, <prototype>)
     -> <constructor>
 ```
+
 
 Shorthand to `Constructor(..)`
 ```

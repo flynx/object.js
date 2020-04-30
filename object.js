@@ -66,6 +66,8 @@ function(text, tab_size){
 // 		-> list
 //
 //
+// NOTE: this will not trigger any props...
+//
 // XXX should the callback(..) be used to break (current) or filter/map???
 // XXX revise name...
 var sources =
@@ -131,8 +133,10 @@ function(obj, name, callback){
 // 		loops, for example, this.method deep in a chain will resolve to 
 // 		the first .method value visible from 'this', i.e. the top most 
 // 		value and not the value visible from that particular level...
-//
-// XXX need to add a way to work with props... (???)
+// NOTE: in the general case this will get the value of the returned 
+// 		property/attribute, the rest of the way passive to props.
+// 		The method case will get the value of every method from 'this' 
+// 		and to the method after the match.
 var parent =
 module.parent =
 function(proto, name){
@@ -151,6 +155,28 @@ function(proto, name){
 	return res ?
 		// get next value...
 		res.__proto__[name] 
+		: undefined }
+
+
+// Find the next parent property descriptor in the prototype chain...
+//
+// 	parentProperty(proto, name)
+// 		-> prop-descriptor
+//
+//
+// This is like parent(..) but will get a property descriptor...
+//
+var parentProperty =
+module.parentProperty =
+function(proto, name){
+	// get second source...
+	var c = 0
+	var res = sources(proto, name, 
+			function(obj){ return c++ == 1 })
+		.pop() 
+	return res ?
+		// get next value...
+		Object.getOwnPropertyDescriptor(res, name)
 		: undefined }
 
 
