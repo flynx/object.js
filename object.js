@@ -59,17 +59,32 @@ function(text, tab_size){
 
 //---------------------------------------------------------------------
 
-// Get a list of sources/definitions for a prop/attr...
+// Get a list of source objects for a prop/attr name...
 //
 // 	sources(obj, name)
 // 	sources(obj, name, callback)
 // 		-> list
+// 		-> []
+// 		
+// 	callback(obj)
+// 		-> true | 'stop'
+// 		-> ..
+// 		
+// 		
+// The callback(..) is called with each matching object.
+// 
+// The callback(..) can be used to break/stop the search, returning 
+// a partial list og matcges up untill and including the object 
+// triggering the stop.
 //
 //
+// NOTE: this go up the prototype chain, not caring about any role (
+// 		instance/class or instance/prototype) bounderies and depends 
+// 		only on the object given as the starting point.
+// 		It is possible to start the search from this, thus checking
+// 		for any overloading in the instance, though this approach is 
+// 		not very reusable....
 // NOTE: this will not trigger any props...
-//
-// XXX should the callback(..) be used to break (current) or filter/map???
-// XXX revise name...
 var sources =
 module.sources =
 function(obj, name, callback){
@@ -94,13 +109,29 @@ function(obj, name, callback){
 //
 // 	Get parent attribute value...
 // 	parent(proto, name)
-// 		-> value>
+// 		-> value
 // 		-> undefined
 //
 // 	Get parent method...
-// 	parent(meth, this)
+// 	parent(method, this)
 // 		-> meth
 // 		-> undefined
+//
+// 
+// The two forms differ in:
+// 	- in parent(method, ..) a method's .name attr is used for name.
+// 	- in parent(method, ..) the containing prototype is inferred.
+//
+// NOTE: there are cases where method.name is not set (e.g. anonymous 
+// 		function), so there a name should be passed explicitly...
+// NOTE: when passing a method it is recommended to pass an explicit 
+// 		reference to it relative to the constructor, i.e.:
+// 			Constructor.prototype.method
+// 		this will avoid relative resolution loops, for example: 
+// 			this.method 
+// 		deep in a chain will resolve to the first .method value visible 
+// 		from 'this', i.e. the top most value and not the value visible
+// 		from that particular level...
 //
 //
 // Example:
@@ -121,22 +152,12 @@ function(obj, name, callback){
 // 		})
 //
 //
-// NOTE: this is super(..) replacement...
-// NOTE: the two forms differ only in that in the first case a method 
-// 		usually has a .name attribute so it is not always necessary to
-// 		explicitly state a name...
-// NOTE: there are cases where method.name is not set (e.g. anonymous 
-// 		function), so a name should be passed explicitly...
-// NOTE: when passing a method it is recommended to pass an explicit 
-// 		reference to it relative to the constructor, i.e. 
-// 		Constructor.prototype.method, this will avoid relative resolution 
-// 		loops, for example, this.method deep in a chain will resolve to 
-// 		the first .method value visible from 'this', i.e. the top most 
-// 		value and not the value visible from that particular level...
 // NOTE: in the general case this will get the value of the returned 
 // 		property/attribute, the rest of the way passive to props.
 // 		The method case will get the value of every method from 'this' 
 // 		and to the method after the match.
+// NOTE: this is super(..) replacement, usable in any context without 
+// 		restriction -- super(..) is restricted to class methods only...
 var parent =
 module.parent =
 function(proto, name){
@@ -194,7 +215,7 @@ function(proto, name){
 //
 // NOTE: this is just like parent(..) but will call the retrieved method,
 // 		essentially this is a shorthand to:
-// 			parent(method, name, this).call(this, ...)
+// 			parent(proto, name).call(this, ...)
 // 		or:
 // 			parent(method, this).call(this, ...)
 // NOTE: for more docs see parent(..)
@@ -272,6 +293,7 @@ function(root, ...objects){
 //
 //
 // This will not call .__init__(..)
+//
 //
 // NOTE: context is only passed to .__new__(..) if defined...
 // NOTE: as this simply an extension to the base JavaScript protocol this
