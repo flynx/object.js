@@ -6,8 +6,8 @@
 * 		...if yes then it would also be logical to move Object.run(..) here
 *
 **********************************************************************/
-((typeof define)[0]=='u'?function(f){module.exports=f(require)}:define)(
-function(require){ var module={} // makes module AMD/node compatible...
+((typeof define)[0]=='u'?function(f){module.exports=f(require)}:define)
+(function(require){ var module={} // make module AMD/node compatible...
 /*********************************************************************/
 // Helpers...
 
@@ -66,6 +66,8 @@ function(text, tab_size){
 // 		-> list
 //
 //
+// NOTE: this will not trigger any props...
+//
 // XXX should the callback(..) be used to break (current) or filter/map???
 // XXX revise name...
 var sources =
@@ -75,13 +77,14 @@ function(obj, name, callback){
 	var res = []
 	do {
 		if(obj.hasOwnProperty(name)){
-			res.push(obj)
+			res.push(obj) 
 			// handle callback...
 			stop = callback
 				&& callback(obj)
 			// stop requested by callback...
-			if(stop === false || stop == 'stop'){
-				return obj } }
+			if(stop === true || stop == 'stop'){
+				return res } 
+		}
 		obj = obj.__proto__
 	} while(obj !== null)
 	return res }
@@ -90,7 +93,7 @@ function(obj, name, callback){
 // Find the next parent attribute in the prototype chain.
 //
 // 	Get parent attribute value...
-// 	parent(value, name, this)
+// 	parent(proto, name)
 // 		-> value>
 // 		-> undefined
 //
@@ -108,7 +111,7 @@ function(obj, name, callback){
 //
 // 			method: function(){
 // 				// get attribute...
-// 				var a = object.parent(X.prototype.attr, 'attr', this)
+// 				var a = object.parent(X.prototype, 'attr')
 //
 // 				// get method...
 // 				var ret = object.parent(X.prototype.method, this).call(this, ...arguments)
@@ -130,37 +133,64 @@ function(obj, name, callback){
 // 		loops, for example, this.method deep in a chain will resolve to 
 // 		the first .method value visible from 'this', i.e. the top most 
 // 		value and not the value visible from that particular level...
-var parent = 
+// NOTE: in the general case this will get the value of the returned 
+// 		property/attribute, the rest of the way passive to props.
+// 		The method case will get the value of every method from 'this' 
+// 		and to the method after the match.
+var parent =
 module.parent =
-function(proto, name, that){
+function(proto, name){
 	// special case: method...
-	if(arguments.length == 2){
-		var method = proto
-		proto = that = name
-		name = method.name
-		// skip until we get to the current method...
-		while(proto.__proto__ && proto[name] !== method){
-			proto = proto.__proto__
-		}
-	}
-	// skip till next name occurrence...
-	while(proto.__proto__ && !proto.hasOwnProperty(name)){
-		proto = proto.__proto__
-	}
-	// get next value...
-	return proto.__proto__[name] }
+	if(typeof(name) != typeof('str')){
+		that = name
+		name = proto.name
+		// get first matching source...
+		proto = sources(that, name, 
+				function(obj){ return obj[name] === proto })
+			.pop() }
+	// get first source...
+	var res = sources(proto, name, 
+			function(obj){ return 'stop' })
+		.pop() 
+	return res ?
+		// get next value...
+		res.__proto__[name] 
+		: undefined }
+
+
+// Find the next parent property descriptor in the prototype chain...
+//
+// 	parentProperty(proto, name)
+// 		-> prop-descriptor
+//
+//
+// This is like parent(..) but will get a property descriptor...
+//
+var parentProperty =
+module.parentProperty =
+function(proto, name){
+	// get second source...
+	var c = 0
+	var res = sources(proto, name, 
+			function(obj){ return c++ == 1 })
+		.pop() 
+	return res ?
+		// get next value...
+		Object.getOwnPropertyDescriptor(res, name)
+		: undefined }
 
 
 // Find the next parent method and call it...
 //
-// 	parentCall(meth, this, ...)
 // 	parentCall(proto, name, this, ...)
+// 	parentCall(meth, this, ...)
 // 		-> res
 // 		-> undefined
 //
 //
 // This also gracefully handles the case when no higher level definition 
-// is found, i.e. the corresponding parent(..) call will return undefined.
+// is found, i.e. the corresponding parent(..) call will return undefined
+// or a non-callable.
 //
 // NOTE: this is just like parent(..) but will call the retrieved method,
 // 		essentially this is a shorthand to:
@@ -168,20 +198,14 @@ function(proto, name, that){
 // 		or:
 // 			parent(method, this).call(this, ...)
 // NOTE: for more docs see parent(..)
-//
-// XXX should we rename this to parent.call(..) ???
-// 		...this does not care about context so there is no reason to keep
-// 		the default call, but this lowers discoverability and might be 
-// 		confusing...
 var parentCall =
 module.parentCall =
 function(proto, name, that, ...args){
-	var [p, c] = typeof(name) == typeof('str') ?
-		[ [proto, name, that], [...arguments].slice(2)]
-		: [ [proto, name],  [...arguments].slice(1)]
-	var meth = parent(...p)
+	var meth = parent(proto, name)
 	return meth instanceof Function ?
-		meth.call(...c)
+		meth.call(...( typeof(name) == typeof('str') ?
+			[...arguments].slice(2)
+			: [...arguments].slice(1) ))
 		: undefined }
 
 
@@ -498,8 +522,7 @@ function Constructor(name, a, b){
 		enumerable: false,
 	})
 
-	return _constructor
-}
+	return _constructor }
 
 
 
