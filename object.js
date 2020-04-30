@@ -3,7 +3,8 @@
 *
 *
 * XXX should this extend Object???
-* 		...if yes then it would also be logical to move Object.run(..) here
+* 		...if yes then it would also be logical to move Object.run(..) 
+* 		here...
 *
 **********************************************************************/
 ((typeof define)[0]=='u'?function(f){module.exports=f(require)}:define)
@@ -22,10 +23,10 @@ module.TAB_SIZE = 4
 //
 //
 // This will remove common indent from each like of text, this is useful 
-// for printing function code of functions that were defined at deep levels 
-// of indent.
+// for printing function code of functions that were defined at deep 
+// levels of indent.
 //
-// NOTE: this will trim out both leading and trailing whitespace.
+// NOTE: this will trim out both leading and trailing white-space.
 //
 // XXX is this the right place for this???
 // 		...when moving take care that ImageGrid's core.doc uses this...
@@ -58,6 +59,7 @@ function(text, tab_size){
 
 
 //---------------------------------------------------------------------
+// Prototype chain content access...
 
 // Get a list of source objects for a prop/attr name...
 //
@@ -145,7 +147,8 @@ function(obj, name, callback){
 // 				var a = object.parent(X.prototype, 'attr')
 //
 // 				// get method...
-// 				var ret = object.parent(X.prototype.method, this).call(this, ...arguments)
+// 				var ret = object.parent(X.prototype.method, this)
+// 					.call(this, ...arguments)
 //
 // 				// ...
 // 			}
@@ -232,6 +235,8 @@ function(proto, name, that, ...args){
 
 
 //---------------------------------------------------------------------
+// Mixin utils...
+// XXX should we add mixout(..) and friends ???
 
 // Mix a set of methods/props/attrs into an object...
 // 
@@ -275,7 +280,9 @@ function(root, ...objects){
 
 
 //---------------------------------------------------------------------
-// Make/get the base instance object...
+// Constructor...
+
+// Make an uninitialized instance object...
 //
 // 	makeRawInstance(context, constructor, ...)
 // 		-> instance
@@ -328,14 +335,16 @@ function(context, constructor, ...args){
 		: constructor.prototype instanceof Function ?
 			_mirror_doc(
 				function(){
-					return constructor.prototype.call(obj, this, ...arguments) },
+					return constructor.prototype
+						.call(obj, this, ...arguments) },
 				constructor.prototype)
 		// callable instance -- prototype defines .__call__(..)...
 		// NOTE: we need to isolate the .__call__ from instances...
 		: constructor.prototype.__call__ instanceof Function ?
 			_mirror_doc(
 				function(){
-					return constructor.prototype.__call__.call(obj, this, ...arguments) },
+					return constructor.prototype.__call__
+						.call(obj, this, ...arguments) },
 				constructor.prototype.__call__)
 		// default object base...
 		: {} 
@@ -352,8 +361,7 @@ function(context, constructor, ...args){
 	return obj }
 
 
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-// Make a JavaScript object constructor...	
+// Make an object constructor function...
 //
 // 	Make a constructor with an object prototype...
 // 		Constructor(name, proto)
@@ -460,12 +468,12 @@ function(context, constructor, ...args){
 //
 //
 // Motivation:
-// 	The general motivation here is to standardise the constructor protocol
-// 	and make a single simple way to go with minimal variation. This is due
-// 	to the JavaScript base protocol though quite simple, being too flexible
-// 	making it very involved to produce objects in a consistent manner by 
-// 	hand, especially in long running projects, in turn spreading all the 
-// 	refactoring over multiple sites and styles.
+// 	The general motivation here is to standardise the constructor 
+// 	protocol and make a single simple way to go with minimal variation. 
+// 	This is due to the JavaScript base protocol though quite simple, 
+// 	being too flexible making it very involved to produce objects in a 
+// 	consistent manner by hand, especially in long running projects, 
+// 	in turn spreading all the refactoring over multiple sites and styles.
 //
 // 	This removes part of the flexibility and in return gives us:
 // 		- single, well defined protocol
@@ -475,8 +483,8 @@ function(context, constructor, ...args){
 //
 //
 // NOTE: this sets the proto's .constructor attribute, thus rendering it
-// 		not reusable, to use the same prototype for multiple objects clone
-// 		it via. Object.create(..) or copy it...
+// 		not reusable, to use the same prototype for multiple objects 
+// 		clone it via. Object.create(..) or copy it...
 // NOTE: to disable .__rawinstance__(..) handling set it to false in the 
 // 		class prototype... (XXX EXPERIMENTAL)
 // 
@@ -520,7 +528,8 @@ function Constructor(name, a, b){
 				var args = proto.__init__ ?
 					proto.__init__
 						.toString()
-						.split(/\n/)[0].replace(/function\(([^)]*)\){.*/, '$1')
+						.split(/\n/)[0]
+							.replace(/function\(([^)]*)\){.*/, '$1')
 					: ''
 				var code = proto.__init__ ?
 					proto.__init__
