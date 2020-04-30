@@ -58,6 +58,7 @@ function(text, tab_size){
 
 
 //---------------------------------------------------------------------
+// Prototype chain content access...
 
 // Get a list of sources/definitions for a prop/attr...
 //
@@ -211,6 +212,8 @@ function(proto, name, that, ...args){
 
 
 //---------------------------------------------------------------------
+// Mixin utils...
+// XXX should we add mixout(..) and friends ???
 
 // Mix a set of methods/props/attrs into an object...
 // 
@@ -254,7 +257,9 @@ function(root, ...objects){
 
 
 //---------------------------------------------------------------------
-// Make/get the base instance object...
+// Constructor...
+
+// Make an uninitialized instance object...
 //
 // 	makeRawInstance(context, constructor, ...)
 // 		-> instance
@@ -327,8 +332,7 @@ function(context, constructor, ...args){
 	return obj }
 
 
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-// Make a JavaScript object constructor...	
+// Make an object constructor function...
 //
 // 	Make a constructor with an object prototype...
 // 		Constructor(name, proto)
