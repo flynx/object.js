@@ -295,9 +295,10 @@ function(root, ...objects){
 // This will not call .__init__(..)
 //
 //
-// NOTE: context is only passed to .__new__(..) if defined...
-// NOTE: as this simply an extension to the base JavaScript protocol this
-// 		can be used to construct using any object...
+// NOTE: context is only used when passeding to .__new__(..) if defined, 
+// 		and is ignored otherwise...
+// NOTE: as this is simply an extension to the base JavaScript protocol this
+// 		can be used to construct any object...
 // 		Example:
 // 			var O = function(){}
 // 			// new is optional...
@@ -305,7 +306,7 @@ function(root, ...objects){
 // NOTE: .__new__(..) is intentionaly an instance method (contary to 
 // 		Python) this is done because there are no classes in JS and 
 // 		adding and instance constructor as a class method would create 
-// 		unneccessary restrictions both on the "class" object and the 
+// 		unneccessary restrictions both on the "class" object and on the 
 // 		instance...
 var makeRawInstance = 
 module.makeRawInstance =
