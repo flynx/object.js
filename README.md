@@ -242,14 +242,14 @@ parentCall(<method>, <this>)
 
 Mixin objects into a prototype chain
 ```
-mixin(<root>, <object>, ...)
+mixin(<root>, <object>, ..)
     -> <object>
 ```
 
 
 Mixin contents of objects into one
 ```
-mixinFlat(<root>, <object>, ...)
+mixinFlat(<root>, <object>, ..)
     -> <object>
 ```
 This is like `Object.assign(..)` but copies property objects rather than
@@ -258,11 +258,11 @@ property values.
 
 Make a raw (un-initialized) instance
 ```
-makeRawInstance(<context>, <constructor>, ...)
+makeRawInstance(<context>, <constructor>, ..)
 	-> <object>
 ```
 
-_EXPERIMENTAL: a shorthand to this is defined as `Constructor.__rawinstance__(context, ..)`_
+A shorthand to this is `Constructor.__rawinstance__(context, ..)`.
 
 
 Define an object constructor
