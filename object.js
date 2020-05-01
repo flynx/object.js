@@ -1,5 +1,9 @@
 /**********************************************************************
 * 
+* object.js
+*
+* Repo and docs:
+* 	https://github.com/flynx/object.js
 *
 *
 * XXX should this extend Object???
@@ -315,6 +319,15 @@ function(root, ...objects){
 // 		adding and instance constructor as a class method would create 
 // 		unneccessary restrictions both on the "class" object and on the 
 // 		instance...
+// 
+// XXX Q: should the context (this) in .__new__(..) be _constructor or 
+// 		.prototype???
+// 		... .prototype seems to be needed more often but through it we 
+// 		can't reach the actual constructor... but on the other hand we 
+// 		can (should?) always explicitly use it -- .__new__(..) is usually 
+// 		in the same scope + this makes it more reusable for chaining
+// 		.__new__(..) calls...
+// 		...currently it's .prototype...
 var makeRawInstance = 
 module.makeRawInstance =
 function(context, constructor, ...args){
@@ -355,8 +368,6 @@ function(context, constructor, ...args){
 		value: constructor,
 		enumerable: false,
 	})
-
-	// there is explicitly no initialization here...
 
 	return obj }
 
@@ -437,7 +448,7 @@ function(context, constructor, ...args){
 // NOTE: raw instance creation is defined by makeRawInstance(..) so see 
 // 		it for more info.
 // NOTE: raw instance creation can be completely overloaded by defining
-// 		.__rawinstance__(..) on the constructor. (XXX EXPERIMENTAL)
+// 		.__rawinstance__(..) on the constructor.
 //
 //
 //
@@ -486,11 +497,7 @@ function(context, constructor, ...args){
 // 		not reusable, to use the same prototype for multiple objects 
 // 		clone it via. Object.create(..) or copy it...
 // NOTE: to disable .__rawinstance__(..) handling set it to false in the 
-// 		class prototype... (XXX EXPERIMENTAL)
-// 
-// XXX EXPERIMENTAL: calling .__rawinstance__(..) to create an instance...
-// XXX Q: should the context in .__new__(..) be _constructor or .prototype???
-// 		...currently it's .prototype...
+// 		class prototype...
 var Constructor = 
 module.Constructor =
 // shorthand...
@@ -541,7 +548,6 @@ function Constructor(name, a, b){
 		})
 	_constructor.__proto__ = cls_proto
 	_constructor.prototype = proto
-	// XXX EXPERIMENTAL...
 	// generic raw instance constructor...
 	_constructor.__rawinstance__ instanceof Function
 		|| (_constructor.__rawinstance__ = 
