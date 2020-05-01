@@ -16,8 +16,8 @@ several advantages:
 - Simple way to define callable instances (including a-la _Python's_ 
   `.__call__(..)`)
 - Less restrictive:
-    - `new` is optional
-    - all input components are reusable
+	- `new` is optional
+	- all input components are reusable
 	- no artificial restrictions
 
 Disadvantages compared to the `class` syntax:  
@@ -76,33 +76,33 @@ c instanceof A // -> true
 ### Inheritance
 ```javascript
 //
-//    Base <--- Item
+//	  Base <--- Item
 //
 var Base = object.Constructor('Base', {
-    proto_attr: 'prototype attr value',
+	proto_attr: 'prototype attr value',
 
-    get prop(){
-        return 'propery value' },
+	get prop(){
+		return 'propery value' },
 
-    method: function(){
-        console.log('Base.method()') },
+	method: function(){
+		console.log('Base.method()') },
 
-    // initializer...
-    __init__: function(){
-        this.instance_attr = 'instance'
-    },
+	// initializer...
+	__init__: function(){
+		this.instance_attr = 'instance'
+	},
 })
 
 var Item = object.Constructor('Item', {
-    // inherit from Base...
-    __proto__: Base.prototype,
+	// inherit from Base...
+	__proto__: Base.prototype,
 
-    __init__: function(){
-        // call the "super" method...
-        object.parentCall(this.prototype.__init__, this)
+	__init__: function(){
+		// call the "super" method...
+		object.parentCall(this.prototype.__init__, this)
 
-        this.item_attr = 'instance attribute value'
-    },
+		this.item_attr = 'instance attribute value'
+	},
 })
 
 ```
@@ -112,11 +112,11 @@ var Item = object.Constructor('Item', {
 
 ```javascript
 var Action = object.Constructor('Action',
-    // constructor as a function...
-    function(context, ...args){
-        // return the instance...
-        return this
-    })
+	// constructor as a function...
+	function(context, ...args){
+		// return the instance...
+		return this
+	})
 
 var action = new Action()
 
@@ -131,9 +131,9 @@ action()
 // attributes and props.
 
 var Action2 = object.Constructor('Action2', {
-    __call__: function(context, ...args){
-        return this
-    },
+	__call__: function(context, ...args){
+		return this
+	},
 })
 
 ```
@@ -143,7 +143,7 @@ method receive a `context` argument in addition to `this` context, those
 represent the two contexts relevant to the callable instance:
 - Internal context (`this`)  
   This always references the instance being called
-- External context (`context`)  
+- External context (`context`)	
   This is the object the instance is called from, i.e. the call _context_ 
   (`window` or `global` by default)
 
@@ -155,9 +155,9 @@ user's responsibility to call `.__call__(..)` method.
 
 ```javascript
 var LowLevel = object.Constructor('LowLevel', {
-    __new__: function(context, ...args){
-        return {}
-    },
+	__new__: function(context, ...args){
+		return {}
+	},
 })
 
 ```
@@ -171,7 +171,7 @@ The external context is the same as above.
 Contexts:
 - Internal context (`this`)  
   References the `.prototype` of the constructor.
-- External context (`context`)  
+- External context (`context`)	
   This is the object the instance is called from, i.e. the call _context_ 
   (`window` or `global` by default), the same as for function constructor 
   and `.__call__(..)`.
@@ -198,7 +198,7 @@ Get sources for attribute
 ```
 sources(<object>, <name>)
 sources(<object>, <name>, <callback>)
-    -> <list>
+	-> <list>
 ```
 
 
@@ -209,7 +209,7 @@ parent(<prototype>, <name>)
 	-> undefined
 
 parent(<method>, <this>)
-    -> <parent-method>
+	-> <parent-method>
 	-> undefined
 ```
 
@@ -231,11 +231,11 @@ parentProperty(<prototype>, <name>)
 Get parent method and call it
 ```
 parentCall(<prototype>, <name>, <this>)
-    -> <result>
+	-> <result>
 	-> undefined
 
 parentCall(<method>, <this>)
-    -> <result>
+	-> <result>
 	-> undefined
 ```
 
@@ -243,14 +243,14 @@ parentCall(<method>, <this>)
 Mixin objects into a prototype chain
 ```
 mixin(<root>, <object>, ..)
-    -> <object>
+	-> <object>
 ```
 
 
 Mixin contents of objects into one
 ```
 mixinFlat(<root>, <object>, ..)
-    -> <object>
+	-> <object>
 ```
 This is like `Object.assign(..)` but copies property objects rather than
 property values.
@@ -269,14 +269,14 @@ Define an object constructor
 ```
 Constructor(<name>, <prototype>)
 Constructor(<name>, <class-prototype>, <prototype>)
-    -> <constructor>
+	-> <constructor>
 ```
 
 
 Shorthand to `Constructor(..)`
 ```
 C(<name>, ..)
-    -> <constructor>
+	-> <constructor>
 ```
 
 
