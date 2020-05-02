@@ -286,26 +286,6 @@ function(root, ...objects){
 //---------------------------------------------------------------------
 // Constructor...
 
-// Make an object extending target...
-//
-// 	extend(target)
-// 		-> object
-//
-// 	extend(target, object)
-// 		-> object
-//
-//
-// NOTE: this will modify the input object.
-//
-// XXX EXPERIMENTAL...
-var extend = 
-module.extend =
-function(target, obj){
-	obj = obj || {}
-	obj.__proto__ = target.prototype
-	return obj }
-
-
 // Make an uninitialized instance object...
 //
 // 	makeRawInstance(context, constructor, ...)
@@ -318,6 +298,8 @@ function(target, obj){
 // 			-> call and use its return value
 //		- if prototype is a function or if .__call__(..) is defined
 //			-> use a wrapper function
+//		- if constructor.__proto__ is a constructor
+//			-> use it to create an instance
 //		- else
 //			-> use {}
 // 	- link the object into the prototype chain
@@ -382,9 +364,8 @@ function(context, constructor, ...args){
 					return constructor.prototype.__call__
 						.call(obj, this, ...arguments) },
 				constructor.prototype.__call__)
-		// XXX EXPERIMENTAL...
+		// use parent's constructor...  (XXX EXPERIMENTAL)
 		// XXX do a better test...
-		// use parent's constructor...
 		: (constructor.__proto__ instanceof Function 
 				&& constructor.__proto__ !== (function(){}).__proto__) ?
 			Reflect.construct(constructor.__proto__, [], constructor)
@@ -584,12 +565,13 @@ function Constructor(name, a, b){
 		_constructor.__proto__
 		: cls_proto
 	_constructor.prototype = proto
-	// generic raw instance constructor...
+	// set generic raw instance constructor...
 	_constructor.__rawinstance__ instanceof Function
 		|| (_constructor.__rawinstance__ = 
 			function(context, ...args){
 				return makeRawInstance(context, this, ...args) })
-	// set .prototype.constructor
+
+	// set constructor.prototype.constructor
 	Object.defineProperty(_constructor.prototype, 'constructor', {
 		value: _constructor,
 		enumerable: false,
