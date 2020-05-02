@@ -196,6 +196,55 @@ handling.
   as restrict the use-cases for the constructor.
 
 
+### Extending the constructor
+
+The `constructor.__proto__` should be callable.
+
+```javascript
+var D = object.Constructor('D', 
+	object.mixinFlat(function(){}, {
+		constructor_attr: 'some value',
+		
+		constructorMethod: function(){
+			// ...
+		},
+
+		// ...
+	}), 
+	{
+		instance_attr: 'some other value',
+
+		instanceMethod: function(){
+			var x = this.constructor.constructor_attr
+
+			// ...
+		},
+
+		// ...
+	})
+```
+
+Keeping the class prototype a function is not necessary, but not doing 
+so will break the `D instanceof Function` test.
+
+Here is another less strict approach but here `D.__proto__` will not be 
+callable:
+```javascript
+var D = object.Constructor('D', 
+	{
+		__proto__: Function,
+
+		// ...
+	}, 
+	{
+		// ...
+	})
+```
+
+Passing a simple object as a constructor prototype will work too, but 
+will not pass the `D instanceof Function` test and is not recommended.
+
+
 ### Inheriting from native objects
 
 ```javascript
