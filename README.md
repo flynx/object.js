@@ -198,7 +198,8 @@ handling.
 
 ### Extending the constructor
 
-The `constructor.__proto__` should be callable.
+The `constructor.__proto__` should be callable, _object.js_ will by design
+make no effort to either maintain nor test for this.
 
 ```javascript
 var D = object.Constructor('D', 
@@ -242,10 +243,11 @@ var D = object.Constructor('D',
 ```
 
 Passing a simple object as a constructor prototype will work too, but 
-will not pass the `D instanceof Function` test and is not recommended.
+will neither pass the `D instanceof Function` test nor be callable and 
+thus is not recommended.
 
 
-### Inheriting from native objects
+### Inheriting from native constructor objects
 
 ```javascript
 var myArray = object.Constructor('myArray', Array, {
@@ -255,8 +257,11 @@ var myArray = object.Constructor('myArray', Array, {
 })
 ```
 
-All special methods and protocols except for `.__new__(..)` will work here 
-without change.
+All special methods and protocols defined by _object.js_ except for 
+`.__new__(..)` will work here without change.
+
+For details on `.__new__(..)` and native `.constructor(..)` interaction 
+see: [Extending native `.constructor(..)`](#extending-native-constructor)
 
 
 ### Extending native `.constructor(..)`
