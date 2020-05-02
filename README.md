@@ -54,7 +54,7 @@ var A = new object.Constructor('A')
 
 
 In _JavaScript_ constructor `B` inherits from constructor `A` iff 
-`B.prototype` is _prototype_ of `A.prototype`. So to implement inheritance 
+`A.prototype` is _prototype_ of `B.prototype`. So to implement inheritance 
 we simply need to _link_ the prototypes of two constructors via `.__proto__`,
 `Object.create(..)` or other means.
 
