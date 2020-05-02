@@ -152,6 +152,9 @@ If the prototype is explicitly defined as a function then it is the
 user's responsibility to call `.__call__(..)` method.
 
 
+
+## Advanced usage
+
 ### Low level constructor
 
 ```javascript
@@ -191,10 +194,6 @@ handling.
   JavaScript there is no distinction between an instance and a class and
   defining `.__new__(..)` in the class would both add complexity as well 
   as restrict the use-cases for the constructor.
-
-
-
-## Advanced cases
 
 
 ### Inheriting from native objects
