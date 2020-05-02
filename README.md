@@ -36,8 +36,8 @@ $ npm install ig-object
 Or just download and drop [object.js](object.js) into your code.
 
 
-## Basic usage
 
+## Basic usage
 
 Include the code, this is compatible with both [node's](https://nodejs.org/) and
 [RequireJS'](https://requirejs.org/) `require(..)`
@@ -64,6 +64,7 @@ var B = object.Constructor('B', {__proto__: A.prototype})
 var C = object.Constructor('C', Object.create(B.prototype))
 ```
 
+Now we can test this...
 ```javascript
 var c = C() // or new C()
 
@@ -192,6 +193,46 @@ handling.
   as restrict the use-cases for the constructor.
 
 
+
+## Advanced cases
+
+
+### Inheriting from native objects
+
+```javascript
+var myArray = object.Constructor('myArray', Array, {
+	__proto__: Array.prototype,
+
+	// ...
+})
+```
+
+All special methods and protocols except for `.__new__(..)` will work here 
+without change.
+
+
+### Extending native `.constructor(..)`
+
+Extending `.constructor(..)` is not necessary in most cases as 
+`.__init__(..)` will do everything generally needed, except for instance 
+replacement.
+
+```javascript
+var myArray = object.Constructor('myArray', Array, {
+	__proto__: Array.prototype,
+
+	__new__: function(context, ...args){
+		var obj = Reflect.construct(myArray.__proto__, args, myArray)
+
+		// ...
+
+		return obj
+	},
+})
+```
+
+
+
 ## Components
 
 Get sources for attribute
@@ -267,6 +308,7 @@ A shorthand to this is `Constructor.__rawinstance__(context, ..)`.
 
 Define an object constructor
 ```
+Constructor(<name>)
 Constructor(<name>, <prototype>)
 Constructor(<name>, <class-prototype>, <prototype>)
 	-> <constructor>
