@@ -513,6 +513,14 @@ function(context, constructor, ...args){
 // 			X = Constructor('X', Array, function(){})
 // 		...can we "mix" disibilar types in JS, if yes then how do we 
 // 		construct the instance -- which constructor do we call???
+// 		..this appears not to be possible as:
+// 			1) Reflect.construct(Function, [], Array)
+// 				will produce a callable object with access to all the 
+// 				array methods but none of the low-level mechanics, thus
+// 				part of the methods will break like .push(..)
+// 			2) Reflect.construct(Array, [], Function)
+// 				will produce an array instnace that looks like a function
+// 				but is not callable...
 // XXX revise .toString(..) definition test...
 var Constructor = 
 module.Constructor =

@@ -402,20 +402,34 @@ to make source printing in console more pleasant to read.
 At this point we can't mix native types, for example it is not possible 
 to make a callable `Array` object...
 
-For example this will produce a broken instance:
+This is not possible in current _JavaScript_ implementations directly 
+as most builtin objects rely on "hidden" mechanics and there is no way 
+to combine or inherit them.
+
+To illustrate:
 ```javascript
-var CallablaArray = object.Constructor('CallablaArray', Array, function(){ .. })
+// produces an Array that looks like a function but does not act like one...
+var a = Reflect.construct(Array, [], Function)
+
+// creates a function that looks like an array... 
+var b = Reflect.construct(Function, [], Array)
 ```
 
-This will produce an instance broken in a different way:
+So these will produce partially broken instances:
 ```javascript
-var CallablaArray = object.Constructor('CallablaArray', Array, {
+var A = object.Constructor('A', Array, function(){ .. })
+
+var B = object.Constructor('B', Array, {
 	__call__: function(){ .. },
 })
 ```
 
-Some of this is due to how _object.js_ is currently implemented, this 
-needs further investigation...
+Essentially this issue and the inability to implement it without 
+emulation, shows the side-effects of two "features" in _JavaScript_:
+- lack of multiple inheritance
+- _hidden_ protocols/functionality (namely: calls, attribute access)
+
+Still, this is worth some thought.
 
 
 
