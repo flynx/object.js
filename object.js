@@ -322,6 +322,14 @@ function(root, ...objects){
 // 		unneccessary restrictions both on the "class" object and on the 
 // 		instance...
 // 
+// XXX the following are not the same:
+// 			var C = Constructor('C', function(){ .. })
+// 		and
+// 			var C2 = Constructor('C2', { __call__: function(){ .. } })
+// 		the difference is in C.prototype vs. C2.prototype, the first 
+// 		being a function while the second is an object with a call 
+// 		method...
+// 		Q: should the two cases produce the same result???
 // XXX Q: should the context (this) in .__new__(..) be _constructor or 
 // 		.prototype???
 // 		... .prototype seems to be needed more often but through it we 
@@ -373,12 +381,8 @@ function(context, constructor, ...args){
 		: Reflect.construct(Object, [], constructor)
 
 	// link to prototype chain, if not done already...
-	if(obj.__proto__ !== constructor.prototype){
-		obj.__proto__ = constructor.prototype
-		Object.defineProperty(obj, 'constructor', {
-			value: constructor,
-			enumerable: false,
-		}) }
+	obj.__proto__ !== constructor.prototype
+		&& (obj.__proto__ = constructor.prototype)
 
 	return obj }
 
@@ -389,12 +393,13 @@ function(context, constructor, ...args){
 // 		Constructor(name, proto)
 // 			-> constructor
 //
-// 	Make a constructor with a prototype (object/function) and a class
-// 	prototype...
-// 		Constructor(name, class-proto, proto)
+// 	Make a constructor with a prototype and a constructor prototype...
+// 		Constructor(name, constructor-mixin, proto)
 // 			-> constructor
-// 			NOTE: the <class-proto> defines a set of class methods and 
-// 					attributes.
+//
+// 	Make a constructor with prototype extending parent-constructor...
+// 		Constructor(name, parent-constructor, proto)
+// 			-> constructor
 //
 //
 // The resulting constructor can produce objects in one of these ways:
@@ -432,6 +437,16 @@ function(context, constructor, ...args){
 // 
 //
 // 
+// Special attributes:
+// 	.__extends__
+// 		Shorthand to define define the prototype constructor.
+//			Constructor('X', {__extends__: Y})
+//		is the same as:
+//			Constructor('X', Y, {})
+// 		This can be defined on either the prototype or the constructor
+// 		mixin but not on both.
+//
+//
 // Special methods (constructor):
 //
 //  Handle uninitialized instance construction
@@ -469,13 +484,9 @@ function(context, constructor, ...args){
 // 		// NOTE: new is optional...
 // 		var A = new Constructor('A')
 //
-// 		// NOTE: in a prototype chain the prototypes are "inherited"
-// 		// NOTE: JS has no classes and the prototype is just another 
-// 		//		object, the only difference is that it's used by the 
-// 		//		constructor to link other objects i.e. "instances" to...
-// 		var B = Constructor('B', {__proto__: A.prototype})
+// 		var B = Constructor('B', { __extends__: A })
 //
-// 		var C = Constructor('C', Objec.create(B.prototype))
+// 		var C = Constructor('C', B, {})
 //
 // 		var c = C()
 //
@@ -510,6 +521,9 @@ function(context, constructor, ...args){
 // NOTE: to disable .__rawinstance__(..) handling set it to false in the 
 // 		class prototype...
 //
+// XXX BUG:
+// 		// this does not make a callable array...
+// 		X = Constructor('X', Array, function(){})
 // XXX revise .toString(..) definition test...
 var Constructor = 
 module.Constructor =
@@ -518,9 +532,43 @@ module.C =
 function Constructor(name, a, b){
 	var proto = b == null ? a : b
 	proto = proto || {}
-	var cls_proto = b == null ? b : a
+	var constructor_mixin = b == null ? b : a
+	var constructor_proto
 
-	// the actual constructor...
+	// handle: 
+	// 	Constructor(name, constructor, { .. })
+	if(constructor_mixin instanceof Function){
+		constructor_proto = constructor_mixin
+		constructor_mixin = null
+		proto.__proto__ === ({}).__proto__
+			&& (proto.__proto__ = constructor_proto.prototype)
+
+	// handle: 
+	// 	Constructor(name, { .. })
+	// 	Constructor(name, { .. }, { .. })
+	} else {
+		// handle .__extends__
+		a = Object.hasOwnProperty.call(proto, '__extends__')
+				&& proto.__extends__
+		b = constructor_mixin != null
+				&& Object.hasOwnProperty.call(constructor_mixin, '__extends__')
+				&& constructor_mixin.__extends__
+		// sanity check...
+		if(!!a && !!b){
+			throw new Error('Constructor(..): '
+				+'only one  of prototype.__extends__ or constructor.__extends__ '
+				+'can exist.') }
+		constructor_proto = !!a ? a : b
+		// cleanup...
+		if(!!b){
+			constructor_mixin = mixinFlat({}, constructor_mixin)
+			delete constructor_mixin.__extends__ }
+		!!constructor_proto
+			&& (proto.__proto__ = constructor_proto.prototype)
+	}
+
+
+	// the constructor base...
 	var _constructor = function Constructor(){
 		// create raw instance...
 		var obj = _constructor.__rawinstance__ ? 
@@ -543,8 +591,8 @@ function Constructor(name, a, b){
 	// set .toString(..)...
 	// NOTE: do this only if .toString(..) is not defined by user...
 	// XXX revise this test...
-	;((cls_proto || {}).toString === Function.toString
-			|| (cls_proto || {}).toString === ({}).toString)
+	;((constructor_mixin || {}).toString === Function.toString
+			|| (constructor_mixin || {}).toString === ({}).toString)
 		&& Object.defineProperty(_constructor, 'toString', {
 			value: function(){ 
 				var args = proto.__init__ ?
@@ -561,21 +609,24 @@ function Constructor(name, a, b){
 				return `${this.name}(${args})${normalizeIndent(code)}` },
 			enumerable: false,
 		})
-	_constructor.__proto__ = cls_proto === undefined ? 
-		_constructor.__proto__
-		: cls_proto
-	_constructor.prototype = proto
 	// set generic raw instance constructor...
 	_constructor.__rawinstance__ instanceof Function
 		|| (_constructor.__rawinstance__ = 
 			function(context, ...args){
 				return makeRawInstance(context, this, ...args) })
+	!!constructor_proto
+		&& (_constructor.__proto__ = constructor_proto)
+	_constructor.prototype = proto
+	// NOTE: this is intentionally last, this enables the user to override
+	// 		any of the system methods...
+	// NOTE: place the non-overridable definitions after this...
+	!!constructor_mixin
+		&& mixinFlat(
+			_constructor,
+			constructor_mixin)
 
 	// set constructor.prototype.constructor
-	Object.defineProperty(_constructor.prototype, 'constructor', {
-		value: _constructor,
-		enumerable: false,
-	})
+	_constructor.prototype.constructor = _constructor
 
 	return _constructor }
 

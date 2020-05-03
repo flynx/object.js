@@ -25,10 +25,13 @@ Disadvantages compared to the `class` syntax:
 - Slightly more complicated calling of `parent` (_super_) methods
 
 
+There are some other limitations to this currently, for more info see 
+the [relevant section](#limitations).
+
 
 ## Installation
 
-```bash
+```shell
 $ npm install ig-object
 
 ```
@@ -59,9 +62,9 @@ we simply need to _link_ the prototypes of two constructors via `.__proto__`,
 `Object.create(..)` or other means.
 
 ```javascript
-var B = object.Constructor('B', {__proto__: A.prototype})
+var B = object.Constructor('B', { __extends__: A })
 
-var C = object.Constructor('C', Object.create(B.prototype))
+var C = object.Constructor('C', B, {})
 ```
 
 Now we can test this...
@@ -96,7 +99,7 @@ var Base = object.Constructor('Base', {
 
 var Item = object.Constructor('Item', {
 	// inherit from Base...
-	__proto__: Base.prototype,
+	__extends__: Base,
 
 	__init__: function(){
 		// call the "super" method...
@@ -106,6 +109,9 @@ var Item = object.Constructor('Item', {
 	},
 })
 
+var SubItem = object.Constructor('SubItem', Item, {
+	// ...
+})
 ```
 
 
@@ -150,6 +156,14 @@ represent the two contexts relevant to the callable instance:
 
 If the prototype is explicitly defined as a function then it is the 
 user's responsibility to call `.__call__(..)` method.
+
+
+**Notes:**
+- the two approaches (_function_ vs. `.__call__(..)`) will produce 
+  slightly different results, the difference is in `.prototype`, in the
+  first case it is a _function_ while in the second an object with a 
+  `.__call__(..)` method.  
+  (this may change in the future)
 
 
 
@@ -198,60 +212,50 @@ handling.
 
 ### Extending the constructor
 
-The `constructor.__proto__` should be callable, _object.js_ will by design
-make no effort to either maintain nor test for this.
-
 ```javascript
-var D = object.Constructor('D', 
-	object.mixinFlat(function(){}, {
-		constructor_attr: 'some value',
-		
+var C = object.Constructor('C',
+	// this will get mixed into the constructor C...
+	{
+		constructor_attr: 123,
+
 		constructorMethod: function(){
 			// ...
 		},
 
 		// ...
-	}), 
-	{
-		instance_attr: 'some other value',
-
+	}, {
 		instanceMethod: function(){
+			// get constructor data...
 			var x = this.constructor.constructor_attr
 
 			// ...
 		},
-
 		// ...
 	})
 ```
 
-Keeping the class prototype a function is not necessary, but not doing 
-so will break the `D instanceof Function` test.
-
-Here is another less strict approach but here `D.__proto__` will not be 
-callable:
+And the same thing while extending...
 ```javascript
-var D = object.Constructor('D', 
+var D = object.Constructor('D',
+	// this will get mixed into C(..)...
 	{
-		__proto__: Function,
+		__extends__: C,
 
 		// ...
-	}, 
-	{
+	}, {
 		// ...
 	})
 ```
 
-Passing a simple object as a constructor prototype will work too, but 
-will neither pass the `D instanceof Function` test nor be callable and 
-thus is not recommended.
+Note that `.__extends__` can be written in either block, this is done 
+for convenience and to keep it as close as possible to the definition top.
 
 
 ### Inheriting from native constructor objects
 
 ```javascript
-var myArray = object.Constructor('myArray', Array, {
-	__proto__: Array.prototype,
+var myArray = object.Constructor('myArray', {
+	__extends__: Array,
 
 	// ...
 })
@@ -271,8 +275,8 @@ Extending `.constructor(..)` is not necessary in most cases as
 replacement.
 
 ```javascript
-var myArray = object.Constructor('myArray', Array, {
-	__proto__: Array.prototype,
+var myArray = object.Constructor('myArray', {
+	__extends__: Array,
 
 	__new__: function(context, ...args){
 		var obj = Reflect.construct(myArray.__proto__, args, myArray)
@@ -363,7 +367,8 @@ Define an object constructor
 ```
 Constructor(<name>)
 Constructor(<name>, <prototype>)
-Constructor(<name>, <class-prototype>, <prototype>)
+Constructor(<name>, <parent-constructor>, <prototype>)
+Constructor(<name>, <constructor-mixin>, <prototype>)
 	-> <constructor>
 ```
 
@@ -373,6 +378,29 @@ Shorthand to `Constructor(..)`
 C(<name>, ..)
 	-> <constructor>
 ```
+
+
+## Limitations
+
+### Can not mix unrelated native types directly
+
+At this point we can't mix native types, i.e. it is not possible to make 
+a callable `Array`...
+
+For example this will produce a broken instance:
+```javascript
+var CallablaArray = object.Constructor('CallablaArray', Array, function(){ .. })
+```
+
+This will produce a broken instance in a different way:
+```javascript
+var CallablaArray = object.Constructor('CallablaArray', Array, {
+	__call__: function(){ .. },
+})
+```
+
+Some of this is due to how _object.js_ is currently implemented, this 
+needs further investigation...
 
 
 ## Utilities
