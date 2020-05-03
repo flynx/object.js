@@ -380,28 +380,6 @@ C(<name>, ..)
 ```
 
 
-## Limitations
-
-### Can not mix unrelated native types directly
-
-At this point we can't mix native types, i.e. it is not possible to make 
-a callable `Array`...
-
-For example this will produce a broken instance:
-```javascript
-var CallablaArray = object.Constructor('CallablaArray', Array, function(){ .. })
-```
-
-This will produce a broken instance in a different way:
-```javascript
-var CallablaArray = object.Constructor('CallablaArray', Array, {
-	__call__: function(){ .. },
-})
-```
-
-Some of this is due to how _object.js_ is currently implemented, this 
-needs further investigation...
-
 
 ## Utilities
 
@@ -414,6 +392,31 @@ normalizeIndent(<text>, <tab-size>)
 
 This is used to format `.toString(..)` return values for nested functions
 to make source printing in console more pleasant to read.
+
+
+
+## Limitations
+
+### Can not mix unrelated native types directly
+
+At this point we can't mix native types, for example it is not possible 
+to make a callable `Array` object...
+
+For example this will produce a broken instance:
+```javascript
+var CallablaArray = object.Constructor('CallablaArray', Array, function(){ .. })
+```
+
+This will produce an instance broken in a different way:
+```javascript
+var CallablaArray = object.Constructor('CallablaArray', Array, {
+	__call__: function(){ .. },
+})
+```
+
+Some of this is due to how _object.js_ is currently implemented, this 
+needs further investigation...
+
 
 
 ## License
