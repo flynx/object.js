@@ -6,10 +6,6 @@
 * 	https://github.com/flynx/object.js
 *
 *
-* XXX should this extend Object???
-* 		...if yes then it would also be logical to move Object.run(..) 
-* 		here...
-*
 **********************************************************************/
 ((typeof define)[0]=='u'?function(f){module.exports=f(require)}:define)
 (function(require){ var module={} // make module AMD/node compatible...
@@ -330,14 +326,6 @@ function(root, ...objects){
 // 		being a function while the second is an object with a call 
 // 		method...
 // 		Q: should the two cases produce the same result???
-// XXX Q: should the context (this) in .__new__(..) be _constructor or 
-// 		.prototype???
-// 		... .prototype seems to be needed more often but through it we 
-// 		can't reach the actual constructor... but on the other hand we 
-// 		can (should?) always explicitly use it -- .__new__(..) is usually 
-// 		in the same scope + this makes it more reusable for chaining
-// 		.__new__(..) calls...
-// 		...currently it's .prototype...
 var makeRawInstance = 
 module.makeRawInstance =
 function(context, constructor, ...args){
@@ -372,8 +360,8 @@ function(context, constructor, ...args){
 					return constructor.prototype.__call__
 						.call(obj, this, ...arguments) },
 				constructor.prototype.__call__)
-		// use parent's constructor...  (XXX EXPERIMENTAL)
-		// XXX do a better test...
+		// use parent's constructor...
+		// XXX do a better test???
 		: (constructor.__proto__ instanceof Function 
 				&& constructor.__proto__ !== (function(){}).__proto__) ?
 			Reflect.construct(constructor.__proto__, [], constructor)
@@ -521,9 +509,10 @@ function(context, constructor, ...args){
 // NOTE: to disable .__rawinstance__(..) handling set it to false in the 
 // 		class prototype...
 //
-// XXX BUG:
-// 		// this does not make a callable array...
-// 		X = Constructor('X', Array, function(){})
+// XXX BUG?: this does not make a callable array...
+// 			X = Constructor('X', Array, function(){})
+// 		...can we "mix" disibilar types in JS, if yes then how do we 
+// 		construct the instance -- which constructor do we call???
 // XXX revise .toString(..) definition test...
 var Constructor = 
 module.Constructor =
@@ -617,6 +606,7 @@ function Constructor(name, a, b){
 	!!constructor_proto
 		&& (_constructor.__proto__ = constructor_proto)
 	_constructor.prototype = proto
+
 	// NOTE: this is intentionally last, this enables the user to override
 	// 		any of the system methods...
 	// NOTE: place the non-overridable definitions after this...
