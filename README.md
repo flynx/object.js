@@ -25,6 +25,24 @@ Disadvantages compared to the `class` syntax:
 - Slightly more complicated calling of `parent` (_super_) methods
 
 
+## Contents
+- [object.js](#objectjs)
+	- [Contents](#contents)
+	- [Installation](#installation)
+	- [Basic usage](#basic-usage)
+		- [Inheritance](#inheritance)
+		- [Callable instances](#callable-instances)
+	- [Advanced usage](#advanced-usage)
+		- [Low level constructor](#low-level-constructor)
+		- [Extending the constructor](#extending-the-constructor)
+		- [Inheriting from native constructor objects](#inheriting-from-native-constructor-objects)
+		- [Extending native `.constructor(..)`](#extending-native-constructor)
+	- [Components](#components)
+	- [Utilities](#utilities)
+	- [Limitations](#limitations)
+		- [Can not mix unrelated native types](#can-not-mix-unrelated-native-types)
+	- [License](#license)
+
 
 ## Installation
 
@@ -394,7 +412,7 @@ to make source printing in console more pleasant to read.
 
 ## Limitations
 
-### Can not mix unrelated native types directly
+### Can not mix unrelated native types
 
 At this point we can't mix native types, for example it is not possible 
 to make a callable `Array` object...
