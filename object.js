@@ -508,19 +508,17 @@ function(context, constructor, ...args){
 // 		clone it via. Object.create(..) or copy it...
 // NOTE: to disable .__rawinstance__(..) handling set it to false in the 
 // 		class prototype...
+// NOTE: it is currently not possible to mix native unrelated types, for 
+// 		example a callable array constructor will produce inconsistent 
+// 		instance objects that in general will not work as expected...
+// 			Reflect.construct(Array, [], Function)
+// 		or
+// 			Reflect.construct(Function, [], Array)
+// 		will either initialize internal/hidden state for either one or 
+// 		the other producing a semi-broken instance.
+// 		It is however possible to mix related types as we are doing for 
+// 		callable instances (Function + Object -- a function is an object).
 //
-// XXX BUG?: this does not make a callable array...
-// 			X = Constructor('X', Array, function(){})
-// 		...can we "mix" disibilar types in JS, if yes then how do we 
-// 		construct the instance -- which constructor do we call???
-// 		..this appears not to be possible as:
-// 			1) Reflect.construct(Function, [], Array)
-// 				will produce a callable object with access to all the 
-// 				array methods but none of the low-level mechanics, thus
-// 				part of the methods will break like .push(..)
-// 			2) Reflect.construct(Array, [], Function)
-// 				will produce an array instnace that looks like a function
-// 				but is not callable...
 // XXX revise .toString(..) definition test...
 var Constructor = 
 module.Constructor =
