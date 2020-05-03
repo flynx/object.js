@@ -25,9 +25,6 @@ Disadvantages compared to the `class` syntax:
 - Slightly more complicated calling of `parent` (_super_) methods
 
 
-There are some other limitations to this currently, for more info see 
-the [relevant section](#limitations).
-
 
 ## Installation
 
