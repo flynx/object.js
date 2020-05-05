@@ -1,7 +1,9 @@
 # object.js
 
-_object.js_ provides a set of tools for making and maintaining object
-constructors and for managing their inheritance relations.
+_object.js_ provides a meta-constructor and a set of tools and utilities 
+to aid in object/instance construction and implementing dynamic data and 
+functionality inheritance within the established JavaScript prototypical
+object model and interfaces.
 
 
 This is an alternative to the ES6 `class` syntax in JavaScript and provides 
@@ -23,6 +25,61 @@ several advantages:
 Disadvantages compared to the `class` syntax:  
 - No _syntactic sugar_
 - Slightly more complicated calling of `parent` (_super_) methods
+
+<table>
+<tr valign="top">
+<td width="50%">
+
+_object.js_
+```javascript
+var Base = object.Constructor('X', Array, {
+	constructor_attr: 'constructor',
+
+	method: function(){
+		return 'constructor'
+	},
+}, {
+	// prototype attribute...
+	attr: 'prototype',
+
+	get prop(){
+		return 42 },
+
+	__init__: function(){
+		this.instance_attr = 7
+	},
+})
+```
+
+</td>
+<td>
+
+_ES6_
+```javascript
+class X extends Array {
+	static constructor_attr = 'class'
+
+	static method(){
+		return 'class'
+	}
+
+	// instance attribute with default value...
+	attr = 'instance'
+
+	get prop(){
+		return 42 }
+
+	constructor(){
+		super(...arguments)	
+
+		this.instance_attr = 7
+	}
+}
+```
+
+</td>
+</tr>
+</table>
 
 
 ## Contents

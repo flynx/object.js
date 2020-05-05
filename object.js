@@ -387,6 +387,7 @@ function(context, constructor, ...args){
 //
 // 	Make a constructor with prototype extending parent-constructor...
 // 		Constructor(name, parent-constructor, proto)
+// 		Constructor(name, parent-constructor, constructor-mixin, proto)
 // 			-> constructor
 //
 //
@@ -518,29 +519,32 @@ function(context, constructor, ...args){
 // 		the other producing a semi-broken instance.
 // 		It is however possible to mix related types as we are doing for 
 // 		callable instances (Function + Object -- a function is an object).
+// 		See README.md for more info.
 //
 // XXX revise .toString(..) definition test...
 var Constructor = 
 module.Constructor =
 // shorthand...
 module.C =
-function Constructor(name, a, b){
-	var proto = b == null ? a : b
-	proto = proto || {}
-	var constructor_mixin = b == null ? b : a
-	var constructor_proto
+function Constructor(name, a, b, c){
+	var args = [...arguments].slice(1, 4)
+
+	// parse args...
+	// 	Constructor(name[[, constructor[, mixin]], proto])
+	var proto = args.pop() || {}
+	var constructor_proto = args[0] instanceof Function ?
+		args.shift()
+		: undefined
+	var constructor_mixin = args.pop()
 
 	// handle: 
-	// 	Constructor(name, constructor, { .. })
-	if(constructor_mixin instanceof Function){
-		constructor_proto = constructor_mixin
-		constructor_mixin = null
-		proto.__proto__ === ({}).__proto__
+	// 	Constructor(name, constructor, ..)
+	if(constructor_proto){
+		proto.__proto__ === Object.prototype
 			&& (proto.__proto__ = constructor_proto.prototype)
 
 	// handle: 
-	// 	Constructor(name, { .. })
-	// 	Constructor(name, { .. }, { .. })
+	// 	Constructor(name, ..)
 	} else {
 		// handle .__extends__
 		a = Object.hasOwnProperty.call(proto, '__extends__')
