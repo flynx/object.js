@@ -26,7 +26,7 @@ Disadvantages compared to the `class` syntax:
 - No _syntactic sugar_
 - Slightly more complicated calling of `parent` (_super_) methods
 
-<table>
+<table border="0">
 <tr valign="top">
 <td width="50%">
 
