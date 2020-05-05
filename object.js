@@ -326,6 +326,7 @@ function(root, ...objects){
 // 		being a function while the second is an object with a call 
 // 		method...
 // 		Q: should the two cases produce the same result???
+// 			...don't think so...
 var makeRawInstance = 
 module.makeRawInstance =
 function(context, constructor, ...args){
