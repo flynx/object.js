@@ -28,7 +28,7 @@ Disadvantages compared to the `class` syntax:
 
 <table border="0">
 <tr valign="top">
-<td width="50%">
+<td width="50%" border="0">
 
 _object.js_
 ```javascript
@@ -52,7 +52,7 @@ var Base = object.Constructor('X', Array, {
 ```
 
 </td>
-<td>
+<td border="0">
 
 _ES6_
 ```javascript
