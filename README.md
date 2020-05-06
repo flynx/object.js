@@ -66,7 +66,8 @@ var B = object.Constructor('B', A, {
 - Clear separation of constructor and `.prototype` data:
 	- First block (optional) is merged with `B`,
 	- Second block _is_ the `B.prototype`,
-- no direct way to do "private" definitions.
+- No _direct_ way to do "private" definitions,
+- No special syntax, less distinct.
 
 </td>
 <td>
@@ -99,7 +100,7 @@ class B extends A {
 	}
 }
 ```
-- pretty but _misleading_ (calling a constructor a class) syntax,
+- Syntax pretty but _misleading_ (calling a constructor a class),
 - `static` and instance definitions are not ordered,
 - `.attr` is copied to every instance
 
