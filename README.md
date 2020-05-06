@@ -270,7 +270,7 @@ m = o.mixout(m, utilityMixin)
 ```
 
 The mixed-in data is removed iff an object is found in the chain with the
-same number of attributes as `utilityMixin` and with each attribute matching
+same attributes as `utilityMixin` and with each attribute matching
 identity with the corresponding attribute in the mixin.
 
 
