@@ -100,7 +100,8 @@ class B extends A {
 	}
 }
 ```
-- Syntax pretty but _misleading_ (calling a constructor a class),
+- Syntax pretty but _misleading_;  
+  calling a constructor a class is not correct,
 - `static` and instance definitions are not ordered,
 - `.attr` is copied to every instance
 
