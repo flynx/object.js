@@ -264,6 +264,15 @@ var m = object.mixin(Base(), utilityMixin)
 `.mixin(..)` will copy the contents of `utilityMixin` into the prototype 
 chain between `m` and `m.__proto__`.
 
+We can also remove the mixin...
+```javascript
+m = o.mixout(m, utilityMixin)
+```
+
+The mixed-in data is removed iff an object is found in the chain with the
+same number of attributes as `utilityMixin` and with each attribute matching
+identity with the corresponding attribute in the mixin.
+
 
 Constructor-based mixin...
 ```javascript
