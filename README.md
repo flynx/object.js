@@ -99,18 +99,9 @@ class B extends A {
 	}
 }
 ```
-- pretty but misleading syntax,
+- pretty but _misleading_ (calling a constructor a class) syntax,
 - `static` and instance definitions are not ordered,
 - `.attr` is copied to every instance
-
-</td>
-</tr>
-<td>
-
-
-</td>
-<td>
-
 
 </td>
 </tr>
