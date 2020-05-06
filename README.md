@@ -433,9 +433,13 @@ var myArray = object.Constructor('myArray', Array, {
 
 ## Components
 
-Note that all of the bellow are generic and will work on any JavaScript 
-object, e.g. `object.makeRawInstance(null, Array, 'a', 'b', 'c')` will 
-happily produce `['a', 'b', 'c']` and so on...
+Note that all of the following are generic and will work on any relevant
+JavaScript object.
+
+For example this will happily create and array `['a', 'b', 'c']`...
+```javascript
+var l = object.makeRawInstance(null, Array, 'a', 'b', 'c')
+```
 
 
 ### `sources(..)`
