@@ -423,6 +423,8 @@ var myArray = object.Constructor('myArray', Array, {
 
 ## Components
 
+### `sources(..)`
+
 Get sources for attribute
 ```
 sources(<object>, <name>)
@@ -430,6 +432,8 @@ sources(<object>, <name>, <callback>)
 	-> <list>
 ```
 
+
+### `parent(..)`
 
 Get parent attribute value or method
 ```
@@ -448,6 +452,9 @@ to the same method under the same name, `parent(..)` can't distinguish
 between these references and will always return the second one._
 
 
+
+### `parentProperty(..)`
+
 Get parent property descriptor
 
 ```
@@ -456,6 +463,8 @@ parentProperty(<prototype>, <name>)
 	-> undefined
 ```
 
+
+### `parentCall(..)`
 
 Get parent method and call it
 ```
@@ -469,12 +478,25 @@ parentCall(<method>, <this>)
 ```
 
 
+### `mixin(..)`
+
 Mixin objects into a prototype chain
 ```
 mixin(<root>, <object>, ..)
-	-> <object>
+	-> <root>
 ```
 
+
+### `mixout(..)`
+
+Mix objects out of a prototype chain
+```
+mixout(<root>, <object>, ..)
+	-> <root>
+```
+
+
+### `mixinFlat(..)`
 
 Mixin contents of objects into one
 ```
@@ -484,6 +506,8 @@ mixinFlat(<root>, <object>, ..)
 This is like `Object.assign(..)` but copies property objects rather than
 property values.
 
+
+### `makeRawInstance(..)`
 
 Make a raw (un-initialized) instance
 ```
@@ -504,6 +528,8 @@ makeRawInstance(<context>, <constructor>, ..)
 
 A shorthand to this is `Constructor.__rawinstance__(context, ..)`.
 
+
+### `Constructor(..)`
 
 Define an object constructor
 ```
@@ -527,6 +553,8 @@ The resulting _constructor_ function when called will:
   to create an instance,
 - call instance's `.__init__(..)` if present.
 
+
+### `C(..)`
 
 Shorthand to `Constructor(..)`
 ```
