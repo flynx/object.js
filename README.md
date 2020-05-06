@@ -59,7 +59,7 @@ var L = object.Constructor('L', Array, {
 
 - Clear separation of constructor and `.prototype` data:
 	- First block (optional) is merged with `L`,
-	- Second block _is_ the `.prototype`,
+	- Second block _is_ the `L.prototype`,
 - no direct way to do "private" definitions.
 
 </td>
