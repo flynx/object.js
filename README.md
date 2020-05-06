@@ -8,7 +8,8 @@ object model and interfaces.
 
 This is an alternative to the ES6 `class` syntax in JavaScript and provides 
 several advantages:  
-- Simple way to define instance and "class" methods, properties and attributes,
+- Simple way to define instance and "class" (constructor) methods, 
+  properties and attributes,
 - Uniform and minimalistic definition syntax based on basic JavaScript 
   object syntax, no special cases, special syntax or _"the same but slightly 
   different"_ ways to do things,
@@ -17,6 +18,8 @@ several advantages:
   and `.__init__(..)` methods)
 - Simple way to define callable instances (including a-la _Python's_ 
   `.__call__(..)`)
+- produces fully introspectable constructors/instances, i.e. no direct 
+  way to define "private" attributes or methods.  
 - Less restrictive:
 	- `new` is optional
 	- all input components are reusable
@@ -26,20 +29,23 @@ Disadvantages compared to the `class` syntax:
 - No _syntactic sugar_
 - Slightly more complicated calling of `parent` (_super_) methods
 
+
+
+Here is a basic comparison:
 <table border="0">
 <tr valign="top">
-<td width="50%" style="border:none;">
+<td width="50%">
 
 _object.js_
 ```javascript
-var Base = object.Constructor('X', Array, {
+var L = object.Constructor('L', Array, {
 	constructor_attr: 'constructor',
 
 	method: function(){
 		return 'constructor'
 	},
 }, {
-	// prototype attribute...
+	// prototype attribute (inherited)...
 	attr: 'prototype',
 
 	get prop(){
@@ -51,19 +57,24 @@ var Base = object.Constructor('X', Array, {
 })
 ```
 
+- Clear separation of constructor and `.prototype` data:
+	- First block (optional) is merged with constructor
+	- Second block is the `.prototype`
+- no direct way to define "private" 
+
 </td>
-<td style="border:none;">
+<td>
 
 _ES6_
 ```javascript
-class X extends Array {
+class L extends Array {
 	static constructor_attr = 'class'
 
 	static method(){
 		return 'class'
 	}
 
-	// instance attribute with default value...
+	// instance attribute (copied)...
 	attr = 'instance'
 
 	get prop(){
@@ -76,10 +87,13 @@ class X extends Array {
 	}
 }
 ```
+- `static` and instance definitions are mixed within the body,
+- `.attr` is copied to every instance
 
 </td>
 </tr>
 </table>
+
 
 
 ## Contents
