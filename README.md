@@ -38,16 +38,22 @@ Here is a basic comparison:
 
 _object.js_
 ```javascript
-var L = object.Constructor('L', Array, {
-	constructor_attr: 'constructor',
-
-	method: function(){
-		return 'constructor'
-	},
-}, {
+var A = object.Constructor('A', {
 	// prototype attribute (inherited)...
 	attr: 'prototype',
 
+	method: function(){
+		// ...
+	},
+})
+
+var B = object.Constructor('B', A, {
+	constructor_attr: 'constructor',
+
+	constructor_method: function(){
+		return 'constructor'
+	},
+}, {
 	get prop(){
 		return 42 },
 
@@ -58,8 +64,8 @@ var L = object.Constructor('L', Array, {
 ```
 
 - Clear separation of constructor and `.prototype` data:
-	- First block (optional) is merged with `L`,
-	- Second block _is_ the `L.prototype`,
+	- First block (optional) is merged with `B`,
+	- Second block _is_ the `B.prototype`,
 - no direct way to do "private" definitions.
 
 </td>
@@ -67,15 +73,21 @@ var L = object.Constructor('L', Array, {
 
 _ES6_
 ```javascript
-class L extends Array {
-	static constructor_attr = 'class'
-
-	static method(){
-		return 'class'
-	}
-
+class A {
 	// instance attribute (copied)...
 	attr = 'instance'
+
+	method(){
+		// ...
+	}
+}
+
+class B extends A {
+	static constructor_attr = 'class'
+
+	static constructor_method(){
+		return 'class'
+	}
 
 	get prop(){
 		return 42 }
@@ -90,6 +102,15 @@ class L extends Array {
 - pretty but misleading syntax,
 - `static` and instance definitions are not ordered,
 - `.attr` is copied to every instance
+
+</td>
+</tr>
+<td>
+
+
+</td>
+<td>
+
 
 </td>
 </tr>
