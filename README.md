@@ -511,9 +511,16 @@ objects themselves, making them fully reusable.
 
 ### `mixout(..)`
 
-Remove objects out of a prototype chain
+Remove the first occurrence of each object out of a prototype chain
 ```
 mixout(<base>, <object>, ..)
+mixout(<base>, 'first', <object>, ..)
+	-> <base>
+```
+
+Remove all occurrences of each object out of a prototype chain
+```
+mixout(<base>, 'all', <object>, ..)
 	-> <base>
 ```
 

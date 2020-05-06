@@ -284,37 +284,60 @@ function(root, ...objects){
 
 // Mix-out sets of methods/props/attrs out of an object prototype chain...
 //
+// 	Mix-out first occurrence of each matching object...
 // 	mixout(root, object, ..)
+// 	mixout(root, 'first', object, ..)
 // 		-> root
 //
-// This is the opposite to mixin(..)
+// 	Mix-out all occurrences of each matching object...
+// 	mixout(root, 'all', object, ..)
+// 		-> root
 //
-// XXX Q: should this drop all occurences (current) or just the first???
-// XXX revise...
+//
+// This will match an object to a mixin iff:
+// 	- if they are identical or
+// 	- attr count is the same and,
+// 	- attr names are the same and,
+// 	- attr values are identical.
+//
+// NOTE: this is the opposite to mixin(..)
 var mixout =
 module.mixout =
 function(root, ...objects){
-	var match = function(root, obj){
+	var all = objects[0] == 'all' ?
+			!!objects.shift()
+		: objects[0] == 'first' ?
+			!objects.shift()
+		// default...
+		: false
+
+	var _match = function(root, obj){
+		// identity...
 		if(root === obj){
 			return true }
+		// attr count...
 		if(Object.keys(root).length != Object.keys(obj).length){
 			return false }
+		// names and values...
 		var e = Object.entries(obj)
 		while(e.length > 0){
 			var [k, v] = e.pop()
 			if(!root.hasOwnProperty(k) || root[k] !== v){
 				return false } }
 		return true }
-	var drop = function(obj){
+	var _drop = function(obj){
 		var cur = root
-		while(cur.__proto__ != null){
-			match(cur.__proto__, obj)
+		var found = false
+		while(cur.__proto__ != null 
+				// continue iff ...
+				&& (all || !found)){
+			found = _match(cur.__proto__, obj)
+			found
 				&& (cur.__proto__ = cur.__proto__.__proto__) 
-			cur = cur.__proto__ }
-		return root }
+			cur = cur.__proto__ } }
 
 	// do the work...
-	objects.map(drop)
+	objects.map(_drop)
 
 	return root }
 
