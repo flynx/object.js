@@ -206,8 +206,8 @@ function(proto, name){
 
 // Find the next parent method and call it...
 //
-// 	parentCall(proto, name, this, ...)
-// 	parentCall(meth, this, ...)
+// 	parentCall(proto, name, this, ..)
+// 	parentCall(meth, this, ..)
 // 		-> res
 // 		-> undefined
 //
@@ -260,7 +260,7 @@ function(root, ...objects){
 
 // Mix sets of methods/props/attrs into an object as prototypes...
 //
-// 	mixin(root, object, ...)
+// 	mixin(root, object, ..)
 // 		-> root
 //
 //
@@ -268,14 +268,62 @@ function(root, ...objects){
 // mixinFlat(..) the method set into this object leaving the 
 // original objects intact.
 // 
-// 		root <-- object1_copy <-- .. <-- objectN_copy
+// 		root <-- object1_copy <-- .. <-- objectN_copy <- root.__proto__
 // 				
+//
+// NOTE: this will only mix in non-empty objects...
+//
+// XXX BUG: this is wrong...
+// 		var m = { m: function(){ console.log('!!!') } }
+// 		var a = object.Constructor('A', Array, {})()
+// 		var aa = object.mixin(a, m)
+// 		aa === a // -> false
 var mixin = 
 module.mixin = 
 function(root, ...objects){
-	return objects
+	root.__proto__ = objects
 		.reduce(function(res, cur){
-			return module.mixinFlat(Object.create(res), cur) }, root) }
+			return Object.keys(cur).length > 0 ?
+				module.mixinFlat(Object.create(res), cur) 
+				: res }, root.__proto__) 
+	return root }
+
+
+// Mix-out sets of methods/props/attrs out of an object prototype chain...
+//
+// 	mixout(root, object, ..)
+// 		-> root
+//
+// This is the opposite to mixin(..)
+//
+// XXX Q: should this drop all occurences (current) or just the first???
+// XXX revise...
+var mixout =
+module.mixout =
+function(root, ...objects){
+	var match = function(root, obj){
+		if(root === obj){
+			return true }
+		if(Object.keys(root).length != Object.keys(obj).length){
+			return false }
+		var e = Object.entries(obj)
+		while(e.length > 0){
+			var [k, v] = e.pop()
+			if(!root.hasOwnProperty(k) || root[k] !== v){
+				return false } }
+		return true }
+	var drop = function(obj){
+		var cur = root
+		while(cur.__proto__ != null){
+			match(cur.__proto__, obj)
+				&& (cur.__proto__ = cur.__proto__.__proto__) 
+			cur = cur.__proto__ }
+		return root }
+
+	// do the work...
+	objects.map(drop)
+
+	return root }
 
 
 

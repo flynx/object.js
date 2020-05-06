@@ -105,6 +105,7 @@ class L extends Array {
 		- [Inheritance](#inheritance)
 		- [Callable instances](#callable-instances)
 	- [Advanced usage](#advanced-usage)
+		- [Mix-ins](#mix-ins)
 		- [Low level constructor](#low-level-constructor)
 		- [Extending the constructor](#extending-the-constructor)
 		- [Inheriting from native constructor objects](#inheriting-from-native-constructor-objects)
@@ -241,6 +242,40 @@ user's responsibility to call `.__call__(..)` method.
   `.__call__(..)` method.  
   (this may change in the future)
 
+
+### Mix-ins
+
+Prototype-based mixin...
+```javascript
+
+var utilityMixin = {
+	utility: function(){
+		// ...
+	},
+}
+
+var Base = object.Constructor('Base') 
+
+
+// mixin directly into the instance...
+var m = object.mixin(Base(), utilityMixin)
+```
+
+`.mixin(..)` will copy the contents of `utilityMixin` into the prototype 
+chain between `m` and `m.__proto__`.
+
+
+Constructor-based mixin...
+```javascript
+var UtilityMixin = function(parent){
+	return object.Constructor(parent.name + '+utils', parent, utilityMixin) }
+
+var Mixed = object.Constructor('Mixed', UtilityMixin(Base), {
+	// ...
+})
+
+var m = Mixed()
+```
 
 
 ## Advanced usage
