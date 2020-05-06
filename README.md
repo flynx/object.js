@@ -140,15 +140,7 @@ Create a basic constructor...
 ```javascript
 // NOTE: new is optional here...
 var A = new object.Constructor('A')
-```
 
-
-In _JavaScript_ constructor `B` inherits from constructor `A` iff 
-`A.prototype` is _prototype_ of `B.prototype`. So to implement inheritance 
-we simply need to _link_ the prototypes of two constructors via `.__proto__`,
-`Object.create(..)` or other means.
-
-```javascript
 var B = object.Constructor('B', A, {})
 
 var C = object.Constructor('C', B, {})
