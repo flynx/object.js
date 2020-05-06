@@ -381,16 +381,14 @@ function(root, ...objects){
 // 		adding and instance constructor as a class method would create 
 // 		unneccessary restrictions both on the "class" object and on the 
 // 		instance...
-// 
-// XXX the following are not the same:
+// NOTE: the following are not the same:
 // 			var C = Constructor('C', function(){ .. })
 // 		and
 // 			var C2 = Constructor('C2', { __call__: function(){ .. } })
 // 		the difference is in C.prototype vs. C2.prototype, the first 
 // 		being a function while the second is an object with a call 
 // 		method...
-// 		Q: should the two cases produce the same result???
-// 			...don't think so...
+// 		XXX Q: should the two cases produce the same result???
 var makeRawInstance = 
 module.makeRawInstance =
 function(context, constructor, ...args){
