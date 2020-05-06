@@ -328,10 +328,12 @@ var LowLevel = object.Constructor('LowLevel', {
 
 ```
 
-Like _function constructor_ and `.__call__(..)` this also has two contexts,
-but the internal context is different -- as it is the job of `.__new__(..)`
-to create an instance, at time of call the instance does not exist and `this`
-references the `.prototype` object.
+Like [_function constructor_ and `.__call__(..)`](#callable-instances) 
+this also has two contexts, but the internal context is different -- as
+it is the job of `.__new__(..)` to create an instance, at time of call 
+the instance does not exist and `this` references the `.prototype` 
+object.
+
 The external context is the same as above.
 
 Contexts:
