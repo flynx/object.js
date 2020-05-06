@@ -68,10 +68,11 @@ var B = object.Constructor('B', A, {
 })
 ```
 
-- Clear separation of constructor and `.prototype` data:
+- No _direct_ way to do "private" definitions,
+- Clear separation of constructor and `.prototype`  
+  For example, in `B`:
 	- First block (optional) is merged with `B`,
 	- Second block _is_ the `B.prototype`,
-- No _direct_ way to do "private" definitions,
 - No special syntax, less distinct.
 
 </td>
