@@ -8,14 +8,12 @@ object model and interfaces.
 
 This is an alternative to the ES6 `class` syntax in JavaScript and provides 
 several advantages:  
-- Simple way to define instance and constructor methods, properties and 
-  attributes,
 - Uniform and minimalistic definition syntax based on basic JavaScript 
   object syntax, no special cases, special syntax or _"the same but slightly 
   different"_ ways to do things,
 - _Transparently_ based on JavaScript's prototypical inheritance model,
-- Granular instance construction (a-la _Python's_ `.__new__(..)` 
-  and `.__init__(..)` methods),
+- Granular 2-stage instance construction and initialization (a-la 
+  _Python's_ `.__new__(..)` and `.__init__(..)` methods),
 - Simple way to define callable instances (including a-la _Python's_ 
   `.__call__(..)`),
 - Produces fully introspectable constructors/instances, i.e. no _direct_
@@ -23,7 +21,7 @@ several advantages:
 - Does not try to emulate constructs not present in the language (classes),
 - Less restrictive:
 	- `new` is optional,
-	- all input components are reusable,
+	- all input components are reusable JavaScript objects,
 	- no artificial restrictions.
 
 Disadvantages compared to the `class` syntax:  
@@ -436,7 +434,7 @@ var myArray = object.Constructor('myArray', Array, {
 Note that all of the following are generic and will work on any relevant
 JavaScript object.
 
-For example this will happily create and array `['a', 'b', 'c']`...
+For example, this will happily create and array `['a', 'b', 'c']`:
 ```javascript
 var l = object.makeRawInstance(null, Array, 'a', 'b', 'c')
 ```
@@ -533,8 +531,8 @@ This is the opposite of `mixin(..)`
 
 Mixin contents of objects into one
 ```
-mixinFlat(<root>, <object>, ..)
-	-> <object>
+mixinFlat(<base>, <object>, ..)
+	-> <base>
 ```
 This is like `Object.assign(..)` but copies property descriptors rather 
 than property values.
