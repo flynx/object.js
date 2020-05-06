@@ -352,13 +352,6 @@ This has priority over the callable protocols above, thus the user must
 take care of both the _function constructor_ and `prototype.__call__(..)` 
 handling.
 
-**Notes:** 
-- `.__new__(..)` is an instance method, contrary to _Python_ (the 
-  inspiration for this protocol). This is done intentionally as in
-  JavaScript there is no distinction between an instance and a class and
-  defining `.__new__(..)` in the class would both add complexity as well 
-  as restrict the use-cases for the constructor.
-
 
 ### Extending the constructor
 
