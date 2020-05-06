@@ -426,7 +426,21 @@ function(context, constructor, ...args){
 // 		call .__init__(..) if defined
 // 
 //
-// 
+// Special attributes:
+//
+// 	Sets parent constructor
+// 	.__extends__ = constructor
+// 		NOTE: this can be set on either constructor-mixin or proto but 
+// 			not on both...
+// 		NOTE: if .__proto__ is not set in the proto, then it will be 
+// 			set to .__extends__.prototype by default.
+// 		NOTE: setting this and proto.__proto__ to can be used to link the
+// 			constructor and instance object to different prototype chains
+// 		NOTE: this attr is only used if explicitly defined, inherited 
+// 			values are ignored.
+// 		XXX this may get removed in future versions.
+//
+//
 // Special methods (constructor):
 //
 //  Handle uninitialized instance construction
