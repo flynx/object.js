@@ -236,7 +236,6 @@ function(proto, name, that, ...args){
 
 //---------------------------------------------------------------------
 // Mixin utils...
-// XXX should we add mixout(..) and friends ???
 
 // Mix a set of methods/props/attrs into an object...
 // 
@@ -272,12 +271,6 @@ function(root, ...objects){
 // 				
 //
 // NOTE: this will only mix in non-empty objects...
-//
-// XXX BUG: this is wrong...
-// 		var m = { m: function(){ console.log('!!!') } }
-// 		var a = object.Constructor('A', Array, {})()
-// 		var aa = object.mixin(a, m)
-// 		aa === a // -> false
 var mixin = 
 module.mixin = 
 function(root, ...objects){
