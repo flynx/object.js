@@ -661,6 +661,7 @@ function Constructor(name, a, b, c){
 	!!constructor_proto
 		&& (_constructor.__proto__ = constructor_proto)
 	_constructor.prototype = proto
+	_constructor.prototype.constructor = _constructor
 
 	// NOTE: this is intentionally last, this enables the user to override
 	// 		any of the system methods...
@@ -669,9 +670,6 @@ function Constructor(name, a, b, c){
 		&& mixinFlat(
 			_constructor,
 			constructor_mixin)
-
-	// set constructor.prototype.constructor
-	_constructor.prototype.constructor = _constructor
 
 	return _constructor }
 

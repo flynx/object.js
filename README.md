@@ -37,7 +37,7 @@ interchangeable with them.
 
 
 Here is a basic comparison:
-<table border="0">
+<table border="0" width="100%">
 <tr valign="top">
 <td width="50%">
 
@@ -107,9 +107,9 @@ class B extends A {
 }
 ```
 - Syntax pretty but _misleading_;  
-  calling a constructor a class is not correct,
-- `static` and instance definitions are not ordered,
-- `.attr` is copied to every instance
+  calling a _constructor_ a class is not correct,
+- `static` and instance definitions are not separated,
+- lots of details done non-transparently under the hood.
 
 </td>
 </tr>
@@ -491,6 +491,17 @@ makeRawInstance(<context>, <constructor>, ..)
 	-> <object>
 ```
 
+`makeRawInstance(..)` will do the following:
+- Create an instance object
+	- get result of `.__new__(..)` if defined, or
+	- if prototype is a function or `.__call__(..)` is defined, create a 
+	  wrapper function, or
+	- if constructor's `.__proto__` is a function (constructor) use it 
+	  to create an instance, or
+	- use {}.
+- Link the object into the prototype chain
+
+
 A shorthand to this is `Constructor.__rawinstance__(context, ..)`.
 
 
@@ -504,6 +515,18 @@ Constructor(<name>, <constructor-mixin>, <prototype>)
 	-> <constructor>
 ```
 
+`Constructor(..)` essentially does the following:
+- Creates a _constructor_ function,
+- Sets constructor `.name` and `.toString(..)` for introspection,
+- Creates `.__rawinstance__(..)` wrapper to `makeRawInstance(..)`
+- Sets constructor `.__proto__`, `.prototype` and `.prototype.constructor`,
+- Mixes in _constructor-mixin_ if given.
+
+The resulting _constructor_ function when called will:
+- call constructor's `.__rawinstance__(..)` if defined or `makeRawInstance(..)` 
+  to create an instance,
+- call instance's `.__init__(..)` if present.
+
 
 Shorthand to `Constructor(..)`
 ```
@@ -511,6 +534,11 @@ C(<name>, ..)
 	-> <constructor>
 ```
 
+
+**Note:**
+- All of the above are generic and will work on any JavaScript object, 
+  e.g. `object.makeRawInstance(null, Array, 'a', 'b', 'c')` will happily
+  produce `['a', 'b', 'c']` and so on...
 
 
 ## Utilities
