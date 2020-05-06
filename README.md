@@ -498,7 +498,7 @@ makeRawInstance(<context>, <constructor>, ..)
 	  wrapper function, or
 	- if constructor's `.__proto__` is a function (constructor) use it 
 	  to create an instance, or
-	- use {}.
+	- use `{}`.
 - Link the object into the prototype chain
 
 
