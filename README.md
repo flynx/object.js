@@ -384,9 +384,7 @@ var C = object.Constructor('C',
 
 And the same thing while extending...
 ```javascript
-var D = object.Constructor('D', C,
-	// this will get mixed into C(..)...
-	{
+var D = object.Constructor('D', C, {
 		// ...
 	}, {
 		// ...
@@ -536,7 +534,7 @@ This is the opposite of `mixin(..)`
 
 ### `mixinFlat(..)`
 
-Mixin contents of objects into one
+Mixin contents of objects into one _base_ object
 ```
 mixinFlat(<base>, <object>, ..)
 	-> <base>
@@ -562,9 +560,6 @@ makeRawInstance(<context>, <constructor>, ..)
 	  to create an instance, or
 	- use `{}`.
 - Link the object into the prototype chain
-
-
-A shorthand to this is `Constructor.__rawinstance__(context, ..)`.
 
 
 ### `Constructor(..)` / `C(..)`
