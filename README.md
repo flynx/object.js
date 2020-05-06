@@ -131,7 +131,17 @@ class B extends A {
 		- [Inheriting from native constructor objects](#inheriting-from-native-constructor-objects)
 		- [Extending native `.constructor(..)`](#extending-native-constructor)
 	- [Components](#components)
+		- [`sources(..)`](#sources)
+		- [`parent(..)`](#parent)
+		- [`parentProperty(..)`](#parentproperty)
+		- [`parentCall(..)`](#parentcall)
+		- [`mixin(..)`](#mixin)
+		- [`mixout(..)`](#mixout)
+		- [`mixinFlat(..)`](#mixinflat)
+		- [`makeRawInstance(..)`](#makerawinstance)
+		- [`Constructor(..)` / `C(..)`](#constructor--c)
 	- [Utilities](#utilities)
+		- [`normalizeIndent(..)`](#normalizeindent)
 	- [Limitations](#limitations)
 		- [Can not mix unrelated native types](#can-not-mix-unrelated-native-types)
 	- [License](#license)
@@ -423,6 +433,11 @@ var myArray = object.Constructor('myArray', Array, {
 
 ## Components
 
+Note that all of the bellow are generic and will work on any JavaScript 
+object, e.g. `object.makeRawInstance(null, Array, 'a', 'b', 'c')` will 
+happily produce `['a', 'b', 'c']` and so on...
+
+
 ### `sources(..)`
 
 Get sources for attribute
@@ -456,7 +471,6 @@ between these references and will always return the second one._
 ### `parentProperty(..)`
 
 Get parent property descriptor
-
 ```
 parentProperty(<prototype>, <name>)
 	-> <prop-descriptor>
@@ -480,20 +494,35 @@ parentCall(<method>, <this>)
 
 ### `mixin(..)`
 
-Mixin objects into a prototype chain
+_Mixin_ objects into a prototype chain
 ```
-mixin(<root>, <object>, ..)
-	-> <root>
+mixin(<base>, <object>, ..)
+	-> <base>
 ```
+
+This will link the base `.__proto__` to the last _mixin_ in chain, 
+keeping the prototype visibility the same.
+
+This will copy the content of each input object without touching the 
+objects themselves, making them fully reusable.
 
 
 ### `mixout(..)`
 
-Mix objects out of a prototype chain
+Remove objects out of a prototype chain
 ```
-mixout(<root>, <object>, ..)
-	-> <root>
+mixout(<base>, <object>, ..)
+	-> <base>
 ```
+
+This relies on first level object structure to identify the target 
+objects in the prototype chain, for a successful match the following 
+must apply:
+- attribute count must match,
+- attribute names must match,
+- attribute values must be identical.
+
+This is the opposite of `mixin(..)`
 
 
 ### `mixinFlat(..)`
@@ -503,8 +532,8 @@ Mixin contents of objects into one
 mixinFlat(<root>, <object>, ..)
 	-> <object>
 ```
-This is like `Object.assign(..)` but copies property objects rather than
-property values.
+This is like `Object.assign(..)` but copies property descriptors rather 
+than property values.
 
 
 ### `makeRawInstance(..)`
@@ -529,7 +558,7 @@ makeRawInstance(<context>, <constructor>, ..)
 A shorthand to this is `Constructor.__rawinstance__(context, ..)`.
 
 
-### `Constructor(..)`
+### `Constructor(..)` / `C(..)`
 
 Define an object constructor
 ```
@@ -554,8 +583,6 @@ The resulting _constructor_ function when called will:
 - call instance's `.__init__(..)` if present.
 
 
-### `C(..)`
-
 Shorthand to `Constructor(..)`
 ```
 C(<name>, ..)
@@ -563,13 +590,10 @@ C(<name>, ..)
 ```
 
 
-**Note:**
-- All of the above are generic and will work on any JavaScript object, 
-  e.g. `object.makeRawInstance(null, Array, 'a', 'b', 'c')` will happily
-  produce `['a', 'b', 'c']` and so on...
-
 
 ## Utilities
+
+### `normalizeIndent(..)`
 
 Align text to shortest leading whitespace
 ```
