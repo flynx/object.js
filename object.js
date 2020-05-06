@@ -427,16 +427,6 @@ function(context, constructor, ...args){
 // 
 //
 // 
-// Special attributes:
-// 	.__extends__
-// 		Shorthand to define define the prototype constructor.
-//			Constructor('X', {__extends__: Y})
-//		is the same as:
-//			Constructor('X', Y, {})
-// 		This can be defined on either the prototype or the constructor
-// 		mixin but not on both.
-//
-//
 // Special methods (constructor):
 //
 //  Handle uninitialized instance construction
@@ -474,7 +464,7 @@ function(context, constructor, ...args){
 // 		// NOTE: new is optional...
 // 		var A = new Constructor('A')
 //
-// 		var B = Constructor('B', { __extends__: A })
+// 		var B = Constructor('B', A, {})
 //
 // 		var C = Constructor('C', B, {})
 //
@@ -540,13 +530,12 @@ function Constructor(name, a, b, c){
 
 	// handle: 
 	// 	Constructor(name, constructor, ..)
-	if(constructor_proto){
-		proto.__proto__ === Object.prototype
-			&& (proto.__proto__ = constructor_proto.prototype)
+	constructor_proto
+		&& proto.__proto__ === Object.prototype
+		&& (proto.__proto__ = constructor_proto.prototype)
 
-	// handle: 
-	// 	Constructor(name, ..)
-	} else {
+	// handle: .__extends__
+	if(!constructor_proto){
 		// handle .__extends__
 		a = Object.hasOwnProperty.call(proto, '__extends__')
 				&& proto.__extends__

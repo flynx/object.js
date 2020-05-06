@@ -58,9 +58,9 @@ var L = object.Constructor('L', Array, {
 ```
 
 - Clear separation of constructor and `.prototype` data:
-	- First block (optional) is merged with constructor
-	- Second block is the `.prototype`
-- no direct way to define "private" 
+	- First block (optional) is merged with `L`,
+	- Second block _is_ the `.prototype`,
+- no direct way to do "private" definitions.
 
 </td>
 <td>
@@ -87,7 +87,8 @@ class L extends Array {
 	}
 }
 ```
-- `static` and instance definitions are mixed within the body,
+- pretty but misleading syntax,
+- `static` and instance definitions are not ordered,
 - `.attr` is copied to every instance
 
 </td>
@@ -148,7 +149,7 @@ we simply need to _link_ the prototypes of two constructors via `.__proto__`,
 `Object.create(..)` or other means.
 
 ```javascript
-var B = object.Constructor('B', { __extends__: A })
+var B = object.Constructor('B', A, {})
 
 var C = object.Constructor('C', B, {})
 ```
@@ -183,10 +184,7 @@ var Base = object.Constructor('Base', {
 	},
 })
 
-var Item = object.Constructor('Item', {
-	// inherit from Base...
-	__extends__: Base,
-
+var Item = object.Constructor('Item', Base, {
 	__init__: function(){
 		// call the "super" method...
 		object.parentCall(this.prototype.__init__, this)
@@ -322,27 +320,20 @@ var C = object.Constructor('C',
 
 And the same thing while extending...
 ```javascript
-var D = object.Constructor('D',
+var D = object.Constructor('D', C,
 	// this will get mixed into C(..)...
 	{
-		__extends__: C,
-
 		// ...
 	}, {
 		// ...
 	})
 ```
 
-Note that `.__extends__` can be written in either block, this is done 
-for convenience and to keep it as close as possible to the definition top.
-
 
 ### Inheriting from native constructor objects
 
 ```javascript
-var myArray = object.Constructor('myArray', {
-	__extends__: Array,
-
+var myArray = object.Constructor('myArray', Array, {
 	// ...
 })
 ```
@@ -361,9 +352,7 @@ Extending `.constructor(..)` is not necessary in most cases as
 replacement.
 
 ```javascript
-var myArray = object.Constructor('myArray', {
-	__extends__: Array,
-
+var myArray = object.Constructor('myArray', Array, {
 	__new__: function(context, ...args){
 		var obj = Reflect.construct(myArray.__proto__, args, myArray)
 
@@ -454,6 +443,7 @@ Define an object constructor
 Constructor(<name>)
 Constructor(<name>, <prototype>)
 Constructor(<name>, <parent-constructor>, <prototype>)
+Constructor(<name>, <parent-constructor>, <constructor-mixin>, <prototype>)
 Constructor(<name>, <constructor-mixin>, <prototype>)
 	-> <constructor>
 ```
