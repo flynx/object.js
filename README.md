@@ -10,7 +10,7 @@ several advantages:
   different"_ ways to do things,
 - _Transparently_ based on JavaScript's prototypical inheritance model,
 - Produces fully introspectable constructors/instances,
-- Does not try to emulate constructs foreign JavaScript (i.e. classes),
+- Does not try to emulate constructs foreign to JavaScript (i.e. classes),
 - Granular 2-stage instance construction and initialization (a-la 
   _Python's_ `.__new__(..)` and `.__init__(..)` methods),
 - Simple way to define callable instances (including a-la _Python's_ 
