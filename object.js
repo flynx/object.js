@@ -59,7 +59,16 @@ function(text, tab_size){
 
 // Match two objects...
 //
-// XXX this will match any two objects with no enumerable keys...
+// 	match(a, b)
+// 		-> bool
+//
+//
+// This will match objects iff:
+// 	- if they are identical or
+// 	- attr count is the same and,
+// 	- attr names are the same and,
+// 	- attr values are identical.
+//
 var match = 
 module.match =
 function(base, obj){
@@ -70,7 +79,6 @@ function(base, obj){
 	if(typeof(base) != typeof(obj)){
 		return false }
 	// attr count...
-	//var o = Object.entries(obj)
 	var o = Object.keys(Object.getOwnPropertyDescriptors(obj))
 	if(Object.keys(Object.getOwnPropertyDescriptors(base)).length != o.length){
 		return false }
@@ -311,6 +319,16 @@ function(base, ...objects){
 
 // Get matching mixins...
 //
+// 	mixins(base, object[, callback])
+// 	mixins(base, list[, callback])
+// 		-> list
+//
+//
+//	callback(base, obj, parent)
+//		-> 'stop' | false
+//		-> undefined
+//
+//
 // NOTE: if base matches directly callback(..) will get undefined as parent
 // NOTE: this will also match base...
 var mixins =
@@ -361,12 +379,6 @@ function(base, object){
 // 		-> base
 //
 //
-// This will match an object to a mixin iff:
-// 	- if they are identical or
-// 	- attr count is the same and,
-// 	- attr names are the same and,
-// 	- attr values are identical.
-//
 // NOTE: this is the opposite to mixin(..)
 var mixout =
 module.mixout =
@@ -384,7 +396,7 @@ function(base, ...objects){
 	// NOTE: we are removing on a separate stage so as not to mess with
 	// 		mixins(..) iterating...
 	remove
-		// XXX not sure why we need to reverse here -- needs more thought...
+		// XXX
 		.reverse()
 		.forEach(function(p){
 			p.__proto__ = p.__proto__.__proto__ })

@@ -129,12 +129,15 @@ class B extends A {
 		- [`parentProperty(..)`](#parentproperty)
 		- [`parentCall(..)`](#parentcall)
 		- [`mixin(..)`](#mixin)
+		- [`mixins(..)`](#mixins)
+		- [`hasMixin(..)`](#hasmixin)
 		- [`mixout(..)`](#mixout)
 		- [`mixinFlat(..)`](#mixinflat)
 		- [`makeRawInstance(..)`](#makerawinstance)
 		- [`Constructor(..)` / `C(..)`](#constructor--c)
 	- [Utilities](#utilities)
 		- [`normalizeIndent(..)`](#normalizeindent)
+		- [`match(..)`](#match)
 	- [Limitations](#limitations)
 		- [Can not mix unrelated native types](#can-not-mix-unrelated-native-types)
 	- [License](#license)
@@ -144,7 +147,6 @@ class B extends A {
 
 ```shell
 $ npm install ig-object
-
 ```
 
 Or just download and drop [object.js](object.js) into your code.
@@ -634,13 +636,15 @@ match(base, obj)
 	-> bool
 ```
 
-This relies on first level object structure to identify the target 
-objects in the prototype chain, for a successful match the following 
-must apply:
-- attribute count must match,
-- attribute names must match,
-- attribute values must be identical.
+This relies on first level object structure to match the input object, for 
+a successful match one of the following must apply:
+- object are identical
 
+or:
+- `typeof` matches _and_,
+- attribute count matches _and_,
+- attribute names match _and_,
+- attribute values are identical.
 
 
 
