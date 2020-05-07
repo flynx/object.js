@@ -426,22 +426,16 @@ function(base, ...objects){
 // 	- link the object into the prototype chain
 //
 //
-// This will not call .__init__(..)
+// This will not call .__init__(..), hence the "uninitialized".
 //
 //
-// NOTE: context is only used when passeding to .__new__(..) if defined, 
+// NOTE: "context" is only used when passeding to .__new__(..) if defined, 
 // 		and is ignored otherwise...
 // NOTE: as this is simply an extension to the base JavaScript protocol this
 // 		can be used to construct any object...
 // 		Example:
-// 			var O = function(){}
 // 			// new is optional...
-// 			var o = new makeRawInstance(null, O)
-// NOTE: .__new__(..) is intentionaly an instance method (contary to 
-// 		Python) this is done because there are no classes in JS and 
-// 		adding and instance constructor as a class method would create 
-// 		unneccessary restrictions both on the "class" object and on the 
-// 		instance...
+// 			var l = new makeRawInstance(null, Array, 'a', 'b', 'c')
 // NOTE: the following are not the same:
 // 			var C = Constructor('C', function(){ .. })
 // 		and
@@ -449,7 +443,6 @@ function(base, ...objects){
 // 		the difference is in C.prototype vs. C2.prototype, the first 
 // 		being a function while the second is an object with a call 
 // 		method...
-// 		XXX Q: should the two cases produce the same result???
 var makeRawInstance = 
 module.makeRawInstance =
 function(context, constructor, ...args){
@@ -648,8 +641,6 @@ function(context, constructor, ...args){
 // 		It is however possible to mix related types as we are doing for 
 // 		callable instances (Function + Object -- a function is an object).
 // 		See README.md for more info.
-//
-// XXX revise .toString(..) definition test...
 var Constructor = 
 module.Constructor =
 // shorthand...
@@ -754,6 +745,7 @@ function Constructor(name, a, b, c){
 			constructor_mixin)
 
 	return _constructor }
+
 
 
 
