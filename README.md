@@ -272,7 +272,6 @@ user's responsibility to call `.__call__(..)` method.
 
 Prototype-based mixin...
 ```javascript
-
 var utilityMixin = {
 	utility: function(){
 		// ...
@@ -432,7 +431,8 @@ var myArray = object.Constructor('myArray', Array, {
 Note that all of the following are generic and will work on any relevant
 JavaScript object.
 
-For example, this will happily create a normal native array object `['a', 'b', 'c']`:
+For example, this will happily create a normal native array object 
+`['a', 'b', 'c']`:
 ```javascript
 var l = object.makeRawInstance(null, Array, 'a', 'b', 'c')
 ```
