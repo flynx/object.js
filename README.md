@@ -432,7 +432,7 @@ var myArray = object.Constructor('myArray', Array, {
 Note that all of the following are generic and will work on any relevant
 JavaScript object.
 
-For example, this will happily create and array `['a', 'b', 'c']`:
+For example, this will happily create a normal native array object `['a', 'b', 'c']`:
 ```javascript
 var l = object.makeRawInstance(null, Array, 'a', 'b', 'c')
 ```
