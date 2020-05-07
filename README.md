@@ -71,7 +71,7 @@ var B = object.Constructor('B', A, {
   For example, in `B`:
 	- First block (optional) is merged with `B`,
 	- Second block _is_ the `B.prototype`,
-- No special syntax, less distinct.
+- No special syntax, stands out less.
 
 </td>
 <td>
