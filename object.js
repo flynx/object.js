@@ -57,6 +57,33 @@ function(text, tab_size){
 		.trim() }
 
 
+// Match two objects...
+//
+// XXX this will match any two objects with no enumerable keys...
+var match = 
+module.match =
+function(base, obj){
+	// identity...
+	if(base === obj){
+		return true }
+	// typeof -- sanity check...
+	if(typeof(base) != typeof(obj)){
+		return false }
+	// attr count...
+	//var o = Object.entries(obj)
+	var o = Object.keys(Object.getOwnPropertyDescriptors(obj))
+	if(Object.keys(Object.getOwnPropertyDescriptors(base)).length != o.length){
+		return false }
+	// names and values...
+	o = o.map(function(k){
+			return [k, obj[k]] })
+	while(o.length > 0){
+		var [k, v] = o.pop()
+		if(!base.hasOwnProperty(k) || base[k] !== v){
+			return false } }
+	return true }
+
+
 
 //---------------------------------------------------------------------
 // Prototype chain content access...
@@ -239,59 +266,99 @@ function(proto, name, that, ...args){
 
 // Mix a set of methods/props/attrs into an object...
 // 
-//	mixinFlat(root, object, ...)
-//		-> root
+//	mixinFlat(base, object, ...)
+//		-> base
 //
 //
 // NOTE: essentially this is just like Object.assign(..) but copies 
 // 		properties directly rather than copying property values...
 var mixinFlat = 
 module.mixinFlat = 
-function(root, ...objects){
+function(base, ...objects){
 	return objects
-		.reduce(function(root, cur){
+		.reduce(function(base, cur){
 			Object.keys(cur)
 				.map(function(k){
-					Object.defineProperty(root, k,
+					Object.defineProperty(base, k,
 						Object.getOwnPropertyDescriptor(cur, k)) })
-			return root }, root) }
+			return base }, base) }
 
 
 // Mix sets of methods/props/attrs into an object as prototypes...
 //
-// 	mixin(root, object, ..)
-// 		-> root
+// 	mixin(base, object, ..)
+// 		-> base
 //
 //
 // This will create a new object per set of methods given and 
 // mixinFlat(..) the method set into this object leaving the 
 // original objects intact.
 // 
-// 		root <-- object1_copy <-- .. <-- objectN_copy <- root.__proto__
+// 		base <-- object1_copy <-- .. <-- objectN_copy <- base.__proto__
 // 				
 //
 // NOTE: this will only mix in non-empty objects...
 var mixin = 
 module.mixin = 
-function(root, ...objects){
-	root.__proto__ = objects
+function(base, ...objects){
+	base.__proto__ = objects
 		.reduce(function(res, cur){
 			return Object.keys(cur).length > 0 ?
 				module.mixinFlat(Object.create(res), cur) 
-				: res }, root.__proto__) 
-	return root }
+				: res }, base.__proto__) 
+	return base }
+
+
+// Get matching mixins...
+//
+// NOTE: if base matches directly callback(..) will get undefined as parent
+// NOTE: this will also match base...
+var mixins =
+module.mixins =
+function(base, object, callback){
+	object = object instanceof Array ?
+		object
+		: [object]
+	var res = []
+	var stop
+	var parent
+	while(base != null){
+		// match each object...
+		for(var obj of object){
+			if(match(base, obj)){
+				res.push(base)
+				stop = callback 
+					&& callback(base, obj, parent)
+				if(stop === true || stop == 'stop'){
+					return res } 
+				// match found, no need to test further...
+				break } }
+		parent = base
+		base = base.__proto__ }
+	return res }
+
+
+// Check of base has mixin...
+//
+// 	hasMixin(base, mixin)
+// 		-> bool
+//
+var hasMixin =
+module.hasMixin =
+function(base, object){
+	return mixins(base, object, function(){ return 'stop' }).length > 0 }
 
 
 // Mix-out sets of methods/props/attrs out of an object prototype chain...
 //
 // 	Mix-out first occurrence of each matching object...
-// 	mixout(root, object, ..)
-// 	mixout(root, 'first', object, ..)
-// 		-> root
+// 	mixout(base, object, ..)
+// 	mixout(base, 'first', object, ..)
+// 		-> base
 //
 // 	Mix-out all occurrences of each matching object...
-// 	mixout(root, 'all', object, ..)
-// 		-> root
+// 	mixout(base, 'all', object, ..)
+// 		-> base
 //
 //
 // This will match an object to a mixin iff:
@@ -303,43 +370,25 @@ function(root, ...objects){
 // NOTE: this is the opposite to mixin(..)
 var mixout =
 module.mixout =
-function(root, ...objects){
+function(base, ...objects){
 	var all = objects[0] == 'all' ?
 			!!objects.shift()
 		: objects[0] == 'first' ?
 			!objects.shift()
-		// default...
 		: false
-
-	var _match = function(root, obj){
-		// identity...
-		if(root === obj){
-			return true }
-		// attr count...
-		if(Object.keys(root).length != Object.keys(obj).length){
-			return false }
-		// names and values...
-		var e = Object.entries(obj)
-		while(e.length > 0){
-			var [k, v] = e.pop()
-			if(!root.hasOwnProperty(k) || root[k] !== v){
-				return false } }
-		return true }
-	var _drop = function(obj){
-		var cur = root
-		var found = false
-		while(cur.__proto__ != null 
-				// continue iff ...
-				&& (all || !found)){
-			found = _match(cur.__proto__, obj)
-			found
-				&& (cur.__proto__ = cur.__proto__.__proto__) 
-			cur = cur.__proto__ } }
-
-	// do the work...
-	objects.map(_drop)
-
-	return root }
+	var remove = []
+	mixins(base, objects, function(match, obj, parent){
+		parent && remove.push(parent)
+		// when removing the first occurrence, don't check for obj again...
+		all || objects.splice(objects.indexOf(obj), 1) })
+	// NOTE: we are removing on a separate stage so as not to mess with
+	// 		mixins(..) iterating...
+	remove
+		// XXX not sure why we need to reverse here -- needs more thought...
+		.reverse()
+		.forEach(function(p){
+			p.__proto__ = p.__proto__.__proto__ })
+	return base }
 
 
 

@@ -437,6 +437,12 @@ sources(<object>, <name>, <callback>)
 	-> <list>
 ```
 
+```
+callback(<source>)
+	-> 'stop' | false
+	-> undefined
+```
+
 
 ### `parent(..)`
 
@@ -497,9 +503,36 @@ This will copy the content of each input object without touching the
 objects themselves, making them fully reusable.
 
 
+### `mixins(..)`
+
+Get matching mixins
+```
+mixins(<base>, <object>)
+mixins(<base>, [<object>, ..])
+mixins(<base>, <object>, <callback>)
+mixins(<base>, [<object>, ..], <callback>)
+	-> list
+```
+
+```
+callback(<match>, <object>, <parent>)
+	-> 'stop' | false
+	-> undefined
+```
+
+
+### `hasMixin(..)`
+
+Check of object has mixin
+```
+hasMixin(<base>, <mixin>)
+	-> <bool>
+```
+
+
 ### `mixout(..)`
 
-Remove the first occurrence of each object out of a prototype chain
+Remove the first match for each object out of a prototype chain
 ```
 mixout(<base>, <object>, ..)
 mixout(<base>, 'first', <object>, ..)
@@ -511,13 +544,6 @@ Remove all occurrences of each object out of a prototype chain
 mixout(<base>, 'all', <object>, ..)
 	-> <base>
 ```
-
-This relies on first level object structure to identify the target 
-objects in the prototype chain, for a successful match the following 
-must apply:
-- attribute count must match,
-- attribute names must match,
-- attribute values must be identical.
 
 This is the opposite of `mixin(..)`
 
@@ -598,6 +624,23 @@ normalizeIndent(<text>, <tab-size>)
 
 This is used to format `.toString(..)` return values for nested functions
 to make source printing in console more pleasant to read.
+
+
+### `match(..)`
+
+Test if the two objects match in attributes and attribute values
+```
+match(base, obj)
+	-> bool
+```
+
+This relies on first level object structure to identify the target 
+objects in the prototype chain, for a successful match the following 
+must apply:
+- attribute count must match,
+- attribute names must match,
+- attribute values must be identical.
+
 
 
 
