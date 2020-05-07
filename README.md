@@ -1,24 +1,20 @@
 # object.js
 
-_object.js_ provides a meta-constructor and a set of tools and utilities 
-to aid in object/instance construction and implementing dynamic data and 
-functionality inheritance within the established JavaScript prototypical
-object model and interfaces.
-
+_object.js_ is a set of tools and abstractions to create and manage 
+constructors, objects and prototype chains in idiomatic JavaScript.
 
 This is an alternative to the ES6 `class` syntax in JavaScript and provides 
 several advantages:  
-- Uniform and minimalistic definition syntax based on basic JavaScript 
-  object syntax, no special cases, special syntax or _"the same but slightly 
+- _Uniform and minimalistic_ definition syntax based on basic JavaScript 
+  object literals. No special cases, special syntax or _"the same but slightly
   different"_ ways to do things,
 - _Transparently_ based on JavaScript's prototypical inheritance model,
+- Produces fully introspectable constructors/instances,
+- Does not try to emulate constructs foreign JavaScript (i.e. classes),
 - Granular 2-stage instance construction and initialization (a-la 
   _Python's_ `.__new__(..)` and `.__init__(..)` methods),
 - Simple way to define callable instances (including a-la _Python's_ 
   `.__call__(..)`),
-- Produces fully introspectable constructors/instances, i.e. no _direct_
-  way to define "private" attributes or methods,
-- Does not try to emulate constructs not present in the language (classes),
 - Less restrictive:
 	- `new` is optional,
 	- all input components are reusable JavaScript objects,
@@ -27,7 +23,6 @@ several advantages:
 Disadvantages compared to the `class` syntax:  
 - No _syntactic sugar_,
 - Slightly more complicated calling of `parent` (_super_) methods.
-
 
 Note that the produced constructors and objects are functionally 
 identical (almost) to the ones produced via ES6 classes and are 
