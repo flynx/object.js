@@ -5,7 +5,7 @@ constructors, objects and prototype chains in idiomatic JavaScript.
 
 This is an alternative to the ES6 `class` syntax in JavaScript and provides 
 several advantages:  
-- _Uniform and minimalistic_ definition syntax based on basic JavaScript 
+- _Uniform and minimalistic_ definition "syntax" based on basic JavaScript 
   object literals. No special cases, special syntax or _"the same but slightly
   different"_ ways to do things,
 - _Transparently_ based on JavaScript's prototypical inheritance model,
