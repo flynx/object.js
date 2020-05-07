@@ -281,22 +281,30 @@ var utilityMixin = {
 
 var Base = object.Constructor('Base') 
 
+// normal instance prototype chain:
+//	b -> Base.prototype -> .. 
+//
+var b = Base()
 
 // mixin directly into the instance...
-var m = object.mixin(Base(), utilityMixin)
+//
+// now the prototype chain looks like this:
+//	b -> mixinFlat({}, utilityMixin) -> Base.prototype -> ..
+//
+object.mixin(b, utilityMixin)
 ```
 
 `.mixin(..)` will copy the contents of `utilityMixin` into the prototype 
-chain between `m` and `m.__proto__`.
+chain between `b` and `b.__proto__`.
 
 We can also remove the mixin...
 ```javascript
-m = o.mixout(m, utilityMixin)
+o.mixout(b, utilityMixin)
 ```
 
-The mixed-in data is removed iff an object is found in the chain with the
-same attributes as `utilityMixin` and with each attribute matching
-identity with the corresponding attribute in the mixin.
+The mixed-in data is removed iff a [matching](#match) object is found in 
+the chain with the same attributes as `utilityMixin` and with each 
+attribute matching identity with the corresponding attribute in the mixin.
 
 
 Constructor-based mixin...
