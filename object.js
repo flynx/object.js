@@ -54,20 +54,21 @@ function(text, tab_size, keep_tabs){
 			KEEP_TABS 
 			: keep_tabs) 
 		* tab_size
-	tab_size = ' '.repeat(tab_size)
-	text = tab_size != '' ?
-		text.replace(/\t/g, tab_size)
+	// prepare text...
+	var tab = ' '.repeat(tab_size)
+	text = tab != '' ?
+		text.replace(/\t/g, tab)
 		: text
-
 	var lines = text.trim().split(/\n/)
+	// count common indent...
 	var l = lines 
 		.reduce(function(l, e, i){
 			var indent = e.length - e.trimLeft().length
 			return e.trim().length == 0 
-						// ignore 0 indent of first/last lines...
+						// ignore 0 indent of first line...
 						|| (i == 0 && indent == 0) ?
 					l 
-				// last line -- ...
+				// last line -- ignore keep_tabs if lower indent...
 				: i == lines.length-1 && indent > l ? 
 					Math.max(l-keep_tabs, 0) 
 				// initial state...
@@ -75,7 +76,7 @@ function(text, tab_size, keep_tabs){
 					indent 
 				// min...
 				: Math.min(l, indent) }, -1)
-
+	// normalize...
 	return lines
 		.map(function(line, i){ 
 			return i == 0 ? 
@@ -415,6 +416,8 @@ function(base, object){
 //
 //
 // NOTE: this is the opposite to mixin(..)
+// NOTE: this used mixins(..) / match(..) to find the relevant mixins, 
+// 		see those for more info...
 var mixout =
 module.mixout =
 function(base, ...objects){
@@ -471,7 +474,8 @@ function(base, ...objects){
 // 		Example:
 // 			// new is optional...
 // 			var l = new makeRawInstance(null, Array, 'a', 'b', 'c')
-// NOTE: the following are not the same:
+// NOTE: the following are not the same in structure but functionally 
+// 		are identical:
 // 			var C = Constructor('C', function(){ .. })
 // 		and
 // 			var C2 = Constructor('C2', { __call__: function(){ .. } })
@@ -502,7 +506,9 @@ function(context, constructor, ...args){
 		: /\[native code\]/.test(constructor.toString()) ?
 			Reflect.construct(constructor, args)
 		// callable instance...
-		// NOTE: we need to isolate the callable from instances...
+		// NOTE: we need to isolate the callable from instances, thus we
+		// 		reference 'constructor' directly rather than using 
+		// 		'this.constructor'...
 		: (constructor.prototype instanceof Function
 				|| constructor.prototype.__call__ instanceof Function) ?
 			_mirror_doc(
@@ -647,21 +653,6 @@ function(context, constructor, ...args){
 //
 // 		c.x 				// -> 123
 //
-//
-//
-// Motivation:
-// 	The general motivation here is to standardise the constructor 
-// 	protocol and make a single simple way to go with minimal variation. 
-// 	This is due to the JavaScript base protocol though quite simple, 
-// 	being too flexible making it very involved to produce objects in a 
-// 	consistent manner by hand, especially in long running projects, 
-// 	in turn spreading all the refactoring over multiple sites and styles.
-//
-// 	This removes part of the flexibility and in return gives us:
-// 		- single, well defined protocol
-// 		- one single spot where all the "magic" happens
-// 		- full support for existing JavaScript ways of doing things
-// 		- easy refactoring without touching the client code
 //
 //
 // NOTE: this sets the proto's .constructor attribute, thus rendering it
