@@ -654,7 +654,7 @@ to make source printing in console more pleasant to read.
 `keep_tabs` defaults to `object.KEEP_TABS`
 
 
-A shorthand to 'normalizeIndent(..)' optimized for text rather than code
+A shorthand to `normalizeIndent(..)` optimized for text rather than code
 ```
 normalizeTextIndent(..)
 	-> <text>
