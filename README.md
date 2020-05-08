@@ -7,7 +7,9 @@ This is an alternative to the ES6 `class` syntax in JavaScript and provides
 several advantages:  
 - _Uniform and minimalistic_ definition "syntax" based on basic JavaScript 
   object literals. No special cases, special syntax or _"the same but slightly
-  different"_ ways to do things,
+  different"_ ways to do things, trying to adhere to 
+  [POLS](https://en.wikipedia.org/wiki/Principle_of_least_astonishment)
+  as much as possible,
 - _Transparently_ based on JavaScript's prototypical inheritance model,
 - Produces fully introspectable constructors/instances,
 - Does not try to emulate constructs foreign to JavaScript (i.e. classes),
@@ -265,11 +267,11 @@ user's responsibility to call `.__call__(..)` method.
 - the two approaches (_function_ vs. `.__call__(..)`) will produce 
   functionally identical but structurally different constructors/objects, 
   the difference is in `.prototype` -- what is defined as the prototype
-  _is_ the prototype, so we get:
+  _is_ the prototype (_POLS_), so we get:
 
-  	- _prototype function_ -> `.prototype` is that function object
-	- `.__call__(..)` -> `.prototype` is the object with the `.__call__(..)` 
-	  method
+  	- _prototype function_ -> `.prototype` is that exact function object,
+	- `.__call__(..)` -> `.prototype` is _the_ object with the `.__call__(..)` 
+	  method.
 
   The instance in both cases is a function wrapper that will proxy the 
   call to the corresponding implementation.
