@@ -15,6 +15,9 @@
 var TAB_SIZE =
 module.TAB_SIZE = 4
 
+var KEEP_TABS = 
+module.KEEP_TABS = 1
+
 
 // Normalize indent...
 //
@@ -26,28 +29,46 @@ module.TAB_SIZE = 4
 // for printing function code of functions that were defined at deep 
 // levels of indent.
 //
+// This will ignore the indent of the first line.
+//
+// If the last line is indented higher or equal to the rest of the text 
+// we will user keep_tabs (defaults to KEEP_TABS) to indent the rest of 
+// the text.
+// This will indent the following styles correctnly:
+//
+// 		|function(a, b){				|function(a, b){
+// 		|	return a + b }				|	return a + b
+// 		|								|}
+//
 // NOTE: this will trim out both leading and trailing white-space.
 //
 // XXX is this the right place for this???
 // 		...when moving take care that ImageGrid's core.doc uses this...
 var normalizeIndent =
 module.normalizeIndent =
-function(text, tab_size){
+function(text, tab_size, keep_tabs){
 	tab_size = tab_size || TAB_SIZE
-	text = tab_size > 0 ?
-		text.replace(/\t/g, ' '.repeat(tab_size))
+	keep_tabs = (keep_tabs || KEEP_TABS) * tab_size
+	tab_size = ' '.repeat(tab_size)
+	text = tab_size != '' ?
+		text.replace(/\t/g, tab_size)
 		: text
-	var lines = text.split(/\n/)
+	var lines = text.trim().split(/\n/)
 	var l = lines 
 		.reduce(function(l, e, i){
 			var indent = e.length - e.trimLeft().length
 			return e.trim().length == 0 
-					// ignore 0 indent of first line...
-					|| (i == 0 && indent == 0) ? l 
+						// ignore 0 indent of first/last lines...
+						|| (i == 0 && indent == 0) ?
+					l 
+				// last line -- ...
+				: i == lines.length-1 && indent > l ? 
+					Math.max(l-keep_tabs, 0) 
+				// initial state...
 				: l < 0 ? 
 					indent 
-				: Math.min(l, indent)
-		}, -1)
+				// min...
+				: Math.min(l, indent) }, -1)
 	return lines
 		.map(function(line, i){ 
 			return i == 0 ? 
@@ -449,7 +470,12 @@ function(context, constructor, ...args){
 	var _mirror_doc = function(func, target){
 		Object.defineProperty(func, 'toString', {
 			value: function(...args){
-				return target.toString(...args) },
+				var f = target.prototype instanceof Function ?
+					target.prototype
+					: target.prototype.__call__
+				return f instanceof Function ?
+						module.normalizeIndent(f.toString(...args))
+					: undefined },
 			enumerable: false,
 		})
 		return func }
@@ -461,22 +487,21 @@ function(context, constructor, ...args){
 		// native constructor...
 		: /\[native code\]/.test(constructor.toString()) ?
 			Reflect.construct(constructor, args)
-		// callable instance -- prototype is a function...
-		// NOTE: we need to isolate the .prototype from instances...
-		: constructor.prototype instanceof Function ?
+		// callable instance...
+		// NOTE: we need to isolate the callable from instances...
+		: (constructor.prototype instanceof Function
+				|| constructor.prototype.__call__ instanceof Function) ?
 			_mirror_doc(
 				function(){
-					return constructor.prototype
-						.call(obj, this, ...arguments) },
-				constructor.prototype)
-		// callable instance -- prototype defines .__call__(..)...
-		// NOTE: we need to isolate the .__call__ from instances...
-		: constructor.prototype.__call__ instanceof Function ?
-			_mirror_doc(
-				function(){
-					return constructor.prototype.__call__
-						.call(obj, this, ...arguments) },
-				constructor.prototype.__call__)
+					return (
+						// .prototype is a function...
+						constructor.prototype instanceof Function ?
+							constructor.prototype
+								.call(obj, this, ...arguments)
+						// .__call__(..)
+						: constructor.prototype.__call__
+							.call(obj, this, ...arguments)) },
+				constructor)
 		// use parent's constructor...
 		// XXX do a better test???
 		: (constructor.__proto__ instanceof Function 
@@ -723,7 +748,7 @@ function Constructor(name, a, b, c){
 						.toString()
 						.replace(/[^{]*{/, '{')
 					: '{ .. }'
-				return `${this.name}(${args})${normalizeIndent(code)}` },
+				return `${this.name}(${args})${module.normalizeIndent(code)}` },
 			enumerable: false,
 		})
 	// set generic raw instance constructor...

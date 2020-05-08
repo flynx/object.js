@@ -264,10 +264,12 @@ user's responsibility to call `.__call__(..)` method.
 **Notes:**
 - the two approaches (_function_ vs. `.__call__(..)`) will produce 
   functionally identical but structurally different constructors/objects, 
-  the difference is in `.prototype`:
+  the difference is in `.prototype` -- what is defined as the prototype
+  _is_ the prototype, so we get:
 
-  	- _prototype function_ -> `.prototype` is a function object
-	- `.__call__(..)` -> `.prototype` object with a `.__call__(..)` method
+  	- _prototype function_ -> `.prototype` is that function object
+	- `.__call__(..)` -> `.prototype` is the object with the `.__call__(..)` 
+	  method
 
   The instance in both cases is a function wrapper that will proxy the 
   call to the corresponding implementation.
@@ -634,10 +636,11 @@ C(<name>, ..)
 
 ### `normalizeIndent(..)`
 
-Align text to shortest leading whitespace
+Align _code_ to shortest leading white-space
 ```
 normalizeIndent(<text>)
 normalizeIndent(<text>, <tab-size>)
+normalizeIndent(<text>, <tab-size>, <keep-tabs>)
 	-> <text>
 ```
 
