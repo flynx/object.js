@@ -19,7 +19,7 @@ var KEEP_TABS =
 module.KEEP_TABS = 1
 
 
-// Normalize indent...
+// Normalize code indent...
 //
 // 	normalizeIndent(text)
 // 		-> text
@@ -47,12 +47,18 @@ module.KEEP_TABS = 1
 var normalizeIndent =
 module.normalizeIndent =
 function(text, tab_size, keep_tabs){
-	tab_size = tab_size || TAB_SIZE
-	keep_tabs = (keep_tabs || KEEP_TABS) * tab_size
+	tab_size = tab_size == null ? 
+		TAB_SIZE 
+		: tab_size
+	keep_tabs = (keep_tabs == null ? 
+			KEEP_TABS 
+			: keep_tabs) 
+		* tab_size
 	tab_size = ' '.repeat(tab_size)
 	text = tab_size != '' ?
 		text.replace(/\t/g, tab_size)
 		: text
+
 	var lines = text.trim().split(/\n/)
 	var l = lines 
 		.reduce(function(l, e, i){
@@ -69,6 +75,7 @@ function(text, tab_size, keep_tabs){
 					indent 
 				// min...
 				: Math.min(l, indent) }, -1)
+
 	return lines
 		.map(function(line, i){ 
 			return i == 0 ? 
@@ -76,6 +83,13 @@ function(text, tab_size, keep_tabs){
 				: line.slice(l) })
 		.join('\n')
 		.trim() }
+
+
+// shorthand more suted for text...
+var normalizeTextIndent =
+module.normalizeTextIndent =
+function(text, tab_size, keep_tabs){
+	return module.normalizeIndent(text, tab_size, keep_tabs || 0) }
 
 
 // Match two objects...

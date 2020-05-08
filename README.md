@@ -634,7 +634,7 @@ C(<name>, ..)
 
 ## Utilities
 
-### `normalizeIndent(..)`
+### `normalizeIndent(..)` / `normalizeTextIndent(..)`
 
 Align _code_ to shortest leading white-space
 ```
@@ -646,6 +646,13 @@ normalizeIndent(<text>, <tab-size>, <keep-tabs>)
 
 This is used to format `.toString(..)` return values for nested functions
 to make source printing in console more pleasant to read.
+
+`tab_size` defaults to `object.TAB_SIZE`
+
+`keep_tabs` defaults to `object.KEEP_TABS`
+
+`normalizeTextIndent(..)` is a shorthand optimized for text rather than 
+code -- ignores `object.KEEP_TABS` and `keep_tabs` is 0 by default.
 
 
 ### `match(..)`
