@@ -533,7 +533,7 @@ callback(<match>, <object>, <parent>)
 
 ### `hasMixin(..)`
 
-Check of object has mixin
+Check if _base_ object has _mixin_
 ```
 hasMixin(<base>, <mixin>)
 	-> <bool>
@@ -542,7 +542,7 @@ hasMixin(<base>, <mixin>)
 
 ### `mixout(..)`
 
-Remove the _first_ match for each input object out of a prototype chain
+Remove the _first_ match matching input _mixin_ from _base_ 
 of _base_
 ```
 mixout(<base>, <object>, ..)
@@ -550,8 +550,7 @@ mixout(<base>, 'first', <object>, ..)
 	-> <base>
 ```
 
-Remove _all_ occurrences of each input object out of a prototype chain 
-of _base_
+Remove _all_ occurrences of each matching input _mixin_ from _base_
 ```
 mixout(<base>, 'all', <object>, ..)
 	-> <base>
@@ -588,6 +587,8 @@ makeRawInstance(<context>, <constructor>, ..)
 	  to create an instance, or
 	- use `{}`.
 - Link the object into the prototype chain
+
+_Un-initialized_ means this will not call `.__init__(..)`
 
 
 ### `Constructor(..)` / `C(..)`
