@@ -360,25 +360,25 @@ handling.
 ### Extending the constructor
 
 ```javascript
-var C = object.Constructor('C',
+var C = object.Constructor('C', {
 	// this will get mixed into the constructor C...
-	{
-		constructor_attr: 123,
 
-		constructorMethod: function(){
-			// ...
-		},
+	constructor_attr: 123,
+
+	constructorMethod: function(){
+		// ...
+	},
+
+	// ...
+}, {
+	instanceMethod: function(){
+		// get constructor data...
+		var x = this.constructor.constructor_attr
 
 		// ...
-	}, {
-		instanceMethod: function(){
-			// get constructor data...
-			var x = this.constructor.constructor_attr
-
-			// ...
-		},
-		// ...
-	})
+	},
+	// ...
+})
 ```
 
 And the same thing while extending...
