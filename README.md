@@ -138,7 +138,7 @@ class B extends A {
 		- [`makeRawInstance(..)`](#makerawinstance)
 		- [`Constructor(..)` / `C(..)`](#constructor--c)
 	- [Utilities](#utilities)
-		- [`normalizeIndent(..)`](#normalizeindent)
+		- [`normalizeIndent(..)` / `normalizeTextIndent(..)`](#normalizeindent--normalizetextindent)
 		- [`match(..)`](#match)
 	- [Limitations](#limitations)
 		- [Can not mix unrelated native types](#can-not-mix-unrelated-native-types)

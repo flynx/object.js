@@ -431,7 +431,7 @@ function(base, ...objects){
 	// NOTE: we are removing on a separate stage so as not to mess with
 	// 		mixins(..) iterating...
 	remove
-		// XXX
+		// XXX not sure why this is needed, needs thought...
 		.reverse()
 		.forEach(function(p){
 			p.__proto__ = p.__proto__.__proto__ })
