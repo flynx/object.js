@@ -167,7 +167,7 @@ Create a basic constructor...
 
 ```javascript
 // NOTE: new is optional here...
-var A = new object.Constructor('A')
+var A = new object.Constructor('A', {})
 
 var B = object.Constructor('B', A, {})
 
@@ -182,6 +182,12 @@ c instanceof C // -> true
 c instanceof B // -> true
 c instanceof A // -> true
 ```
+
+**Note:**
+- in `object.Constructor('X', A)` the second argument is used as the 
+  _prototype_, to use `A` as a parent constructor add an empty object 
+  as a third argument, i.e. 'object.Constructor('X', A, {})'  
+  (see: [`Constructor(..)` / `C(..)`](#constructor--c) for more info)
 
 
 ### Inheritance
@@ -624,6 +630,15 @@ The resulting _constructor_ function when called will:
 - call constructor's `.__rawinstance__(..)` if defined or `makeRawInstance(..)` 
   to create an instance,
 - call instance's `.__init__(..)` if present.
+
+
+Note that `Constructor(<name>, <prototype>)` is intentionally set as default
+instead of having the _parent-constructor_ as the last argument, this is 
+done for two reasons:
+- The main cause to inherit from a constructor is to extend it,
+- In real code the `Constructor(<name>, <prototype>)` is more common than
+  empty inheritance.
+
 
 
 Shorthand to `Constructor(..)`
