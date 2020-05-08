@@ -227,13 +227,7 @@ var Action = object.Constructor('Action',
 		return this
 	})
 
-var action = new Action()
-
-// the instance now is a function...
-action()
-
-
-// a different way to do the above...
+// a more flexible approach...
 //
 // This is the same as the above but a bit more convenient as we do 
 // not need to use Object.assign(..) or object.mixinFlat(..) to define
@@ -245,6 +239,13 @@ var Action2 = object.Constructor('Action2', {
 	},
 })
 
+
+var action = Action()
+var action2 = new Action2()
+
+// the instances are now functions...
+action()
+action2()
 ```
 
 In the above cases both the _function constructor_ and the `.__call__(..)` 
@@ -262,9 +263,14 @@ user's responsibility to call `.__call__(..)` method.
 
 **Notes:**
 - the two approaches (_function_ vs. `.__call__(..)`) will produce 
-  slightly different results, the difference is in `.prototype`, in the
-  first case it is a _function_ while in the second an object with a 
-  `.__call__(..)` method.  
+  functionally identical but structurally different constructors/objects, 
+  the difference is in `.prototype`:
+
+  	- _prototype function_ -> `.prototype` is a function object
+	- `.__call__(..)` -> `.prototype` object with a `.__call__(..)` method
+
+  The instance in both cases is a function wrapper that will proxy the 
+  call to the corresponding implementation.
   (this may change in the future)
 
 
