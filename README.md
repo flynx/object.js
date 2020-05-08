@@ -653,8 +653,14 @@ to make source printing in console more pleasant to read.
 
 `keep_tabs` defaults to `object.KEEP_TABS`
 
-`normalizeTextIndent(..)` is a shorthand optimized for text rather than 
-code -- ignores `object.KEEP_TABS` and `keep_tabs` is 0 by default.
+
+A shorthand to 'normalizeIndent(..)' optimized for text rather than code
+```
+normalizeTextIndent(..)
+	-> <text>
+```
+
+This ignores `object.KEEP_TABS` and `keep_tabs` is 0 by default.
 
 
 ### `match(..)`
