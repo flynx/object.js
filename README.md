@@ -604,7 +604,11 @@ RawInstance(<context>, <constructor>, ..)
 	- use `{}`.
 - Link the object into the prototype chain
 
+
 _Un-initialized_ means this will not call `.__init__(..)`
+
+
+This can be called with and without `new`.
 
 
 ### `Constructor(..)` / `C(..)`
@@ -639,6 +643,8 @@ done for two reasons:
 - In real code the `Constructor(<name>, <prototype>)` is more common than
   empty inheritance.
 
+
+This can be called with and without `new`.
 
 
 Shorthand to `Constructor(..)`
