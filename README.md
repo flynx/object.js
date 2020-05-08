@@ -542,14 +542,16 @@ hasMixin(<base>, <mixin>)
 
 ### `mixout(..)`
 
-Remove the first match for each object out of a prototype chain
+Remove the _first_ match for each input object out of a prototype chain
+of _base_
 ```
 mixout(<base>, <object>, ..)
 mixout(<base>, 'first', <object>, ..)
 	-> <base>
 ```
 
-Remove all occurrences of each object out of a prototype chain
+Remove _all_ occurrences of each input object out of a prototype chain 
+of _base_
 ```
 mixout(<base>, 'all', <object>, ..)
 	-> <base>
