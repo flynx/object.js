@@ -608,7 +608,7 @@ RawInstance(<context>, <constructor>, ..)
 _Un-initialized_ means this will not call `.__init__(..)`
 
 
-This can be called with and without `new`.
+`RawInstance(..)` can be called with and without `new`.
 
 
 ### `Constructor(..)` / `C(..)`
@@ -644,14 +644,14 @@ done for two reasons:
   empty inheritance.
 
 
-This can be called with and without `new`.
-
-
 Shorthand to `Constructor(..)`
 ```
 C(<name>, ..)
 	-> <constructor>
 ```
+
+
+`Constructor(..)` / `C(..)` can be called with and without `new`.
 
 
 
