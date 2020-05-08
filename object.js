@@ -447,7 +447,7 @@ function(base, ...objects){
 
 // Make an uninitialized instance object...
 //
-// 	makeRawInstance(context, constructor, ...)
+// 	RawInstance(context, constructor, ...)
 // 		-> instance
 //
 //
@@ -473,7 +473,7 @@ function(base, ...objects){
 // 		can be used to construct any object...
 // 		Example:
 // 			// new is optional...
-// 			var l = new makeRawInstance(null, Array, 'a', 'b', 'c')
+// 			var l = new RawInstance(null, Array, 'a', 'b', 'c')
 // NOTE: the following are not the same in structure but functionally 
 // 		are identical:
 // 			var C = Constructor('C', function(){ .. })
@@ -482,8 +482,9 @@ function(base, ...objects){
 // 		the difference is in C.prototype vs. C2.prototype, the first 
 // 		being a function while the second is an object with a call 
 // 		method...
-var makeRawInstance = 
-module.makeRawInstance =
+// NOTE: essentially this is an extended version of Reflect.construct(..)
+var RawInstance = 
+module.RawInstance =
 function(context, constructor, ...args){
 	var _mirror_doc = function(func, target){
 		Object.defineProperty(func, 'toString', {
@@ -563,7 +564,7 @@ function(context, constructor, ...args){
 //
 //	Create raw/uninitialized instance...
 //		constructor.__rawinstance__(..)
-//		makeRawInstance(null, constructor, ..)
+//		RawInstance(null, constructor, ..)
 //			-> raw-instance
 //
 //
@@ -575,7 +576,7 @@ function(context, constructor, ...args){
 //
 // Create and initialization protocol:
 // 	1) raw instance is created:
-// 		a) constructor.__rawinstance__(..) / makeRawInstance(..) called:
+// 		a) constructor.__rawinstance__(..) / RawInstance(..) called:
 // 			- call .__new__(..) if defined and get return value as 
 // 				instance, or
 // 			- if .__call__(..) defined or prototype is a function, wrap 
@@ -607,7 +608,7 @@ function(context, constructor, ...args){
 //  Handle uninitialized instance construction
 // 	.__rawinstance__(context, ...)
 // 		-> instance
-// 		NOTE: This is a shorthand to makeRawInstance(..) see it for 
+// 		NOTE: This is a shorthand to RawInstance(..) see it for 
 // 			details.
 // 
 // 
@@ -626,7 +627,7 @@ function(context, constructor, ...args){
 // 		-> ..
 //
 //
-// NOTE: raw instance creation is defined by makeRawInstance(..) so see 
+// NOTE: raw instance creation is defined by RawInstance(..) so see 
 // 		it for more info.
 // NOTE: raw instance creation can be completely overloaded by defining
 // 		.__rawinstance__(..) on the constructor.
@@ -720,7 +721,7 @@ function Constructor(name, a, b, c){
 		// create raw instance...
 		var obj = _constructor.__rawinstance__ ? 
 				_constructor.__rawinstance__(this, ...arguments)
-			: makeRawInstance(this, _constructor, ...arguments)
+			: RawInstance(this, _constructor, ...arguments)
 		// initialize...
 		obj.__init__ instanceof Function
 			&& obj.__init__(...arguments)
@@ -760,7 +761,7 @@ function Constructor(name, a, b, c){
 	_constructor.__rawinstance__ instanceof Function
 		|| (_constructor.__rawinstance__ = 
 			function(context, ...args){
-				return makeRawInstance(context, this, ...args) })
+				return RawInstance(context, this, ...args) })
 	!!constructor_proto
 		&& (_constructor.__proto__ = constructor_proto)
 	_constructor.prototype = proto

@@ -135,7 +135,7 @@ class B extends A {
 		- [`hasMixin(..)`](#hasmixin)
 		- [`mixout(..)`](#mixout)
 		- [`mixinFlat(..)`](#mixinflat)
-		- [`makeRawInstance(..)`](#makerawinstance)
+		- [`RawInstance(..)`](#rawinstance)
 		- [`Constructor(..)` / `C(..)`](#constructor--c)
 	- [Utilities](#utilities)
 		- [`normalizeIndent(..)` / `normalizeTextIndent(..)`](#normalizeindent--normalizetextindent)
@@ -450,7 +450,7 @@ JavaScript object.
 For example, this will happily create a normal native array object 
 `['a', 'b', 'c']`:
 ```javascript
-var l = object.makeRawInstance(null, Array, 'a', 'b', 'c')
+var l = object.RawInstance(null, Array, 'a', 'b', 'c')
 ```
 
 
@@ -586,15 +586,15 @@ This is like `Object.assign(..)` but copies property descriptors rather
 than property values.
 
 
-### `makeRawInstance(..)`
+### `RawInstance(..)`
 
 Make a raw (un-initialized) instance
 ```
-makeRawInstance(<context>, <constructor>, ..)
+RawInstance(<context>, <constructor>, ..)
 	-> <object>
 ```
 
-`makeRawInstance(..)` will do the following:
+`RawInstance(..)` will do the following:
 - Create an instance object
 	- get result of `.__new__(..)` if defined, or
 	- if prototype is a function or `.__call__(..)` is defined, create a 
@@ -622,12 +622,12 @@ Constructor(<name>, <constructor-mixin>, <prototype>)
 `Constructor(..)` essentially does the following:
 - Creates a _constructor_ function,
 - Sets constructor `.name` and `.toString(..)` for introspection,
-- Creates `.__rawinstance__(..)` wrapper to `makeRawInstance(..)`
+- Creates `.__rawinstance__(..)` wrapper to `RawInstance(..)`
 - Sets constructor `.__proto__`, `.prototype` and `.prototype.constructor`,
 - Mixes in _constructor-mixin_ if given.
 
 The resulting _constructor_ function when called will:
-- call constructor's `.__rawinstance__(..)` if defined or `makeRawInstance(..)` 
+- call constructor's `.__rawinstance__(..)` if defined or `RawInstance(..)` 
   to create an instance,
 - call instance's `.__init__(..)` if present.
 
