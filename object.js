@@ -6,6 +6,15 @@
 * 	https://github.com/flynx/object.js
 *
 *
+* Motivation:
+* 	This package was originally written to unify low level object 
+* 	definitios within a large project and from there evolved to be a 
+* 	full functional and consistent alternative to the ES6 class 
+* 	notation with all of its inconsistencies, hoops, "the same but 
+* 	slightly different" ways to do things and "magic" (hidden) 
+* 	functionality.
+*
+*
 **********************************************************************/
 ((typeof define)[0]=='u'?function(f){module.exports=f(require)}:define)
 (function(require){ var module={} // make module AMD/node compatible...
