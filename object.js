@@ -2,17 +2,18 @@
 * 
 * object.js
 *
-* Repo and docs:
-* 	https://github.com/flynx/object.js
-*
+* This is a set of tools and abstractions to create and manage 
+* constructors, objects and prototype chains in idiomatic JavaScript.
 *
 * Motivation:
 * 	This package was originally written to unify low level object 
 * 	definitios within a large project and from there evolved to be a 
-* 	full functional and consistent alternative to the ES6 class 
-* 	notation with all of its inconsistencies, hoops, "the same but 
-* 	slightly different" ways to do things and "magic" (hidden) 
-* 	functionality.
+* 	full functional alternative to the ES6 class notation with all of 
+* 	its inconsistencies, hoops, "the same but slightly different" ways 
+* 	to do things and "magic" (hidden) functionality.
+*
+* Repo and docs:
+* 	https://github.com/flynx/object.js
 *
 *
 **********************************************************************/
@@ -306,7 +307,7 @@ var parentCall =
 module.parentCall =
 function(proto, name, that, ...args){
 	var meth = parent(proto, name)
-	return meth instanceof Function ?
+	return typeof(meth) == 'function' ?
 		meth.call(...( typeof(name) == typeof('str') ?
 			[...arguments].slice(2)
 			: [...arguments].slice(1) ))
@@ -325,6 +326,9 @@ function(proto, name, that, ...args){
 //
 // NOTE: essentially this is just like Object.assign(..) but copies 
 // 		properties directly rather than copying property values...
+// NOTE: this will not transfer several the special variables not listed
+// 		by Object.keys(..).
+// 		This includes things like .__proto__
 var mixinFlat = 
 module.mixinFlat = 
 function(base, ...objects){
@@ -498,10 +502,10 @@ function(context, constructor, ...args){
 	var _mirror_doc = function(func, target){
 		Object.defineProperty(func, 'toString', {
 			value: function(...args){
-				var f = target.prototype instanceof Function ?
+				var f = typeof(constructor.prototype) == 'function' ? 
 					target.prototype
 					: target.prototype.__call__
-				return f instanceof Function ?
+				return typeof(f) == 'function' ?
 						module.normalizeIndent(f.toString(...args))
 					: undefined },
 			enumerable: false,
@@ -519,13 +523,13 @@ function(context, constructor, ...args){
 		// NOTE: we need to isolate the callable from instances, thus we
 		// 		reference 'constructor' directly rather than using 
 		// 		'this.constructor'...
-		: (constructor.prototype instanceof Function
+		: (typeof(constructor.prototype) == 'function'
 				|| constructor.prototype.__call__ instanceof Function) ?
 			_mirror_doc(
 				function(){
 					return (
 						// .prototype is a function...
-						constructor.prototype instanceof Function ?
+						typeof(constructor.prototype) == 'function' ?
 							constructor.prototype
 								.call(obj, this, ...arguments)
 						// .__call__(..)
@@ -533,8 +537,7 @@ function(context, constructor, ...args){
 							.call(obj, this, ...arguments)) },
 				constructor)
 		// use parent's constructor...
-		// XXX do a better test???
-		: (constructor.__proto__ instanceof Function 
+		: (typeof(constructor.__proto__) == 'function'
 				&& constructor.__proto__ !== (function(){}).__proto__) ?
 			Reflect.construct(constructor.__proto__, [], constructor)
 		// default object base...
@@ -640,6 +643,8 @@ function(context, constructor, ...args){
 // 		it for more info.
 // NOTE: raw instance creation can be completely overloaded by defining
 // 		.__rawinstance__(..) on the constructor.
+// NOTE: if constructor-mixin's .__proto__ is set it will also be copied
+// 		 to the created constructor...
 //
 //
 //
@@ -691,7 +696,7 @@ function Constructor(name, a, b, c){
 	// parse args...
 	// 	Constructor(name[[, constructor[, mixin]], proto])
 	var proto = args.pop() || {}
-	var constructor_proto = args[0] instanceof Function ?
+	var constructor_proto = typeof(args[0]) == 'function' ?
 		args.shift()
 		: undefined
 	var constructor_mixin = args.pop()
@@ -783,6 +788,9 @@ function Constructor(name, a, b, c){
 		&& mixinFlat(
 			_constructor,
 			constructor_mixin)
+		// also transfer non-default constructor_mixin.__proto__
+		&& constructor_mixin.__proto__ !== Object.prototype
+			&& (_constructor.__proto__ = constructor_mixin.__proto__)
 
 	return _constructor }
 
