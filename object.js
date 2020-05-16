@@ -536,10 +536,13 @@ function(context, constructor, ...args){
 						: constructor.prototype.__call__
 							.call(obj, this, ...arguments)) },
 				constructor)
+		// recursively call .__rawinstance__(..)
+		: constructor.__proto__.__rawinstance__ ?
+			constructor.__proto__.__rawinstance__(context, ...args)
 		// use parent's constructor...
 		: (typeof(constructor.__proto__) == 'function'
 				&& constructor.__proto__ !== (function(){}).__proto__) ?
-			Reflect.construct(constructor.__proto__, [], constructor)
+			Reflect.construct(constructor.__proto__, args, constructor)
 		// default object base...
 		: Reflect.construct(Object, [], constructor)
 
