@@ -599,6 +599,8 @@ RawInstance(<context>, <constructor>, ..)
 	- get result of `.__new__(..)` if defined, or
 	- if prototype is a function or `.__call__(..)` is defined, create a 
 	  wrapper function, or
+	- if constructor's `.__proto__` has a `.__rawinstance__(..)` use it
+	  to create an instance, or
 	- if constructor's `.__proto__` is a function (constructor) use it 
 	  to create an instance, or
 	- use `{}`.

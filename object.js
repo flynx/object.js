@@ -470,6 +470,8 @@ function(base, ...objects){
 // 			-> call and use its return value
 //		- if prototype is a function or if .__call__(..) is defined
 //			-> use a wrapper function
+//		- if construct.__proto__ has .__rawinstance__(..)
+//			-> use it to create an instance
 //		- if constructor.__proto__ is a constructor
 //			-> use it to create an instance
 //		- else
