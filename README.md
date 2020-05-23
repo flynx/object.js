@@ -470,6 +470,36 @@ callback(<source>)
 ```
 
 
+### `values(..)`
+
+Get values for attribute in prototype chain
+```
+values(<object>, <name>)
+values(<object>, <name>, <callback>)
+	-> <list>
+```
+
+```
+callback(<value>, <source>)
+	-> 'stop' | false
+	-> undefined
+```
+
+
+Get property descriptors for attribute in prototype chain
+```
+values(<object>, <name>, true)
+values(<object>, <name>, <callback>, true)
+	-> <list>
+```
+
+```
+callback(<descriptor>, <source>)
+	-> 'stop' | false
+	-> undefined
+```
+
+
 ### `parent(..)`
 
 Get parent attribute value or method
