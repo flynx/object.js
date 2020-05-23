@@ -126,6 +126,7 @@ class B extends A {
 		- [Inheriting from native constructor objects](#inheriting-from-native-constructor-objects)
 		- [Extending native `.constructor(..)`](#extending-native-constructor)
 	- [Components](#components)
+		- [`STOP`](#stop)
 		- [`sources(..)`](#sources)
 		- [`values(..)`](#values)
 		- [`parent(..)`](#parent)
@@ -455,6 +456,14 @@ var l = object.RawInstance(null, Array, 'a', 'b', 'c')
 ```
 
 
+
+### `STOP`
+
+Used in [`sources(..)`](#sources), [`values(..)`](#values) and 
+[`mixins(..)`](#mixins) to stop the search before it reaches the top of 
+the prototype chain.
+
+
 ### `sources(..)`
 
 Get sources for attribute
@@ -466,9 +475,25 @@ sources(<object>, <name>, <callback>)
 
 ```
 callback(<source>)
-	-> 'stop' | false
+	-> STOP 
 	-> undefined
+	-> <value>
 ```
+
+The `callback(..)` controls the output of `sources(..)` by returning 
+one of the following:
+
+- `object.STOP`  
+  This will make `sources(..)` stop and return the `<list>` including 
+  the object that triggered the _stop_.
+- `undefined`  
+  Return the object triggering `callback(..)` in `<list>` as-is. 
+- array  
+  The containing values will be merged into the result list. This is a 
+  way to either skip an object by returning `[]` or multiple values 
+  instead of one.
+- <value>  
+  Returned as-is instead of the object triggering `callback(..)`.
 
 
 ### `values(..)`
@@ -482,8 +507,9 @@ values(<object>, <name>, <callback>)
 
 ```
 callback(<value>, <source>)
-	-> 'stop' | false
+	-> STOP 
 	-> undefined
+	-> <value>
 ```
 
 
@@ -496,10 +522,12 @@ values(<object>, <name>, <callback>, true)
 
 ```
 callback(<descriptor>, <source>)
-	-> 'stop' | false
+	-> STOP 
 	-> undefined
+	-> <value>
 ```
 
+See [`sources(..)`](#sources) for docs on `callback(..)`
 
 ### `parent(..)`
 
@@ -573,9 +601,12 @@ mixins(<base>, [<object>, ..], <callback>)
 
 ```
 callback(<match>, <object>, <parent>)
-	-> 'stop' | false
+	-> STOP 
 	-> undefined
+	-> <value>
 ```
+
+See [`sources(..)`](#sources) for docs on `callback(..)`
 
 
 ### `hasMixin(..)`

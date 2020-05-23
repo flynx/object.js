@@ -142,6 +142,12 @@ function(base, obj){
 //---------------------------------------------------------------------
 // Prototype chain content access...
 
+// object to trigger iteration stop...
+//
+module.STOP = 
+	{doc: 'stop iteration.'}
+
+
 // Get a list of source objects for a prop/attr name...
 //
 // 	sources(obj, name)
@@ -150,18 +156,25 @@ function(base, obj){
 // 		-> []
 // 		
 // 	callback(obj)
-// 		-> true | 'stop'
+// 		-> STOP
 // 		-> ..
 // 		
-// 		
+//
 // The callback(..) is called with each matching object.
-// 
-// The callback(..) can be used to break/stop the search, returning 
-// a partial list og matcges up untill and including the object 
-// triggering the stop.
 //
+// callback(..) return values:
+// 	- STOP			- stop the search and return the match list terminated
+// 						with the object triggering the stop.
+// 	- undefined		- return the triggering object as-is
+// 						NOTE: this is the same as returning [obj]
+// 	- array			- merge array content into the result insteaad of 
+// 						the triggering value.
+// 						NOTE: an ampty array will effectively omit the 
+// 							triggering object from the results.
+// 	- other			- return a value instead of the triggering object.
+// 		
 //
-// NOTE: this go up the prototype chain, not caring about any role (
+// NOTE: this gos up the prototype chain, not caring about any role (
 // 		instance/class or instance/prototype) bounderies and depends 
 // 		only on the object given as the starting point.
 // 		It is possible to start the search from this, thus checking
@@ -171,21 +184,23 @@ function(base, obj){
 var sources =
 module.sources =
 function(obj, name, callback){
-	var stop
+	var o
 	var res = []
-	do {
+	while(obj != null){
 		if(obj.hasOwnProperty(name)){
-			res.push(obj) 
 			// handle callback...
-			stop = callback
+			o = callback
 				&& callback(obj)
-			// stop requested by callback...
-			if(stop === true || stop == 'stop'){
-				return res } 
-		}
-		obj = obj.__proto__
-	} while(obj !== null)
-	return res }
+			// manage results...
+			res.push(
+				(o === undefined || o === module.STOP) ?
+					[obj]
+					: o )
+			// stop...
+			if(o === module.STOP){
+				return res.flat() } }
+		obj = obj.__proto__ }
+	return res.flat() }
 
 
 // Get a list of values/props set in source objects for a prop/attr name...
@@ -202,11 +217,12 @@ function(obj, name, callback){
 // 		-> list
 // 		-> []
 // 		
-// 	callback(value, obj)
-// 		-> true | 'stop'
+// 	callback(value/prop, obj)
+// 		-> STOP
 // 		-> ..
 // 		
-// 		
+//
+// NOTE: for more docs on the callback(..) see sources(..)
 var values =
 module.values =
 function(obj, name, callback, props){
@@ -219,7 +235,7 @@ function(obj, name, callback, props){
 			return callback(
 				props ?
 					Object.getOwnPropertyDescriptor(obj, name)
-					: obj[name], 
+					: [ obj[name] ],
 				obj) }
 	return sources(...(c ?
 			[obj, name, c]
@@ -287,21 +303,26 @@ function(obj, name, callback, props){
 var parent =
 module.parent =
 function(proto, name){
-	// special case: method...
+	// special case: get method...
 	if(typeof(name) != typeof('str')){
-		that = name
+		var that = name
 		name = proto.name
+		// sanity check...
+		if(name == ''){
+			throw new  Error('parent(..): need a method with non-empty .name') }
 		// get first matching source...
 		proto = sources(that, name, 
-				function(obj){ return obj[name] === proto })
+				function(obj){ 
+					return obj[name] === proto
+						&& module.STOP })
 			.pop() }
 	// get first source...
 	var res = sources(proto, name, 
-			function(obj){ return 'stop' })
+			function(obj){ return module.STOP })
 		.pop() 
 	return res ?
 		// get next value...
-		res.__proto__[name] 
+		res.__proto__[name]
 		: undefined }
 
 
@@ -319,7 +340,9 @@ function(proto, name){
 	// get second source...
 	var c = 0
 	var res = sources(proto, name, 
-			function(obj){ return c++ == 1 })
+			function(obj){ 
+				return c++ == 1 
+					&& module.STOP })
 		.pop() 
 	return res ?
 		// get next value...
@@ -416,12 +439,13 @@ function(base, ...objects){
 //
 //
 //	callback(base, obj, parent)
-//		-> 'stop' | false
+//		-> STOP
 //		-> undefined
 //
 //
 // NOTE: if base matches directly callback(..) will get undefined as parent
 // NOTE: this will also match base...
+// NOTE: for more docs on the callback(..) see sources(..)
 var mixins =
 module.mixins =
 function(base, object, callback){
@@ -429,22 +453,26 @@ function(base, object, callback){
 		object
 		: [object]
 	var res = []
-	var stop
+	var o
 	var parent
 	while(base != null){
 		// match each object...
 		for(var obj of object){
 			if(match(base, obj)){
-				res.push(base)
-				stop = callback 
+				o = callback 
 					&& callback(base, obj, parent)
-				if(stop === true || stop == 'stop'){
-					return res } 
+				// manage results...
+				res.push(
+					(o === undefined || o === module.STOP) ? 
+						[base]
+						: o )
+				if(o === module.STOP){
+					return res.flat() } 
 				// match found, no need to test further...
 				break } }
 		parent = base
 		base = base.__proto__ }
-	return res }
+	return res.flat() }
 
 
 // Check of base has mixin...
@@ -452,10 +480,11 @@ function(base, object, callback){
 // 	hasMixin(base, mixin)
 // 		-> bool
 //
+//
 var hasMixin =
 module.hasMixin =
 function(base, object){
-	return mixins(base, object, function(){ return 'stop' }).length > 0 }
+	return mixins(base, object, function(){ return module.STOP }).length > 0 }
 
 
 // Mix-out sets of methods/props/attrs out of an object prototype chain...
