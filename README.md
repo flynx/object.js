@@ -492,7 +492,7 @@ one of the following:
   The containing values will be merged into the result list. This is a 
   way to either skip an object by returning `[]` or multiple values 
   instead of one.
-- <value>  
+- `<value>`  
   Returned as-is instead of the object triggering `callback(..)`.
 
 
