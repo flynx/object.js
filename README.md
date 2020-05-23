@@ -127,6 +127,7 @@ class B extends A {
 		- [Extending native `.constructor(..)`](#extending-native-constructor)
 	- [Components](#components)
 		- [`sources(..)`](#sources)
+		- [`values(..)`](#values)
 		- [`parent(..)`](#parent)
 		- [`parentProperty(..)`](#parentproperty)
 		- [`parentCall(..)`](#parentcall)
