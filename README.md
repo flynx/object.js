@@ -484,16 +484,17 @@ The `callback(..)` controls the output of `sources(..)` by returning
 one of the following:
 
 - `object.STOP`  
-  This will make `sources(..)` stop and return the `<list>` including 
-  the object that triggered the _stop_.
+  This will make `sources(..)` stop and return the `<list>` up to and 
+  including the object that triggered the _stop_.
 - `undefined`  
-  Return the object triggering `callback(..)` in `<list>` as-is. 
+  Add the object triggering `callback(..)` in `<list>` as-is and continue. 
 - array  
-  The containing values will be merged into the result list. This is a 
-  way to either skip an object by returning `[]` or multiple values 
-  instead of one.
+  The containing values will be merged into the result list and continue.
+  This is a way to either skip an object by returning `[]` or multiple 
+  values instead of one.
 - `<value>`  
-  Returned as-is instead of the object triggering `callback(..)`.
+  Add to the resulting `<list>` as-is instead of the object triggering 
+  `callback(..)` and continue.
 
 
 ### `values(..)`
