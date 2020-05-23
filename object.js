@@ -188,6 +188,48 @@ function(obj, name, callback){
 	return res }
 
 
+// Get a list of values/props set in source objects for a prop/attr name...
+//
+// 	Get values...
+// 	values(obj, name)
+// 	values(obj, name, callback)
+// 		-> list
+// 		-> []
+// 		
+// 	Get propery descriptors...
+// 	values(obj, name, true)
+// 	values(obj, name, callback, true)
+// 		-> list
+// 		-> []
+// 		
+// 	callback(value, obj)
+// 		-> true | 'stop'
+// 		-> ..
+// 		
+// 		
+var values =
+module.values =
+function(obj, name, callback, props){
+	props = callback === true ? 
+		callback 
+		: props
+	// wrap the callback if given...
+	var c = typeof(callback) == 'function'
+		&& function(obj){ 
+			return callback(
+				props ?
+					Object.getOwnPropertyDescriptor(obj, name)
+					: obj[name], 
+				obj) }
+	return sources(...(c ?
+			[obj, name, c]
+			: arguments))
+		.map(function(obj){ 
+			return props ?
+				Object.getOwnPropertyDescriptor(obj, name)
+				: obj[name] }) }
+
+
 // Find the next parent attribute in the prototype chain.
 //
 // 	Get parent attribute value...
