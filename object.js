@@ -223,7 +223,7 @@ function(obj, name, callback, props){
 				obj) }
 	return sources(...(c ?
 			[obj, name, c]
-			: arguments))
+			: [obj, name]))
 		.map(function(obj){ 
 			return props ?
 				Object.getOwnPropertyDescriptor(obj, name)
