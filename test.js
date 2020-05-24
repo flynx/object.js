@@ -13,6 +13,12 @@ var object = require('./object')
 
 
 //---------------------------------------------------------------------
+
+module.VERBOSE = false
+
+
+
+//---------------------------------------------------------------------
 // helpers...
 
 var constructors = function(obj){
@@ -27,59 +33,125 @@ var instances = function(obj){
 			return k[0] == k[0].toLowerCase() && o.constructor }) }
 
 
+var assert = function(pre, stats){
+	return function(e, msg, ...args){
+		stats
+			&& (stats.assertions += 1)
+			&& !e
+				&& (stats.failures += 1)
+		module.VERBOSE
+			&& console.log(pre +': '+ msg, ...args)
+		console.assert(e, pre +': '+ msg, ...args)
+		return e } }
+
 
 //---------------------------------------------------------------------
 
 var setups = {
-	basic: function(msg){
+	basic: function(assert){
 		var X, Y, A, B, C
 		return {
-			X: X = object.Constructor('A'),
-			Y: Y = object.C('Y', { }),
+			X: X = assert(object.Constructor('A'), `Constructor`),
+			Y: Y = assert(object.C('Y', { }), ` C`),
 
-			A: A = object.C('A', Y, { }),
-			B: B = object.C('B', A, { }),
-			C: C = object.C('C', B, { }),
+			A: A = assert(object.C('A', Y, { }), `inherit (gen1)`),
+			B: B = assert(object.C('B', A, { }), `inherit (gen2)`),
+			C: C = assert(object.C('C', B, { }), `inherit (gen3)`),
 		} },
-	init: function(msg){
+	init: function(assert){
 		return {
 
 		} },
-	call: function(msg){
+	call: function(assert){
+		var A, B, C, D, F, G
+		return {
+			A: A = assert(object.C('A', 
+				function(){
+					// XXX
+				}), 'callable'),
+			B: B = assert(object.C('B', {
+				__call__: function(){
+					// XXX
+				},
+			}), 'callable'),
+
+			C: C = assert(object.C('C', A, {}), 'basic inherit'),
+			D: D = assert(object.C('D', B, {}), 'basic inherit'),
+
+			E: E = assert(object.C('E', A,
+				function(){
+					// XXX how do we get the parent callable???
+					object.parent(this)
+				}), 'call parent'),
+			F: F = assert(object.C('F', B, {
+				__call__: function(){
+					object.parentCall(F.__call__, this)
+				},
+			}), 'call parent\'s .__call__'),
+
+
+
+		} },
+	native: function(assert){
 		return {
 
 		} },
-	native: function(msg){
+	mixin: function(assert){
 		return {
 
 		} },
-	instances: function(msg){
+	instances: function(assert){
 		// XXX generate using tests.instance*
+		// XXX need to be able to use different input setups...
 		return {}
 	},
 }
 
 var modifiers = {
-	'as-is': function(msg, setup){
+	// default...
+	'as-is': function(assert, setup){
 		return setup }
+
+	// XXX
 }
 
 
 
 var tests = {
-	instance: function(msg, setup, no_new){
+	instance: function(assert, setup, mode){
 		return constructors(setup) 
 			.reduce(function(res, [k, O]){
-				var o
-				no_new ?
-					console.assert(o = res[k.toLowerCase()] = O(), `${msg}: new:`, k)
-					: console.assert(o = res[k.toLowerCase()] = new O(), `${msg}: new:`, k)
-				console.assert(o instanceof O, `${msg}: instanceof:`, k)
-				console.assert(o.constructor === O, `${msg}: constructor:`, k)
-				console.assert(o.__proto__ === O.prototype, `${msg}: __proto__:`, k)
+				var o = res[k.toLowerCase()] = 
+					mode == 'no_new' ?
+						assert(O(), `new:`, k)
+					: mode == 'raw' ?
+						assert(O.__rawinstance__(), `.__rawinstance__()`, k)	
+					: assert(new O(), `new:`, k)
+				assert(o instanceof O, `instanceof:`, k)
+				O.__proto__ instanceof Function
+					&& assert(o instanceof O.__proto__, `instanceof-nested:`, k)
+				assert(o.constructor === O, `.constructor:`, k)
+				assert(o.__proto__ === O.prototype, `.__proto__:`, k)
 				return res }, {}) },
-	instance_no_new: function(msg, setup){
-		return this.instance(msg, setup, true) },
+	instance_no_new: function(assert, setup){
+		return this.instance(assert, setup, 'no_new') },
+	instance_raw: function(assert, setup){
+		return this.instance(assert, setup, 'raw') },
+
+	attributes: function(assert, setup){
+		return {}
+	},
+
+	// XXX
+	methods: function(assert, setup){
+		constructors(setup)
+			.forEach(function([k, O]){
+				Object.keys(O).forEach(function(m){
+					typeof(O[m]) == 'function'
+						&& O[m]() })
+			})
+		return {}
+	},
 }
 
 
@@ -90,8 +162,18 @@ var cases = {
 
 
 
-// XXX need to report stats...
+//---------------------------------------------------------------------
+
+// XXX need to have two modes:
+// 		- clean
+// 		- reuse test results again...
 var runner = function(){
+	var stats = {
+		tests: 0,
+		assertions: 0,
+		failures: 0,
+	}
+
 	// tests...
 	Object.keys(tests)
 		.forEach(function(t){
@@ -102,15 +184,21 @@ var runner = function(){
 					Object.keys(setups)
 						.forEach(function(s){
 							// run the test...
-							msg =`test:${t}.${s}.${m}`
-							tests[t](msg, modifiers[m](msg, setups[s](msg))) }) }) }) 
+							stats.tests += 1
+							var _assert = assert(`test:${t}.${s}.${m}`, stats)
+							tests[t](_assert, 
+								modifiers[m](_assert, 
+									setups[s](_assert))) }) }) }) 
 	// cases...
 	Object.keys(cases)
 		.forEach(function(c){
-			msg = `case:${c}:`
-			cases[c](msg)
-		})
-}
+			stats.tests += 1
+			cases[c]( assert(`case:${c}:`, stats) ) }) 
+
+	// stats...
+	console.log('Tests:', stats.tests, 
+		'Assertions:', stats.assertions, 
+		'Failures:', stats.failures) }
 
 
 runner()

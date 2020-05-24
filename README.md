@@ -213,9 +213,16 @@ var Base = object.Constructor('Base', {
 })
 
 var Item = object.Constructor('Item', Base, {
+	method: function(){
+		// ... 
+
+		// call the "super" method...
+		return object.parentCall(Item.prototype, 'method', this, ...arguments)
+	},
+
 	__init__: function(){
 		// call the "super" method...
-		object.parentCall(this.prototype.__init__, this)
+		object.parentCall(this.__init__, this, ...arguments)
 
 		this.item_attr = 'instance attribute value'
 	},
@@ -245,7 +252,8 @@ var Action = object.Constructor('Action',
 
 var Action2 = object.Constructor('Action2', {
 	__call__: function(context, ...args){
-		return this
+		// call the callable parent...
+		return object.parentCall(Action2.prototype, '__call__', this, ...arguments)
 	},
 })
 
@@ -269,6 +277,17 @@ represent the two contexts relevant to the callable instance:
 
 If the prototype is explicitly defined as a function then it is the 
 user's responsibility to call `.__call__(..)` method.
+
+When calling the parent passing `'__call__'` will get the parent in both 
+the function and `.__call__(..)` implementations, but extra care must be 
+taken in passing the reference prototype to `.parentCall(..)`, the instance
+is implemented as a proxy function that will pass the arguments to the 
+implementation (i.e. `this.constructor.prototype(..)`) so this proxy 
+function as well as the `.constructor.prototype(..)` are valid implementations
+and both will be retrieved by `sources(this, '__call__')`, 
+`values(this, '__call__')` and by extension `parent(this, '__call__')` 
+and friends, so this is another reason not to use `this` in the general 
+case.
 
 
 **Notes:**
@@ -497,6 +516,18 @@ one of the following:
   `callback(..)` and continue.
 
 
+Special case: get callable implementations
+```
+sources(<object>, '__call__')
+sources(<object>, '__call__', <callback>)
+	-> <list>
+```
+
+This will get the callable implementations regardless of the actual
+implementation details, i.e. both function prototype or `.__call__(..)` 
+methods will be matched.
+
+
 ### `values(..)`
 
 Get values for attribute in prototype chain
@@ -528,7 +559,7 @@ callback(<descriptor>, <source>)
 	-> <value>
 ```
 
-See [`sources(..)`](#sources) for docs on `callback(..)`
+See [`sources(..)`](#sources) for docs on `callback(..)` and special cases.
 
 ### `parent(..)`
 
@@ -537,17 +568,36 @@ Get parent attribute value or method
 parent(<prototype>, <name>)
 	-> <parent-value>
 	-> undefined
+```
 
+It is recommended to use the relative`<constructor>.prototype` as 
+`<prototype>` and in turn not recommended to use `this` or `this.__proto__` 
+as they will not provide the appropriate reference point in the prototype 
+chain for the current method and may result in infinite recursion.
+
+For access to parent methods the following special case is better.
+
+```
 parent(<method>, <this>)
 	-> <parent-method>
 	-> undefined
 ```
+
 
 _Edge case: The `parent(<method>, ..)` has one potential pitfall -- in 
 the rare case where a prototype chain contains two or more references 
 to the same method under the same name, `parent(..)` can't distinguish 
 between these references and will always return the second one._
 
+
+Special case: get the parent callable implementation
+```
+parent(<prototype>, '__call__')
+	-> <parent-value>
+	-> undefined
+```
+
+See [`sources(..)`](#sources) for more info on the special case.
 
 
 ### `parentProperty(..)`
@@ -572,6 +622,15 @@ parentCall(<method>, <this>)
 	-> <result>
 	-> undefined
 ```
+
+Special case: call the parent callable implementation
+```
+parentCall(<prototype>, '__call__', <this>)
+	-> <result>
+	-> undefined
+```
+
+See [`parent(..)`](#parent) and [`sources(..)`](#sources) for more details.
 
 
 ### `mixin(..)`
@@ -813,5 +872,6 @@ Still, this is worth some thought.
 
 Copyright (c) 2019, Alex A. Naanou,  
 All rights reserved.
+
 
 <!-- vim:set ts=4 sw=4 spell : -->

@@ -181,13 +181,18 @@ module.STOP =
 // 		for any overloading in the instance, though this approach is 
 // 		not very reusable....
 // NOTE: this will not trigger any props...
+//
+// XXX document the '__call__' cpecial case...
+// XXX in the call case need to skip the wrapper function... (???)
 var sources =
 module.sources =
 function(obj, name, callback){
 	var o
 	var res = []
 	while(obj != null){
-		if(obj.hasOwnProperty(name)){
+		//if(obj.hasOwnProperty(name)){
+		if(obj.hasOwnProperty(name) 
+				|| (name == '__call__' && typeof(obj) == 'function')){
 			// handle callback...
 			o = callback
 				&& callback(obj)
@@ -223,27 +228,33 @@ function(obj, name, callback){
 // 		
 //
 // NOTE: for more docs on the callback(..) see sources(..)
+//
+// XXX document the '__call__' cpecial case...
 var values =
 module.values =
 function(obj, name, callback, props){
 	props = callback === true ? 
 		callback 
 		: props
+	var _get = function(obj, name){
+		return props ?
+				Object.getOwnPropertyDescriptor(obj, name)
+			// handle callable instance...
+			: !(name in obj) 
+					&& name == '__call__' 
+					&& typeof(obj) == 'function' ?
+				obj
+			// normal attr...
+			: obj[name] }
 	// wrap the callback if given...
 	var c = typeof(callback) == 'function'
 		&& function(obj){ 
-			return callback(
-				props ?
-					Object.getOwnPropertyDescriptor(obj, name)
-					: [ obj[name] ],
-				obj) }
+			return callback(_get(obj, name), obj) }
 	return sources(...(c ?
 			[obj, name, c]
 			: [obj, name]))
 		.map(function(obj){ 
-			return props ?
-				Object.getOwnPropertyDescriptor(obj, name)
-				: obj[name] }) }
+			return _get(obj, name) }) }
 
 
 // Find the next parent attribute in the prototype chain.
@@ -257,6 +268,10 @@ function(obj, name, callback, props){
 // 	parent(method, this)
 // 		-> meth
 // 		-> undefined
+//
+// 	Get parent object...
+// 	parent(this)
+// 		-> parent
 //
 // 
 // The two forms differ in:
@@ -300,9 +315,20 @@ function(obj, name, callback, props){
 // 		and to the method after the match.
 // NOTE: this is super(..) replacement, usable in any context without 
 // 		restriction -- super(..) is restricted to class methods only...
+//
+// XXX need to be able to get a callable prototype...
+// 			parent(proto, '__call__')
+// 		This would need to handle two cases transparently:
+// 			- parent with .__call__(..) defined...
+// 			- parent with callable prototype...
+// 		...should this be handled here or in sources(..)???
+// XXX document both __call__ cases...
 var parent =
 module.parent =
 function(proto, name){
+	// special case: get parent...
+	if(arguments.length == 1){
+		return proto.__proto__ }
 	// special case: get method...
 	if(typeof(name) != typeof('str')){
 		var that = name
@@ -317,13 +343,17 @@ function(proto, name){
 						&& module.STOP })
 			.pop() }
 	// get first source...
+	var c = 0
 	var res = sources(proto, name, 
-			function(obj){ return module.STOP })
+			function(obj){ 
+				return c++ == 1 
+					&& module.STOP })
 		.pop() 
-	return res ?
-		// get next value...
-		res.__proto__[name]
-		: undefined }
+	return !res ?
+			undefined
+		:(!(name in res) && typeof(res) == 'function') ?
+			res
+		: res[name] }
 
 
 // Find the next parent property descriptor in the prototype chain...
@@ -368,6 +398,8 @@ function(proto, name){
 // 		or:
 // 			parent(method, this).call(this, ...)
 // NOTE: for more docs see parent(..)
+//
+// XXX in the call case need to skip the wrapper function... (???)
 var parentCall =
 module.parentCall =
 function(proto, name, that, ...args){
@@ -575,7 +607,7 @@ function(context, constructor, ...args){
 	var _mirror_doc = function(func, target){
 		Object.defineProperty(func, 'toString', {
 			value: function(...args){
-				var f = typeof(constructor.prototype) == 'function' ? 
+				var f = typeof(target.prototype) == 'function' ? 
 					target.prototype
 					: target.prototype.__call__
 				return typeof(f) == 'function' ?
@@ -603,8 +635,13 @@ function(context, constructor, ...args){
 					return (
 						// .prototype is a function...
 						typeof(constructor.prototype) == 'function' ?
-							constructor.prototype
-								.call(obj, this, ...arguments)
+							// NOTE: we are not using .call(..) here as it
+							// 		may not be accesible through the prototype
+							// 		chain, this can occur when creating a 
+							// 		callable instance from a non-callable 
+							// 		parent...
+							Reflect.apply(
+								constructor.prototype, obj, [this, ...arguments])
 						// .__call__(..)
 						: constructor.prototype.__call__
 							.call(obj, this, ...arguments)) },
@@ -779,9 +816,21 @@ function Constructor(name, a, b, c){
 
 	// handle: 
 	// 	Constructor(name, constructor, ..)
+	//
+	// NOTE: this is a bit too functional in style by an if-tree would 
+	// 		be more bulky and less readable...
 	constructor_proto
-		&& proto.__proto__ === Object.prototype
-		&& (proto.__proto__ = constructor_proto.prototype)
+		// XXX need a better test -- need to test if .__proto__ was set 
+		// 		manually and not mess it up...
+		&& (proto.__proto__ === Object.prototype
+				|| proto.__proto__ === Function.prototype)
+			&& (proto.__proto__ = constructor_proto.prototype)
+			// restore func .toString(..) that was replaced to object's .toString(..) 
+			// in the previous op but only if it was not set by user...
+			&& (typeof(proto) == 'function'
+					&& proto.toString === Object.prototype.toString)
+				// XXX should we wrap this in normalizeIndent(..) ???
+				&& (proto.toString = Function.prototype.toString)
 
 	// handle: .__extends__
 	if(!constructor_proto){
@@ -802,15 +851,13 @@ function Constructor(name, a, b, c){
 			constructor_mixin = mixinFlat({}, constructor_mixin)
 			delete constructor_mixin.__extends__ }
 		!!constructor_proto
-			&& (proto.__proto__ = constructor_proto.prototype)
-	}
-
+			&& (proto.__proto__ = constructor_proto.prototype) }
 
 	// the constructor base...
 	var _constructor = function Constructor(){
 		// create raw instance...
 		var obj = _constructor.__rawinstance__ ? 
-				_constructor.__rawinstance__(this, ...arguments)
+			_constructor.__rawinstance__(this, ...arguments)
 			: RawInstance(this, _constructor, ...arguments)
 		// initialize...
 		obj.__init__ instanceof Function
@@ -829,8 +876,8 @@ function Constructor(name, a, b, c){
 	// set .toString(..)...
 	// NOTE: do this only if .toString(..) is not defined by user...
 	// XXX revise this test...
-	;((constructor_mixin || {}).toString === Function.toString
-			|| (constructor_mixin || {}).toString === ({}).toString)
+	;((constructor_mixin || {}).toString === Function.prototype.toString
+			|| (constructor_mixin || {}).toString === Object.prototype.toString)
 		&& Object.defineProperty(_constructor, 'toString', {
 			value: function(){ 
 				var args = proto.__init__ ?
