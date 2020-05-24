@@ -67,11 +67,11 @@ var setups = {
 		return {
 			A: A = assert(object.C('A', 
 				function(){
-					// XXX
+					return 'A'
 				}), 'callable'),
 			B: B = assert(object.C('B', {
 				__call__: function(){
-					// XXX
+					return 'B'
 				},
 			}), 'callable'),
 
@@ -80,17 +80,25 @@ var setups = {
 
 			E: E = assert(object.C('E', A,
 				function(){
-					// XXX how do we get the parent callable???
-					object.parent(this)
+					assert(
+						object.parentCall(E.prototype, '__call__', this, ...arguments) == 'A', 
+						'parrent call')
+					return 'E'
 				}), 'call parent'),
 			F: F = assert(object.C('F', B, {
 				__call__: function(){
-					object.parentCall(F.__call__, this)
+					assert(
+						object.parentCall(F.prototype, '__call__', this, ...arguments) == 'B', 
+						'parent call')
+					return 'F'
 				},
 			}), 'call parent\'s .__call__'),
 
-
-
+			// XXX not sure about these...
+			a: A(),
+			b: B(),
+			e: E(),
+			f: F(),
 		} },
 	native: function(assert){
 		return {
@@ -152,6 +160,11 @@ var tests = {
 			})
 		return {}
 	},
+	callables: function(assert, setup){
+		return instances(setup)
+			.map(function([k, o]){
+				return typeof(o) == 'function'
+					&& assert(o(), 'call', k) }) },
 }
 
 

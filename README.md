@@ -291,7 +291,7 @@ case.
 
 
 **Notes:**
-- the two approaches (_function_ vs. `.__call__(..)`) will produce 
+- The two approaches (_function_ vs. `.__call__(..)`) will produce 
   functionally identical but structurally different constructors/objects, 
   the difference is in `.prototype` -- what is defined as the prototype
   _is_ the prototype (_POLS_), so we get:
@@ -303,6 +303,10 @@ case.
   The instance in both cases is a function wrapper that will proxy the 
   call to the corresponding implementation.
   (this may change in the future)
+- Making an object callable does not guarantee that `<obj> instanceof Function`
+  will be `true`, though `typeof(<obj>) == 'function'`will always work.
+  To satisfy the `instanceof Function` test the prototype tree must be 
+  rooted in `Function`.
 
 
 ### Mix-ins

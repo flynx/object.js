@@ -315,14 +315,6 @@ function(obj, name, callback, props){
 // 		and to the method after the match.
 // NOTE: this is super(..) replacement, usable in any context without 
 // 		restriction -- super(..) is restricted to class methods only...
-//
-// XXX need to be able to get a callable prototype...
-// 			parent(proto, '__call__')
-// 		This would need to handle two cases transparently:
-// 			- parent with .__call__(..) defined...
-// 			- parent with callable prototype...
-// 		...should this be handled here or in sources(..)???
-// XXX document both __call__ cases...
 var parent =
 module.parent =
 function(proto, name){
@@ -363,7 +355,6 @@ function(proto, name){
 //
 //
 // This is like parent(..) but will get a property descriptor...
-//
 var parentProperty =
 module.parentProperty =
 function(proto, name){
@@ -398,8 +389,6 @@ function(proto, name){
 // 		or:
 // 			parent(method, this).call(this, ...)
 // NOTE: for more docs see parent(..)
-//
-// XXX in the call case need to skip the wrapper function... (???)
 var parentCall =
 module.parentCall =
 function(proto, name, that, ...args){
@@ -799,6 +788,10 @@ function(context, constructor, ...args){
 // 		It is however possible to mix related types as we are doing for 
 // 		callable instances (Function + Object -- a function is an object).
 // 		See README.md for more info.
+// NOTE: making an object callable does not guarantee that it will pass
+// 		the instanceof Function test, for that the prototype chain needs
+// 		to be rooted in Function.
+// 		though the typeof(..) == 'function' will always work.
 var Constructor = 
 module.Constructor =
 // shorthand...
