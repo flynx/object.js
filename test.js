@@ -108,11 +108,9 @@ var setups = {
 		return {
 
 		} },
-	instances: function(assert){
-		// XXX generate using tests.instance*
-		// XXX need to be able to use different input setups...
-		return {}
-	},
+
+	// placeholder -- this is written by tests.instance...
+	instances: null,
 }
 
 var modifiers = {
@@ -127,20 +125,20 @@ var modifiers = {
 
 var tests = {
 	instance: function(assert, setup, mode){
-		return constructors(setup) 
-			.reduce(function(res, [k, O]){
-				var o = res[k.toLowerCase()] = 
-					mode == 'no_new' ?
-						assert(O(), `new:`, k)
-					: mode == 'raw' ?
-						assert(O.__rawinstance__(), `.__rawinstance__()`, k)	
-					: assert(new O(), `new:`, k)
-				assert(o instanceof O, `instanceof:`, k)
-				O.__proto__ instanceof Function
-					&& assert(o instanceof O.__proto__, `instanceof-nested:`, k)
-				assert(o.constructor === O, `.constructor:`, k)
-				assert(o.__proto__ === O.prototype, `.__proto__:`, k)
-				return res }, {}) },
+			return constructors(setup) 
+				.reduce(function(res, [k, O]){
+					var o = res[k.toLowerCase()] = 
+						mode == 'no_new' ?
+							assert(O(), `new:`, k)
+						: mode == 'raw' ?
+							assert(O.__rawinstance__(), `.__rawinstance__()`, k)	
+						: assert(new O(), `new:`, k)
+					assert(o instanceof O, `instanceof:`, k)
+					O.__proto__ instanceof Function
+						&& assert(o instanceof O.__proto__, `instanceof-nested:`, k)
+					assert(o.constructor === O, `.constructor:`, k)
+					assert(o.__proto__ === O.prototype, `.__proto__:`, k)
+					return res }, {}) },
 	instance_no_new: function(assert, setup){
 		return this.instance(assert, setup, 'no_new') },
 	instance_raw: function(assert, setup){
@@ -163,6 +161,9 @@ var tests = {
 	callables: function(assert, setup){
 		return instances(setup)
 			.map(function([k, o]){
+				// NOTE: not all callables are instances of Function...
+				//assert(typeof(o) == 'function' 
+				//	&& o instanceof Function, 'instanceof Function')
 				return typeof(o) == 'function'
 					&& assert(o(), 'call', k) }) },
 }
@@ -196,6 +197,8 @@ var runner = function(){
 					// setups...
 					Object.keys(setups)
 						.forEach(function(s){
+							if(typeof(setups[s]) != 'function'){
+								return }
 							// run the test...
 							stats.tests += 1
 							var _assert = assert(`test:${t}.${s}.${m}`, stats)
@@ -211,10 +214,22 @@ var runner = function(){
 	// stats...
 	console.log('Tests:', stats.tests, 
 		'Assertions:', stats.assertions, 
-		'Failures:', stats.failures) }
+		'Failures:', stats.failures) 
+
+	return stats }
 
 
-runner()
+
+//---------------------------------------------------------------------
+
+var stats = runner()
+
+
+// report error status to the OS...
+process
+	&& process.exit(stats.failures)
+
+
 
 
 /**********************************************************************
