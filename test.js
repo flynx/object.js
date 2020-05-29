@@ -196,8 +196,8 @@ var tests = {
 		return instances(setup)
 			.map(function([k, o]){
 				// NOTE: not all callables are instances of Function...
-				assert(typeof(o) == 'function' 
-					&& o instanceof Function, 'instanceof Function')
+				//assert(typeof(o) == 'function' 
+				//	&& o instanceof Function, 'instanceof Function')
 				return typeof(o) == 'function'
 					&& assert(o(), 'call', k) }) },
 }
