@@ -14,7 +14,16 @@ var object = require('./object')
 
 //---------------------------------------------------------------------
 
-module.VERBOSE = false
+// NOTE: to test in verbose mode do:
+// 			$ export VERBOSE=1 && npm test
+// 		or
+// 			$ export VERBOSE=1 && node test.js
+// 		or set this manually after require('./test') but before running 
+// 		the runner(..)
+// 		XXX this may change in the future...
+module.VERBOSE = process ?
+	process.env.VERBOSE
+	: false
 
 
 
@@ -197,7 +206,7 @@ var tests = {
 			.map(function([k, o]){
 				// NOTE: not all callables are instances of Function...
 				//assert(typeof(o) == 'function' 
-				//	&& o instanceof Function, 'instanceof Function')
+				//	&& o instanceof Function, 'instanceof Function', k)
 				return typeof(o) == 'function'
 					&& assert(o(), 'call', k) }) },
 }
