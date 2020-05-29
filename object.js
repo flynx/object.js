@@ -803,6 +803,8 @@ function(context, constructor, ...args){
 // 		the instanceof Function test, for that the prototype chain needs
 // 		to be rooted in Function.
 // 		though the typeof(..) == 'function' will always work.
+// NOTE: this will fail with non-identifier names...
+// 		XXX is this a bug or a feature??? =)
 var Constructor = 
 module.Constructor =
 // shorthand...
@@ -874,6 +876,7 @@ function Constructor(name, a, b, c){
 	_constructor.name == 'Constructor'
 		// NOTE: this eval(..) should not be a risk as its inputs are
 		// 		static and never infuenced by external inputs...
+		// NOTE: this will fail with non-identifier names...
 		&& eval('_constructor = '+ _constructor
 				.toString()
 				.replace(/Constructor/g, name))
