@@ -138,11 +138,12 @@ var setups = {
 			return res
 		}, {}) },
 
-	// mixins...
+	/*/ XXX mixins...
 	mixin: function(assert){
 		return {
 
 		} },
+	//*/
 }
 
 var modifiers = {
@@ -189,10 +190,10 @@ var tests = {
 	instance_raw: function(assert, setup){
 		return this.instance(assert, setup, 'raw') },
 
-	// XXX
+	/*/ XXX
 	attributes: function(assert, setup){
-		return {}
-	},
+		return {} },
+	//*/
 
 	// XXX
 	methods: function(assert, setup){
@@ -202,8 +203,7 @@ var tests = {
 					typeof(O[m]) == 'function'
 						&& O[m]() })
 			})
-		return {}
-	},
+		return {} },
 	callables: function(assert, setup){
 		return instances(setup)
 			.map(function([k, o]){
@@ -216,17 +216,29 @@ var tests = {
 
 
 // specific independent cases...
-// XXX not sure about these...
+//
+// NOTE: it is a good idea to migrate tests from here into the main 
+// 		framework so as to be able to use them on more setups...
 var cases = {
+	'example': function(assert){
+		assert(true, 'example.')
+	},
 }
 
 
 
 //---------------------------------------------------------------------
 
-// XXX need to have two modes:
-// 		- clean
-// 		- reuse test results again...
+// Test runner...
+//
+// This will run 
+// 		test(modifier(setup)) 
+// 			for each test in tests
+// 			for each modifier in modifiers
+// 			for each setup in setups
+// 		case() 
+// 			for each case in cases
+//
 var runner = function(){
 	var stats = {
 		tests: 0,
@@ -258,7 +270,7 @@ var runner = function(){
 			cases[c]( makeAssert(`case:${c}:`, stats) ) }) 
 
 	// stats...
-	console.log('Tests:', stats.tests, 
+	console.log('Tests run:', stats.tests, 
 		'Assertions:', stats.assertions, 
 		'Failures:', stats.failures) 
 
