@@ -45,9 +45,11 @@ var assert = function(pre, stats){
 		return e } }
 
 
+
 //---------------------------------------------------------------------
 
 var setups = {
+	// basic constructor and inheritance...
 	basic: function(assert){
 		var X, Y, A, B, C
 		return {
@@ -58,13 +60,18 @@ var setups = {
 			B: B = assert(object.C('B', A, { }), `inherit (gen2)`),
 			C: C = assert(object.C('C', B, { }), `inherit (gen3)`),
 		} },
+
+	// initialization...
 	init: function(assert){
 		return {
 
 		} },
+
+	// callable instances...
 	call: function(assert){
+		// constructors...
 		var A, B, C, D, F, G
-		return {
+		var res = {
 			A: A = assert(object.C('A', 
 				function(){
 					return 'A'
@@ -93,32 +100,55 @@ var setups = {
 					return 'F'
 				},
 			}), 'call parent\'s .__call__'),
+		} 
+		// create instances...
+		var objs = tests.instance(assert, res)
+		// all instances must be callable...
+		// NOTE: not all instances are going to be instanceof Function...
+		Object.entries(objs)
+			.forEach(function([k, o]){
+				assert(typeof(o) == 'function', 'instance is callable', k) })
+		return Object.assign(res, objs) },
 
-			// XXX not sure about these...
-			a: A(),
-			b: B(),
-			c: C(),
-			d: D(),
-			e: E(),
-			f: F(),
-		} },
+	// inherit from native constructors...
 	native: function(assert){
-		return {
+		return [
+			Object,
+			Array,
+			Number,
+			Map,
+			Set,
+		].reduce(function(res, type){
+			var n = type.name
+			// direct inherit...
+			var O = res[n] = 
+				assert(object.C(n, type, {}), 'inherit from '+n)
+			return res
+		}, {}) },
 
-		} },
+	// mixins...
 	mixin: function(assert){
 		return {
 
 		} },
-
-	// placeholder -- this is written by tests.instance...
-	instances: null,
 }
 
 var modifiers = {
 	// default...
 	'as-is': function(assert, setup){
-		return setup }
+		return setup },
+
+	// make gen2-3 constructors...
+	//
+	// NOTE: there is almost no need to test below gen3...
+	gen2: function(assert, setup, gen){
+		gen = gen || 2
+		return constructors(setup)
+			.reduce(function(res, [n, O]){
+				res[n+'g'+gen] = object.C(n+'g'+gen, O, {})
+				return res }, {}) },
+	gen3: function(assert, setup){
+		return this.gen2(assert, this.gen2(assert, setup), '3') }
 
 	// XXX
 }
@@ -126,6 +156,7 @@ var modifiers = {
 
 
 var tests = {
+	// instance creation...
 	instance: function(assert, setup, mode){
 			return constructors(setup) 
 				.reduce(function(res, [k, O]){
@@ -146,6 +177,7 @@ var tests = {
 	instance_raw: function(assert, setup){
 		return this.instance(assert, setup, 'raw') },
 
+	// XXX
 	attributes: function(assert, setup){
 		return {}
 	},
