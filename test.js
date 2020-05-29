@@ -30,19 +30,22 @@ module.VERBOSE = process ?
 //---------------------------------------------------------------------
 // helpers...
 
+// a constructor is a thing that starts with a capital and has a .prototype
 var constructors = function(obj){
 	return Object.entries(obj)
 		.filter(function([k, o]){
-			return k[0] == k[0].toUpperCase() && o.prototype }) }
+			return k[0] == k[0].toUpperCase() 
+				&& o.prototype }) }
 
-
+// an instance is a thing that starts with a lowercase and has a .constructor
 var instances = function(obj){
 	return Object.entries(obj)
 		.filter(function([k, o]){
-			return k[0] == k[0].toLowerCase() && o.constructor }) }
+			return k[0] == k[0].toLowerCase() 
+				&& o.constructor }) }
 
 
-var assert = function(pre, stats){
+var makeAssert = function(pre, stats){
 	return function(e, msg, ...args){
 		stats
 			&& (stats.assertions += 1)
@@ -244,7 +247,7 @@ var runner = function(){
 								return }
 							// run the test...
 							stats.tests += 1
-							var _assert = assert(`test:${t}.${s}.${m}`, stats)
+							var _assert = makeAssert(`test:${t}.${s}.${m}`, stats)
 							tests[t](_assert, 
 								modifiers[m](_assert, 
 									setups[s](_assert))) }) }) }) 
@@ -252,7 +255,7 @@ var runner = function(){
 	Object.keys(cases)
 		.forEach(function(c){
 			stats.tests += 1
-			cases[c]( assert(`case:${c}:`, stats) ) }) 
+			cases[c]( makeAssert(`case:${c}:`, stats) ) }) 
 
 	// stats...
 	console.log('Tests:', stats.tests, 
