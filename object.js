@@ -155,6 +155,12 @@ module.STOP =
 // 		-> list
 // 		-> []
 // 		
+// 	Get callables or objects defining .__call__ (special-case)
+// 	sources(obj, '__call__')
+// 	sources(obj, '__call__', callback)
+// 		-> list
+// 		-> []
+// 		
 // 	callback(obj)
 // 		-> STOP
 // 		-> ..
@@ -172,7 +178,7 @@ module.STOP =
 // 						NOTE: an ampty array will effectively omit the 
 // 							triggering object from the results.
 // 	- other			- return a value instead of the triggering object.
-// 		
+//
 //
 // NOTE: this gos up the prototype chain, not caring about any role (
 // 		instance/class or instance/prototype) bounderies and depends 
@@ -181,11 +187,6 @@ module.STOP =
 // 		for any overloading in the instance, though this approach is 
 // 		not very reusable....
 // NOTE: this will not trigger any props...
-//
-// XXX document the '__call__' special case...
-// 		- '__call__' gets either the callable prototype or .__call__(..)
-// 		- priority...
-// 		- 
 var sources =
 module.sources =
 function(obj, name, callback){
@@ -229,9 +230,12 @@ function(obj, name, callback){
 // 		-> ..
 // 		
 //
-// NOTE: for more docs on the callback(..) see sources(..)
+// Special case: name is given as '__call__'
+// 		This will return either the value the object if it is callable 
+// 		or the value of .__call__ attribute...
 //
-// XXX document the '__call__' cpecial case...
+//
+// NOTE: for more docs on the callback(..) see sources(..)
 var values =
 module.values =
 function(obj, name, callback, props){
@@ -263,6 +267,11 @@ function(obj, name, callback, props){
 //
 // 	Get parent attribute value...
 // 	parent(proto, name)
+// 		-> value
+// 		-> undefined
+//
+// 	Get parent callable or .__call__ value (special-case)
+// 	parent(proto, '__call__')
 // 		-> value
 // 		-> undefined
 //
@@ -633,7 +642,7 @@ function(context, constructor, ...args){
 							// 		parent...
 							Reflect.apply(
 								constructor.prototype, obj, [this, ...arguments])
-						// .__call__(..)
+						// .__call__(..) or fail semi-gracefully...
 						: constructor.prototype.__call__
 							.call(obj, this, ...arguments)) },
 				constructor)

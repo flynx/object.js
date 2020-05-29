@@ -522,8 +522,7 @@ one of the following:
 
 Special case: get callable implementations
 ```
-sources(<object>, '__call__')
-sources(<object>, '__call__', <callback>)
+sources(<object>, '__call__', ..)
 	-> <list>
 ```
 
@@ -562,6 +561,17 @@ callback(<descriptor>, <source>)
 	-> undefined
 	-> <value>
 ```
+
+
+Special case: get callable implementations
+```
+values(<object>, '__call__', ..)
+	-> <list>
+```
+
+This will return the callable objects themselves or the value of `.__call__`.
+
+
 
 See [`sources(..)`](#sources) for docs on `callback(..)` and special cases.
 
