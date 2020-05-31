@@ -30,6 +30,13 @@ module.VERBOSE = process ?
 //---------------------------------------------------------------------
 // helpers...
 
+var deepKeys = function(obj, stop){
+	var res = []
+	while(obj !== stop && obj != null){
+		res.push(Object.keys(obj))
+		obj = obj.__proto__ }
+	return [...(new Set(res.flat()))] }
+
 // a constructor is a thing that starts with a capital and has a .prototype
 var constructors = function(obj){
 	return Object.entries(obj)
@@ -75,8 +82,38 @@ var setups = {
 
 	// initialization...
 	init: function(assert){
+		var A, B, C
 		return {
+			// init...
+			A: A = assert(object.C('A', {
+				msg: '.__init__()',
+				__init__: function(){
+					this.init_has_run = true },
+				test_init: function(){
+					this.__created_raw ?
+						assert(!this.init_has_run, this.msg+' did not run')
+						: assert(this.init_has_run, this.msg+' run') },
+			}), 'basic .__init__(..)'),
+			// new...
+			B: B = assert(object.C('B', {
+				__new__: function(){
+					var o = {}
+					o.new_has_run = true
+					return o
+				},
+				test_new: function(){
+					assert(this.new_has_run, '.__new__() run') },
+			}), 'basic .__new__(..)'),
+			// new + init...
+			C: C = assert(object.C('C', B, { 
+				msg: '.__init__() after .__new__()',
+				__init__: function(){
+					this.init_has_run = true },
+				test_init: A.prototype.test_init,
+			}), `inherit .__new__()`),
 
+			// XXX gen2 and extended stuff???
+			// XXX
 		} },
 
 	// callable instances...
@@ -89,6 +126,7 @@ var setups = {
 					return 'A'
 				}), 'callable'),
 			B: B = assert(object.C('B', {
+				__non_function: true,
 				__call__: function(){
 					return 'B'
 				},
@@ -161,55 +199,79 @@ var modifiers = {
 				res[n+'g'+gen] = object.C(n+'g'+gen, O, {})
 				return res }, {}) },
 	gen3: function(assert, setup){
-		return this.gen2(assert, this.gen2(assert, setup), '3') }
+		return this.gen2(assert, this.gen2(assert, setup), '3') },
 
-	// XXX
+	// generate instances...
+	// NOTE: these are re-used as tests too...
+	instance: function(assert, setup, mode){
+		return constructors(setup) 
+			.reduce(function(res, [k, O]){
+				var o = res[k.toLowerCase()] = 
+					mode == 'no_new' ?
+						assert(O(), `new:`, k)
+					: mode == 'raw' ?
+						assert(O.__rawinstance__(), `.__rawinstance__()`, k)	
+					: assert(new O(), `new:`, k)
+				assert(o instanceof O, `instanceof:`, k)
+				O.__proto__ instanceof Function
+					&& assert(o instanceof O.__proto__, `instanceof-nested:`, k)
+				assert(o.constructor === O, `.constructor:`, k)
+				assert(o.__proto__ === O.prototype, `.__proto__:`, k)
+				return res }, {}) },
+	instance_no_new: function(assert, setup){
+		return this.instance(assert, setup, 'no_new') },
+	// NOTE: here we mark the raw instances with .__created_raw
+	instance_raw: function(assert, setup){
+		var res = this.instance(assert, setup, 'raw') 
+		Object.values(res)
+			.forEach(function(e){
+				Object.assign(
+					e, 
+					{__created_raw: true}) })
+		return res },
 }
 
 
 
 var tests = {
 	// instance creation...
-	instance: function(assert, setup, mode){
-			return constructors(setup) 
-				.reduce(function(res, [k, O]){
-					var o = res[k.toLowerCase()] = 
-						mode == 'no_new' ?
-							assert(O(), `new:`, k)
-						: mode == 'raw' ?
-							assert(O.__rawinstance__(), `.__rawinstance__()`, k)	
-						: assert(new O(), `new:`, k)
-					assert(o instanceof O, `instanceof:`, k)
-					O.__proto__ instanceof Function
-						&& assert(o instanceof O.__proto__, `instanceof-nested:`, k)
-					assert(o.constructor === O, `.constructor:`, k)
-					assert(o.__proto__ === O.prototype, `.__proto__:`, k)
-					return res }, {}) },
-	instance_no_new: function(assert, setup){
-		return this.instance(assert, setup, 'no_new') },
-	instance_raw: function(assert, setup){
-		return this.instance(assert, setup, 'raw') },
+	instance: modifiers.instance,
+	instance_no_new: modifiers.instance_no_new,
+	instance_raw: modifiers.instance_raw,
 
 	/*/ XXX
 	attributes: function(assert, setup){
 		return {} },
 	//*/
 
-	// XXX
 	methods: function(assert, setup){
+		instances(setup)
+			.forEach(function([k, o]){
+				deepKeys(o)
+					.forEach(function(m){
+						typeof(o[m]) == 'function'
+							// skip special methods...
+							&& !m.startsWith('__')
+							&& o[m]() }) })
+		return {} },
+	constructor_methods: function(assert, setup){
 		constructors(setup)
 			.forEach(function([k, O]){
-				Object.keys(O).forEach(function(m){
-					typeof(O[m]) == 'function'
-						&& O[m]() })
-			})
+				deepKeys(O)
+					.forEach(function(m){
+						typeof(O[m]) == 'function'
+							// skip special methods...
+							&& !m.startsWith('__')
+							&& O[m]() }) })
 		return {} },
 	callables: function(assert, setup){
 		return instances(setup)
 			.map(function([k, o]){
 				// NOTE: not all callables are instances of Function...
-				//assert(typeof(o) == 'function' 
-				//	&& o instanceof Function, 'instanceof Function', k)
+				typeof(o) == 'function' 
+					&& (o.__non_function ?
+						assert(!(o instanceof Function), 'non-instanceof Function', k)
+						: assert(o instanceof Function, 'instanceof Function', k))
 				return typeof(o) == 'function'
 					&& assert(o(), 'call', k) }) },
 }
@@ -245,7 +307,6 @@ var runner = function(){
 		assertions: 0,
 		failures: 0,
 	}
-
 	// tests...
 	Object.keys(tests)
 		.forEach(function(t){
@@ -268,12 +329,10 @@ var runner = function(){
 		.forEach(function(c){
 			stats.tests += 1
 			cases[c]( makeAssert(`case:${c}:`, stats) ) }) 
-
 	// stats...
 	console.log('Tests run:', stats.tests, 
 		'Assertions:', stats.assertions, 
 		'Failures:', stats.failures) 
-
 	return stats }
 
 

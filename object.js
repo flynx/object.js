@@ -115,6 +115,8 @@ function(text, tab_size, keep_tabs){
 // 	- attr names are the same and,
 // 	- attr values are identical.
 //
+// NOTE: this will do a shallow test using Object.keys(..) thus .__proto__
+// 		attributes are ignored...
 var match = 
 module.match =
 function(base, obj){

@@ -373,6 +373,13 @@ var LowLevel = object.Constructor('LowLevel', {
 
 ```
 
+The value `.__new__(..)` returns is used as the instance and gets linked 
+to the prototype chain by the calling constructor's `.__rawinstance__(..)`,
+the constructor then will call `.__init__(..)` if defined.
+
+_Note that `.__init__(..)` is called by the constructor and not by
+`RawInstance(..)` or `.__rawinstance__(..)`._
+
 Like [_function constructor_ and `.__call__(..)`](#callable-instances) 
 this also has two contexts, but the internal context is different -- as
 it is the job of `.__new__(..)` to create an instance, at time of call 
@@ -389,10 +396,6 @@ Contexts:
   (`window` or `global` by default), the same as for function constructor 
   and `.__call__(..)`.
  
-
-The value `.__new__(..)`returns is used as the instance and gets linked 
-in the prototype chain.
-
 This has priority over the callable protocols above, thus the user must
 take care of both the _function constructor_ and `prototype.__call__(..)` 
 handling.
