@@ -1,5 +1,38 @@
 /**********************************************************************
 * 
+* This is an experimental test framework...
+*
+* The idea is that we can split the tests into:
+* 	- setups
+* 		Construct as set of testable things.
+* 		On this stage the construction process can be tested.
+* 	- modifiers
+* 		Take a set of testable things as returned by a setup/modifier and
+* 		modify them or produce new things based on the old ones.
+* 		Here the modification process can be tested.
+* 	- tests
+* 		Take a set of things as returned by a setup/modifier and run a 
+* 		set of tests on them.
+* 		This stage tests a specific state and interactions within it.
+* 	- specific cases
+* 		A specific manual construction of a thing, its modification and
+* 		test.
+*
+* Testing is done by building/running a number chains, starting with a 
+* setup, then chaining the results through zero or more modifiers and 
+* finally into a test.
+*
+* The actual testing is dune via assert(..) functions and is not 
+* restricted to the test stage.
+*
+*
+* NOTE: tests can be used as modifiers if they modify state and return 
+* 		the modified input.
+*
+*
+* XXX thins to simplify:
+* 		- would be nice if the actual code could be readable...
+* 		- can we automate assert callas?
 *
 *
 *
@@ -20,7 +53,7 @@ var object = require('./object')
 // 			$ export VERBOSE=1 && node test.js
 // 		or set this manually after require('./test') but before running 
 // 		the runner(..)
-// 		XXX this may change in the future...
+// NOTE: this may change in the future...
 module.VERBOSE = process ?
 	process.env.VERBOSE
 	: false
@@ -67,7 +100,8 @@ var makeAssert = function(pre, stats){
 
 //---------------------------------------------------------------------
 
-var setups = {
+var setups = 
+module.setups = {
 	// basic constructor and inheritance...
 	basic: function(assert){
 		var X, Y, A, B, C
@@ -176,6 +210,11 @@ var setups = {
 			return res
 		}, {}) },
 
+	/*/ XXX methods (instance/constructor)...
+	methods: function(assert){
+		return {} },
+	//*/
+	
 	/*/ XXX mixins...
 	mixin: function(assert){
 		return {
@@ -184,7 +223,9 @@ var setups = {
 	//*/
 }
 
-var modifiers = {
+
+var modifiers =
+module.modifiers = {
 	// default...
 	'as-is': function(assert, setup){
 		return setup },
@@ -229,11 +270,20 @@ var modifiers = {
 					e, 
 					{__created_raw: true}) })
 		return res },
+
+
+	// sanity checks...
+	// NOTE: these should have no side-effects but since we can run 
+	// 		them why not run them ;)
+	get methods(){ return tests.methods },
+	get constructor_methods(){ return tests.constructor_methods },
+	get callables(){ return tests.callables },
 }
 
 
 
-var tests = {
+var tests =
+module.tests = {
 	// instance creation...
 	instance: modifiers.instance,
 	instance_no_new: modifiers.instance_no_new,
@@ -244,6 +294,7 @@ var tests = {
 		return {} },
 	//*/
 
+	// methods...
 	methods: function(assert, setup){
 		instances(setup)
 			.forEach(function([k, o]){
@@ -253,7 +304,7 @@ var tests = {
 							// skip special methods...
 							&& !m.startsWith('__')
 							&& o[m]() }) })
-		return {} },
+		return setup },
 	constructor_methods: function(assert, setup){
 		constructors(setup)
 			.forEach(function([k, O]){
@@ -263,17 +314,20 @@ var tests = {
 							// skip special methods...
 							&& !m.startsWith('__')
 							&& O[m]() }) })
-		return {} },
+		return setup },
+
+	// callables...
 	callables: function(assert, setup){
-		return instances(setup)
-			.map(function([k, o]){
+		instances(setup)
+			.forEach(function([k, o]){
 				// NOTE: not all callables are instances of Function...
 				typeof(o) == 'function' 
 					&& (o.__non_function ?
 						assert(!(o instanceof Function), 'non-instanceof Function', k)
 						: assert(o instanceof Function, 'instanceof Function', k))
-				return typeof(o) == 'function'
-					&& assert(o(), 'call', k) }) },
+				typeof(o) == 'function'
+					&& assert(o(), 'call', k) }) 
+		return setup },
 }
 
 
@@ -281,7 +335,8 @@ var tests = {
 //
 // NOTE: it is a good idea to migrate tests from here into the main 
 // 		framework so as to be able to use them on more setups...
-var cases = {
+var cases =
+module.cases = {
 	'example': function(assert){
 		assert(true, 'example.')
 	},
@@ -301,11 +356,15 @@ var cases = {
 // 		case() 
 // 			for each case in cases
 //
-var runner = function(){
+var runner = 
+module.runner =
+function(){
+	var started = Date.now()
 	var stats = {
 		tests: 0,
 		assertions: 0,
 		failures: 0,
+		time: 0,
 	}
 	// tests...
 	Object.keys(tests)
@@ -329,23 +388,36 @@ var runner = function(){
 		.forEach(function(c){
 			stats.tests += 1
 			cases[c]( makeAssert(`case:${c}:`, stats) ) }) 
+	// runtime...
+	stats.time = Date.now() - started
 	// stats...
 	console.log('Tests run:', stats.tests, 
 		'Assertions:', stats.assertions, 
-		'Failures:', stats.failures) 
+		'Failures:', stats.failures,
+		`  (${stats.time}ms)`) 
 	return stats }
 
 
 
 //---------------------------------------------------------------------
 
-var stats = runner()
+// test if we are run from command line...
+//
+// NOTE: normally this would be require.main === module but we are 
+// 		overriding module in the compatibility wrapper so we have to do 
+// 		things differently...
+//
+// XXX update wrapper to make this simpler...
+if(typeof(__filename) != 'undefined'
+		&& __filename == (require.main || {}).filename){
 
+	var stats = module.stats = runner()
 
-// report error status to the OS...
-process
-	&& process.exit(stats.failures)
+	// report error status to the OS...
+	process
+		&& process.exit(stats.failures)
 
+}
 
 
 
