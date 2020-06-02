@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 /**********************************************************************
 * 
 * This is an experimental test framework...
@@ -69,6 +70,145 @@ var deepKeys = function(obj, stop){
 		res.push(Object.keys(obj))
 		obj = obj.__proto__ }
 	return [...(new Set(res.flat()))] }
+
+
+// basic argv parser...
+//
+// Format:
+// 	{
+// 		// alias...
+// 		v: 'verbose',
+// 		// handler...
+// 		verbose: function(opt, rest){
+// 			...
+// 		},
+//
+//	    t: 'test',
+//		test: {
+//			doc: 'test option.',
+//			arg: 'VALUE',
+//			handler: function(value, opt, rest){ 
+//				...
+//			}},
+//
+// 		...
+// 	}
+//
+// XXX do we handle = for options with values???
+// XXX move this to it's own lib...
+// XXX need better test processing:
+// 		- line breaks
+// 		- ...
+// XXX revise...
+var ArgvParser = function(spec){
+	// spec defaults...
+	// NOTE: this is intentionally not dynamic...
+	spec = Object.assign({
+		// builtin options...
+		h: 'help',
+		help: {
+			doc: 'print this message and exit.',
+			handler: function(){
+				var opts_width = this.spec.__opts_width__ || 4
+				console.log([
+					`Usage: ${ 
+						typeof(spec.__usage__) == 'function' ? 
+							spec.__usage__.call(this) 
+							: spec.__usage__ }`,
+					'',
+					'Options:',
+					'\t'+ (spec.__getoptions__()
+						.map(function([opts, arg, doc]){
+							opts = '-'+ opts.join(' | -') +' '+ (arg || '')
+							// format options and docs...
+							return opts.length < opts_width*8 ?
+								opts +'\t'.repeat(opts_width - Math.floor(opts.length/8))+ doc
+								: [opts, '\t'.repeat(opts_width)+ doc] })
+						.flat()
+						.join('\n\t')),
+					// XXX links/license/...
+				].join('\n')) 
+				process.exit() }},
+
+		// special values and methods...
+		__opts_width__: 3,
+
+		// these is run in the same context as the handlers... (XXX ???)
+		__usage__: function(){
+			return `${ this.scriptname } [OPTIONS]` },
+		__unknown__: function(key){
+			console.error('Unknown option:', key)
+			process.exit(1) }, 
+
+		// these are run in the context of spec...
+		__getoptions__: function(){
+			var that = this
+			var handlers = {}
+			Object.keys(this)
+				.forEach(function(opt){
+					// skip special methods...
+					if(/^__.*__$/.test(opt)){
+						return }
+					var [k, h] = that.__gethandler__(opt)
+					handlers[k] ?
+						handlers[k][0].push(opt)
+						: (handlers[k] = [[opt], h.arg, h.doc || k, h]) })
+			return Object.values(handlers) },
+		__gethandler__: function(key){
+			var seen = new Set([key])
+			while(key in this 
+					&& typeof(this[key]) == typeof('str')){
+				key = this[key] 
+				// check for loops...
+				if(seen.has(key)){
+					throw Error('Option loop detected: '+ ([...seen, key].join(' -> '))) }
+				seen.add(key) }
+			return [key, this[key]] },
+	}, spec)
+
+	// sanity check -- this will detect argument loops...
+	spec.__getoptions__()
+
+	return function(argv){
+		var pattern = /^--?[a-zA-Z-]*$/
+		argv = argv.slice()
+		var context = {
+			spec: spec,
+			argv: argv.slice(),
+
+			interpreter: argv.shift(),
+			script: argv[0],
+			scriptname: argv.shift().split(/[\\\/]/).pop(),
+
+			rest: argv,
+		}
+		var other = []
+		while(argv.length > 0){
+			var arg = argv.shift()
+			// options...
+			if(pattern.test(arg)){
+				var handler = spec.__gethandler__(arg.replace(/^--?/, '')).pop()
+						|| spec.__unknown__
+				// get option value...
+				var value = (handler.arg && !pattern.test(argv[0])) ?
+						argv.shift()
+					: undefined
+				// run handler...
+				;(typeof(handler) == 'function' ?
+						handler
+						: handler.handler)
+					.call(context, 
+						// pass value...
+						...(handler.arg ? [value] : []), 
+						arg, 
+						argv)
+				continue }
+			other.push(arg) }
+		return other } }
+
+
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 // a constructor is a thing that starts with a capital and has a .prototype
 var constructors = function(obj){
@@ -146,7 +286,6 @@ module.setups = {
 				test_init: A.prototype.test_init,
 			}), `inherit .__new__()`),
 
-			// XXX gen2 and extended stuff???
 			// XXX
 		} },
 
@@ -455,67 +594,40 @@ if(typeof(__filename) != 'undefined'
 		&& __filename == (require.main || {}).filename){
 
 	// parse args...
-	var args = process.argv.slice(2)
-	var arg
-	var chains = []
-	while(args.length > 0){
-		arg = args.shift()
+	var chains = 
+		ArgvParser({
+			__usage__: function(){ 
+				return `Usage: ${ this.scriptname } [OPTIONS] [CHAIN] ...` },
+			// options...
+			l: 'list',
+			list: {
+				doc: 'list available tests.',
+				handler: function(){
+					console.log(object.normalizeTextIndent(
+						`Setups:
+							${ Object.keys(setups).join('\n\
+							') }
 
-		// options...
-		if(/^--?[a-zA-Z-]*/.test(arg)){
-			arg = arg.replace(/^--?/, '')
+						Modifiers:
+							${ Object.keys(modifiers).join('\n\
+							') }
 
-			// verbose...
-			if(arg == 'v' || arg == 'verbose'){
-				module.VERBOSE=true
+						Tests:
+							${ Object.keys(tests).join('\n\
+							') }
 
-			// list...
-			} else if(arg == 'l' || arg == 'list'){
-				console.log(object.normalizeTextIndent(
-					`Setups:
-						${ Object.keys(setups)
-							.join('\n\t\t\t\t\t\t') }
+						Standalone test cases:
+							${ Object.keys(cases).join('\n\
+							') }
+						`))
+					process.exit() }},
+			v: 'verbose',
+			verbose: {
+				doc: 'verbose mode.',
+				handler: function(){
+					module.VERBOSE = true }},
+		})(process.argv)
 
-					Modifiers:
-						${ Object.keys(modifiers)
-							.join('\n\t\t\t\t\t\t') }
-
-					Tests:
-						${ Object.keys(tests)
-							.join('\n\t\t\t\t\t\t') }
-
-					Standalone test cases:
-						${ Object.keys(cases)
-							.join('\n\t\t\t\t\t\t') }
-					`))
-				process.exit()
-
-			// help...
-			// XXX format the lists better... word-wrap??
-			} else if(arg == 'h' || arg == 'help'){
-				console.log(object.normalizeTextIndent(
-					`Usage: ${ process.argv[1].split(/[\\\/]/).pop() } [OPTIONS] [CHAIN] ...
-
-					Chain format:
-						<case>
-						<setup>:<test>
-						<setup>:<modifier>:<test>
-
-					Each item can either be a specific item name or '*' to indicate any/all 
-					items.
-
-					Options:
-						-h | --help			print this message and exit
-						-v | --verbose		verbose mode
-						-l | --list			list available tests
-					`))
-				process.exit() } 
-
-			continue }
-
-		// collect chains...
-		chains.push(arg) }
-		
 	// run the tests...
 	var stats = {}
 	chains.length > 0 ?
@@ -526,13 +638,14 @@ if(typeof(__filename) != 'undefined'
 
 	// print stats...
 	console.log('Tests run:', stats.tests, 
-		'Assertions:', stats.assertions, 
-		'Failures:', stats.failures,
+		'  Assertions:', stats.assertions, 
+		'  Failures:', stats.failures,
 		`  (${stats.time}ms)`) 
 
 	// report error status to the OS...
 	process.exit(stats.failures)
 }
+
 
 
 
