@@ -804,7 +804,7 @@ Align _code_ to shortest leading white-space
 ```
 normalizeIndent(<text>)
 normalizeIndent(<text>, <tab-size>)
-normalizeIndent(<text>, <tab-size>, <keep-tabs>)
+normalizeIndent(<text>, <tab-size>, <leading-tabs>)
 	-> <text>
 ```
 
@@ -813,7 +813,7 @@ to make source printing in console more pleasant to read.
 
 `tab_size` defaults to `object.TAB_SIZE`
 
-`keep_indent` defaults to `object.KEEP_INDENT`
+`leading_tabs` defaults to `object.LEADING_TABS`
 
 
 A shorthand to `normalizeIndent(..)` optimized for text rather than code
@@ -822,7 +822,7 @@ normalizeTextIndent(..)
 	-> <text>
 ```
 
-This ignores `object.KEEP_INDENT` and `keep_indent` is 0 by default.
+This ignores `object.LEADING_TABS` and `leading_tabs` is 0 by default.
 
 
 ### `match(..)`

@@ -25,8 +25,8 @@
 var TAB_SIZE =
 module.TAB_SIZE = 4
 
-var KEEP_INDENT = 
-module.KEEP_INDENT = 1
+var LEADING_TABS = 
+module.LEADING_TABS = 1
 
 
 // Normalize code indent...
@@ -42,8 +42,8 @@ module.KEEP_INDENT = 1
 // This will ignore the indent of the first line.
 //
 // If the last line is indented higher or equal to the rest of the text 
-// we will user keep_indent (defaults to KEEP_INDENT) to indent the rest 
-// of the text.
+// we will user leading_tabs (defaults to LEADING_TABS) to indent the 
+// rest of the text.
 // This will indent the following styles correctnly:
 //
 // 		|function(a, b){				|function(a, b){
@@ -56,13 +56,13 @@ module.KEEP_INDENT = 1
 // 		...when moving take care that ImageGrid's core.doc uses this...
 var normalizeIndent =
 module.normalizeIndent =
-function(text, tab_size, keep_indent){
+function(text, tab_size, leading_tabs){
 	tab_size = tab_size == null ? 
 		TAB_SIZE 
 		: tab_size
-	keep_indent = (keep_indent == null ? 
-			KEEP_INDENT 
-			: keep_indent) 
+	leading_tabs = (leading_tabs == null ? 
+			LEADING_TABS 
+			: leading_tabs) 
 		* tab_size
 	// prepare text...
 	var tab = ' '.repeat(tab_size)
@@ -78,9 +78,9 @@ function(text, tab_size, keep_indent){
 						// ignore 0 indent of first line...
 						|| (i == 0 && indent == 0) ?
 					l 
-				// last line -- ignore keep_indent if lower indent...
+				// last line -- ignore leading_tabs if lower indent...
 				: i == lines.length-1 && indent > l ? 
-					Math.max(l-keep_indent, 0) 
+					Math.max(l-leading_tabs, 0) 
 				// initial state...
 				: l < 0 ? 
 					indent 
@@ -99,8 +99,8 @@ function(text, tab_size, keep_indent){
 // shorthand more suted for text...
 var normalizeTextIndent =
 module.normalizeTextIndent =
-function(text, tab_size, keep_indent){
-	return module.normalizeIndent(text, tab_size, keep_indent || 0) }
+function(text, tab_size, leading_tabs){
+	return module.normalizeIndent(text, tab_size, leading_tabs || 0) }
 
 
 // Match two objects...
