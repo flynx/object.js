@@ -227,6 +227,7 @@ module.setups = {
 var modifiers =
 module.modifiers = {
 	// default...
+	//
 	'as-is': function(assert, setup){
 		return setup },
 
@@ -243,10 +244,13 @@ module.modifiers = {
 		return this.gen2(assert, this.gen2(assert, setup), '3') },
 
 	// generate instances...
+	//
 	// NOTE: these are re-used as tests too...
 	instance: function(assert, setup, mode){
 		return constructors(setup) 
 			.reduce(function(res, [k, O]){
+				// create instance with lowercase name of constructor...
+				// NOTE: constructor is expected to be capitalized...
 				var o = res[k.toLowerCase()] = 
 					mode == 'no_new' ?
 						assert(O(), `new:`, k)
@@ -261,7 +265,9 @@ module.modifiers = {
 				return res }, {}) },
 	instance_no_new: function(assert, setup){
 		return this.instance(assert, setup, 'no_new') },
-	// NOTE: here we mark the raw instances with .__created_raw
+	// NOTE: here we mark the raw instances with .__created_raw, this is
+	// 		done to be able to distinguish them from fully initialized 
+	// 		instances...
 	instance_raw: function(assert, setup){
 		var res = this.instance(assert, setup, 'raw') 
 		Object.values(res)
@@ -273,8 +279,9 @@ module.modifiers = {
 
 
 	// sanity checks...
+	//
 	// NOTE: these should have no side-effects but since we can run 
-	// 		them why not run them ;)
+	// 		them why not run them and verify ;)
 	get methods(){ return tests.methods },
 	get constructor_methods(){ return tests.constructor_methods },
 	get callables(){ return tests.callables },
@@ -348,6 +355,14 @@ module.cases = {
 
 // Test runner...
 //
+// 	runner()
+// 		-> stats
+//
+// 	runner('setup:test')
+// 	runner('setup:mod:test')
+// 		-> stats
+//
+//
 // This will run 
 // 		test(modifier(setup)) 
 // 			for each test in tests
@@ -356,9 +371,23 @@ module.cases = {
 // 		case() 
 // 			for each case in cases
 //
+//
+// NOTE: chaining more than one modifier is not yet supported (XXX)
 var runner = 
 module.runner =
-function(){
+function(chain){
+	// parse chain...
+	chain = chain || []
+	chain = chain instanceof Array ? 
+		chain 
+		: chain.split(/:/)
+	var chain_length = chain.length
+	var setup = chain.shift() || '*'
+	var test = chain.pop() || '*'
+	var mod = chain.pop() || '*'
+	// XXX add case support...
+
+	// prep...
 	var started = Date.now()
 	var stats = {
 		tests: 0,
@@ -367,27 +396,38 @@ function(){
 		time: 0,
 	}
 	// tests...
-	Object.keys(tests)
-		.forEach(function(t){
-			// modifiers...
-			Object.keys(modifiers)
-				.forEach(function(m){
-					// setups...
-					Object.keys(setups)
-						.forEach(function(s){
-							if(typeof(setups[s]) != 'function'){
-								return }
-							// run the test...
-							stats.tests += 1
-							var _assert = makeAssert(`test:${t}.${s}.${m}`, stats)
-							tests[t](_assert, 
-								modifiers[m](_assert, 
-									setups[s](_assert))) }) }) }) 
+	chain_length != 1
+		&& Object.keys(tests)
+			.filter(function(t){
+				return test == '*' || test == t })
+			.forEach(function(t){
+				// modifiers...
+				Object.keys(modifiers)
+					.filter(function(m){
+						return mod == '*' || mod == m })
+					.forEach(function(m){
+						// setups...
+						Object.keys(setups)
+							.filter(function(s){
+								return setup == '*' || setup == s })
+							.forEach(function(s){
+								if(typeof(setups[s]) != 'function'){
+									return }
+								// run the test...
+								stats.tests += 1
+								// XXX revise order...
+								var _assert = makeAssert(`test:${s}:${m}:${t}`, stats)
+								tests[t](_assert, 
+									modifiers[m](_assert, 
+										setups[s](_assert))) }) }) }) 
 	// cases...
-	Object.keys(cases)
-		.forEach(function(c){
-			stats.tests += 1
-			cases[c]( makeAssert(`case:${c}:`, stats) ) }) 
+	chain_length <= 1
+		&& Object.keys(cases)
+			.filter(function(s){
+				return setup == '*' || setup == s })
+			.forEach(function(c){
+				stats.tests += 1
+				cases[c]( makeAssert(`case:${c}`, stats) ) }) 
 	// runtime...
 	stats.time = Date.now() - started
 	// stats...
@@ -401,22 +441,64 @@ function(){
 
 //---------------------------------------------------------------------
 
-// test if we are run from command line...
+// we are run from command line -> test...
 //
 // NOTE: normally this would be require.main === module but we are 
 // 		overriding module in the compatibility wrapper so we have to do 
 // 		things differently...
 //
-// XXX update wrapper to make this simpler...
+// XXX update wrapper to make the condition simpler...
 if(typeof(__filename) != 'undefined'
 		&& __filename == (require.main || {}).filename){
 
-	var stats = module.stats = runner()
+	// parse args...
+	var args = process.argv.slice(2)
+	while(args.length > 0){
+		var arg = args.shift()
+
+		// verbose...
+		if(arg == '-v' || arg == '--verbose'){
+			module.VERBOSE=true
+
+		// help...
+		// XXX format the lists better... word-wrap??
+		} else if(arg == '-h' || arg == '--help'){
+			console.log(object.normalizeTextIndent(
+				`Usage: ${ process.argv[1].split(/[\\\/]/).pop() } [OPTIONS] [CHAIN]
+
+				Chain format:
+					<setup>:<test>
+					<setup>:<modifier>:<test>
+
+				Each item can either be a specific item name or '*' to indicate any/all 
+				items.
+
+				Setups:
+					${ Object.keys(setups).join(', ') }
+
+				Modifiers:
+					${ Object.keys(modifiers).join(', ') }
+
+				Tests:
+					${ Object.keys(tests).join(', ') }
+
+				Options:
+					-h | --help			print this message and exit
+					-v | --verbose		verbose mode
+
+				`))
+			process.exit()
+		} }
+		
+
+	// run the tests...
+	var stats = module.stats = 
+		arg ?
+			runner(arg)
+			: runner()
 
 	// report error status to the OS...
-	process
-		&& process.exit(stats.failures)
-
+	process.exit(stats.failures)
 }
 
 
