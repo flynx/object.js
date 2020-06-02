@@ -813,7 +813,7 @@ to make source printing in console more pleasant to read.
 
 `tab_size` defaults to `object.TAB_SIZE`
 
-`keep_tabs` defaults to `object.KEEP_TABS`
+`keep_indent` defaults to `object.KEEP_INDENT`
 
 
 A shorthand to `normalizeIndent(..)` optimized for text rather than code
@@ -822,7 +822,7 @@ normalizeTextIndent(..)
 	-> <text>
 ```
 
-This ignores `object.KEEP_TABS` and `keep_tabs` is 0 by default.
+This ignores `object.KEEP_INDENT` and `keep_indent` is 0 by default.
 
 
 ### `match(..)`
