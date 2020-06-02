@@ -107,7 +107,7 @@ module.setups = {
 		var X, Y, A, B, C
 		return {
 			X: X = assert(object.Constructor('A'), `Constructor`),
-			Y: Y = assert(object.C('Y', { }), ` C`),
+			Y: Y = assert(object.C('Y', { }), `C`),
 
 			A: A = assert(object.C('A', Y, { }), `inherit (gen1)`),
 			B: B = assert(object.C('B', A, { }), `inherit (gen2)`),
@@ -356,8 +356,10 @@ module.cases = {
 // Test runner...
 //
 // 	runner()
+// 	runner('*')
 // 		-> stats
 //
+// 	runner('case')
 // 	runner('setup:test')
 // 	runner('setup:mod:test')
 // 		-> stats
@@ -375,9 +377,11 @@ module.cases = {
 // NOTE: chaining more than one modifier is not yet supported (XXX)
 var runner = 
 module.runner =
-function(chain){
+function(chain, stats){
 	// parse chain...
-	chain = chain || []
+	chain = (chain == '*' || chain == null) ?
+		[]
+		: chain
 	chain = chain instanceof Array ? 
 		chain 
 		: chain.split(/:/)
@@ -385,16 +389,17 @@ function(chain){
 	var setup = chain.shift() || '*'
 	var test = chain.pop() || '*'
 	var mod = chain.pop() || '*'
-	// XXX add case support...
 
-	// prep...
+	// stats...
+	stats = stats || {}
+	Object.assign(stats, {
+		tests: stats.tests || 0,
+		assertions: stats.assertions || 0,
+		failures: stats.failures || 0,
+		time: stats.time || 0,
+	})
+
 	var started = Date.now()
-	var stats = {
-		tests: 0,
-		assertions: 0,
-		failures: 0,
-		time: 0,
-	}
 	// tests...
 	chain_length != 1
 		&& Object.keys(tests)
@@ -416,7 +421,7 @@ function(chain){
 								// run the test...
 								stats.tests += 1
 								// XXX revise order...
-								var _assert = makeAssert(`test:${s}:${m}:${t}`, stats)
+								var _assert = makeAssert(`test: ${s}:${m}:${t}`, stats)
 								tests[t](_assert, 
 									modifiers[m](_assert, 
 										setups[s](_assert))) }) }) }) 
@@ -427,14 +432,9 @@ function(chain){
 				return setup == '*' || setup == s })
 			.forEach(function(c){
 				stats.tests += 1
-				cases[c]( makeAssert(`case:${c}`, stats) ) }) 
+				cases[c]( makeAssert(`case: ${c}`, stats) ) }) 
 	// runtime...
-	stats.time = Date.now() - started
-	// stats...
-	console.log('Tests run:', stats.tests, 
-		'Assertions:', stats.assertions, 
-		'Failures:', stats.failures,
-		`  (${stats.time}ms)`) 
+	stats.time += Date.now() - started
 	return stats }
 
 
@@ -453,49 +453,67 @@ if(typeof(__filename) != 'undefined'
 
 	// parse args...
 	var args = process.argv.slice(2)
+	var arg
+	var chains = []
 	while(args.length > 0){
-		var arg = args.shift()
+		arg = args.shift()
 
-		// verbose...
-		if(arg == '-v' || arg == '--verbose'){
-			module.VERBOSE=true
+		// options...
+		if(/^--?[a-zA-Z-]*/.test(arg)){
+			arg = arg.replace(/^--?/, '')
 
-		// help...
-		// XXX format the lists better... word-wrap??
-		} else if(arg == '-h' || arg == '--help'){
-			console.log(object.normalizeTextIndent(
-				`Usage: ${ process.argv[1].split(/[\\\/]/).pop() } [OPTIONS] [CHAIN]
+			// verbose...
+			if(arg == 'v' || arg == 'verbose'){
+				module.VERBOSE=true
 
-				Chain format:
-					<setup>:<test>
-					<setup>:<modifier>:<test>
+			// help...
+			// XXX format the lists better... word-wrap??
+			} else if(arg == 'h' || arg == 'help'){
+				console.log(object.normalizeTextIndent(
+					`Usage: ${ process.argv[1].split(/[\\\/]/).pop() } [OPTIONS] [CHAIN] ...
 
-				Each item can either be a specific item name or '*' to indicate any/all 
-				items.
+					Chain format:
+						<case>
+						<setup>:<test>
+						<setup>:<modifier>:<test>
 
-				Setups:
-					${ Object.keys(setups).join(', ') }
+					Each item can either be a specific item name or '*' to indicate any/all 
+					items.
 
-				Modifiers:
-					${ Object.keys(modifiers).join(', ') }
+					Setups:
+						${ Object.keys(setups).join(', ') }
 
-				Tests:
-					${ Object.keys(tests).join(', ') }
+					Modifiers:
+						${ Object.keys(modifiers).join(', ') }
 
-				Options:
-					-h | --help			print this message and exit
-					-v | --verbose		verbose mode
+					Tests:
+						${ Object.keys(tests).join(', ') }
 
-				`))
-			process.exit()
-		} }
+					Options:
+						-h | --help			print this message and exit
+						-v | --verbose		verbose mode
+
+					`))
+				process.exit() } 
+
+			continue }
+
+		// collect chains...
+		chains.push(arg) }
 		
-
 	// run the tests...
-	var stats = module.stats = 
-		arg ?
-			runner(arg)
-			: runner()
+	var stats = {}
+	chains.length > 0 ?
+		chains
+			.forEach(function(chain){
+				runner(chain, stats) })
+		: runner('*', stats)
+
+	// print stats...
+	console.log('Tests run:', stats.tests, 
+		'Assertions:', stats.assertions, 
+		'Failures:', stats.failures,
+		`  (${stats.time}ms)`) 
 
 	// report error status to the OS...
 	process.exit(stats.failures)
