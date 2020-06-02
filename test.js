@@ -389,6 +389,9 @@ function(chain, stats){
 	var setup = chain.shift() || '*'
 	var test = chain.pop() || '*'
 	var mod = chain.pop() || '*'
+	mod = chain_length == 2 ? 
+		'as-is' 
+		: mod
 
 	// stats...
 	stats = stats || {}
@@ -466,6 +469,27 @@ if(typeof(__filename) != 'undefined'
 			if(arg == 'v' || arg == 'verbose'){
 				module.VERBOSE=true
 
+			// list...
+			} else if(arg == 'l' || arg == 'list'){
+				console.log(object.normalizeTextIndent(
+					`Setups:
+						${ Object.keys(setups)
+							.join('\n\t\t\t\t\t\t') }
+
+					Modifiers:
+						${ Object.keys(modifiers)
+							.join('\n\t\t\t\t\t\t') }
+
+					Tests:
+						${ Object.keys(tests)
+							.join('\n\t\t\t\t\t\t') }
+
+					Standalone test cases:
+						${ Object.keys(cases)
+							.join('\n\t\t\t\t\t\t') }
+					`))
+				process.exit()
+
 			// help...
 			// XXX format the lists better... word-wrap??
 			} else if(arg == 'h' || arg == 'help'){
@@ -480,19 +504,10 @@ if(typeof(__filename) != 'undefined'
 					Each item can either be a specific item name or '*' to indicate any/all 
 					items.
 
-					Setups:
-						${ Object.keys(setups).join(', ') }
-
-					Modifiers:
-						${ Object.keys(modifiers).join(', ') }
-
-					Tests:
-						${ Object.keys(tests).join(', ') }
-
 					Options:
 						-h | --help			print this message and exit
 						-v | --verbose		verbose mode
-
+						-l | --list			list available tests
 					`))
 				process.exit() } 
 
