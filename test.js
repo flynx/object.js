@@ -64,12 +64,26 @@ module.VERBOSE = process ?
 //---------------------------------------------------------------------
 // helpers...
 
+// get all keys accessible from object...
 var deepKeys = function(obj, stop){
 	var res = []
 	while(obj !== stop && obj != null){
 		res.push(Object.keys(obj))
 		obj = obj.__proto__ }
 	return [...(new Set(res.flat()))] }
+
+// compare two arrays by items...
+var arrayCmp = function(a, b){
+	var ka = Object.keys(a)
+	var kb = Object.keys(a)
+	return a === b
+		|| ka.length == kb.length
+		&& ka
+			// keep only non matching stuff...
+			.filter(function(k){
+				return a[k] !== b[k] 
+					&& a[k] != a[k] })
+			.length == 0 }
 
 
 // basic argv parser...
@@ -94,9 +108,15 @@ var deepKeys = function(obj, stop){
 // 		...
 // 	}
 //
-// XXX add option groups -- nested specs...
+// XXX add features:
+// 		- option groups -- nested specs...
+// 		- arg value type conversion???
+// 		- make this a constructor???
+// 		- extend this to support command calling...
 // XXX do we handle = for options with values???
 // XXX move this to it's own lib...
+// 		argv-handler
+// 		...
 // XXX need better test processing:
 // 		- line breaks
 // 		- ...
@@ -403,6 +423,85 @@ module.setups = {
 
 		} },
 	//*/
+	
+	// compatibility: native constructors...
+	js_constructors: function(assert){
+		var X, Y, Z, a, b, c, d
+		return {
+			Object,
+			Array,
+			Number,
+			Map,
+			Set,
+		}},
+	// compatibility: attribute/method access in native js prototype tree...
+	js_prototype: function(assert){
+		var a, b, c, d
+		return {
+			a: a = {
+				x: 'a',
+				method: function(){
+					return 'a' },
+			},
+			b: b = {
+				__proto__: a,
+				x: 'b',
+			}, 
+			c: c = {
+				__proto__: b,
+				x: 'c',
+				method: function(){
+					assert(arrayCmp(
+						object.values(c, 'x').join(''), 
+						['c', 'a', 'b']), 
+							'reach all values of attr')
+					assert(arrayCmp(
+						object.sources(c, 'method'), 
+						[c, a]), 
+							'reach all values of method')
+					assert(object.parent(c, 'x') == 'b', 'reach parent attr')
+					assert(object.parentCall(c.method, this) == 'a', 'reach parent method', 'c')
+					return 'c' },
+			}, 
+			d: d = {
+				__proto__: c,
+				method: function(){
+					assert(object.parentCall(d.method, this) == 'c', 'reach parent method', 'd')
+					return 'd' },
+			},
+		}},
+	// compatibility: class...
+	js_class: function(assert){
+		var X, Y, Z
+		return {
+			X: X = class {
+				x = 'x'
+				method(){
+					return 'x' }
+			},
+			Y: Y = class extends X {
+				x = 'y'
+			},
+			Z: Z = class extends Y {
+				x = 'z'
+				method(){
+					assert(arrayCmp(
+						object.values(c, 'x').join(''), 
+						['z', 'y', 'x']), 
+							'reach all values of attr (class)')
+					assert(arrayCmp(
+						object.sources(c, 'method'), 
+						[Z.prototype, X.prototype]), 
+							'reach all values of method (class)')
+					assert(
+						object.parent(c, 'x') == super.x, 
+							'reach super attr (class)')
+					assert(
+						object.parentCall(c.method, this) == super.method(), 
+							'reach super method (class)')
+					return 'c' }
+			},
+		}},
 }
 
 
@@ -431,6 +530,9 @@ module.modifiers = {
 	instance: function(assert, setup, mode){
 		return constructors(setup) 
 			.reduce(function(res, [k, O]){
+				// native JS constructors do not support no_new or raw modes...
+				if((mode == 'raw' || mode == 'no_new') && !O.__rawinstance__){
+					return res }
 				// create instance with lowercase name of constructor...
 				// NOTE: constructor is expected to be capitalized...
 				var o = res[k.toLowerCase()] = 
@@ -647,6 +749,7 @@ if(typeof(__filename) != 'undefined'
 				['$ $scriptname basic:*:*', 'run all tests and modifiers on "basic" setup.'],
 				['$ $scriptname -v example', 'run "example" test in verbose mode.'],
 				['$ $scriptname native:gen3:methods init:gen3:methods', 'run two tests/patterns.'],
+				['$ export VERBOSE=1 && $scriptname', 'set verbose mode globally and run tests.'],
 			],
 			// options...
 			l: 'list',
