@@ -42,6 +42,8 @@
 (function(require){ var module={} // make module AMD/node compatible...
 /*********************************************************************/
 
+var colors = require('colors')
+
 var object = require('./object')
 
 
@@ -64,6 +66,48 @@ module.VERBOSE = process ?
 //---------------------------------------------------------------------
 // helpers...
 
+/*/ Add colors to String...
+var colors =
+String.colors = {
+	reset: '\x1b[0m',
+	bold: '\x1b[1m',
+	dim: '\x1b[2m',
+	underscore: '\x1b[4m',
+	blink: '\x1b[5m',
+	reverse: '\x1b[7m',
+	hidden: '\x1b[8m',
+
+	black: '\x1b[30m',
+	red: '\x1b[31m',
+	green: '\x1b[32m',
+	yellow: '\x1b[33m',
+	blue: '\x1b[34m',
+	magenta: '\x1b[35m',
+	cyan: '\x1b[36m',
+	white: '\x1b[37m',
+
+	bgblack: '\x1b[40m',
+	bgred: '\x1b[41m',
+	bggreen: '\x1b[42m',
+	bgyellow: '\x1b[43m',
+	bgblue: '\x1b[44m',
+	bgmagenta: '\x1b[45m',
+	bgcyan: '\x1b[46m',
+	bgwhite: '\x1b[47m',
+}
+Object.entries(colors)
+	.forEach(function([color, seq]){
+		Object.defineProperty(String.prototype, color, {
+			get: function(){
+				return seq + (this.endsWith(colors.reset) ? 
+					this 
+					: this + String.colors.reset) } }) })
+//*/
+Object.defineProperty(String.prototype, 'raw', {
+	get: function(){
+		return this.replace(/\x1b\[..?m/g, '') }, })
+
+
 // get all keys accessible from object...
 var deepKeys = function(obj, stop){
 	var res = []
@@ -84,6 +128,7 @@ var arrayCmp = function(a, b){
 				return a[k] !== b[k] 
 					&& a[k] != a[k] })
 			.length == 0 }
+
 
 
 // basic argv parser...
@@ -189,8 +234,8 @@ var ArgvParser = function(spec){
 			var opts_width = this.__opts_width__ || 4
 			var prefix = this.__doc_prefix__ || ''
 			return b ?
-				(a.length < opts_width*8 ?
-					[a +'\t'.repeat(opts_width - Math.floor(a.length/8))+ prefix + b]
+				(a.raw.length < opts_width*8 ?
+					[a +'\t'.repeat(opts_width - Math.floor(a.raw.length/8))+ prefix + b]
 					: [a, '\t'.repeat(opts_width)+ prefix + b])
 				: [a] },
 
@@ -295,8 +340,8 @@ var makeAssert = function(pre, stats){
 			&& !e
 				&& (stats.failures += 1)
 		module.VERBOSE
-			&& console.log(pre +': '+ msg, ...args)
-		console.assert(e, pre +': '+ msg, ...args)
+			&& console.log(pre +': '+ msg.bold, ...args)
+		console.assert(e, pre.bold +': '+ msg.bold.yellow, ...args)
 		return e } }
 
 
@@ -434,7 +479,7 @@ module.setups = {
 			Map,
 			Set,
 		}},
-	// compatibility: attribute/method access in native js prototype tree...
+	// compatibility: prototype tree...
 	js_prototype: function(assert){
 		var a, b, c, d
 		return {
@@ -470,7 +515,7 @@ module.setups = {
 					return 'd' },
 			},
 		}},
-	// compatibility: class...
+	// compatibility: class/instance...
 	js_class: function(assert){
 		var X, Y, Z
 		return {
@@ -745,11 +790,16 @@ if(typeof(__filename) != 'undefined'
 			__usage__: `$scriptname [OPTIONS] [CHAIN] ...`,
 			__doc__: 'Run tests on object.js module.',
 			__examples__: [
-				['$ $scriptname', 'run all tests.'],
-				['$ $scriptname basic:*:*', 'run all tests and modifiers on "basic" setup.'],
-				['$ $scriptname -v example', 'run "example" test in verbose mode.'],
-				['$ $scriptname native:gen3:methods init:gen3:methods', 'run two tests/patterns.'],
-				['$ export VERBOSE=1 && $scriptname', 'set verbose mode globally and run tests.'],
+				['$ ./$scriptname', 
+					'run all tests.'],
+				['$ ./$scriptname basic:*:*', 
+					'run all tests and modifiers on "basic" setup.'],
+				['$ ./$scriptname -v example', 
+					'run "example" test in verbose mode.'],
+				['$ ./$scriptname native:gen3:methods init:gen3:methods', 
+					'run two tests/patterns.'],
+				['$ export VERBOSE=1 && ./$scriptname', 
+					'set verbose mode globally and run tests.'],
 			],
 			// options...
 			l: 'list',
@@ -793,7 +843,7 @@ if(typeof(__filename) != 'undefined'
 	console.log('Tests run:', stats.tests, 
 		'  Assertions:', stats.assertions, 
 		'  Failures:', stats.failures,
-		`  (${stats.time}ms)`) 
+		`  (${stats.time}ms)`.bold.black) 
 
 	// report error status to the OS...
 	process.exit(stats.failures)
