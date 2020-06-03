@@ -226,9 +226,10 @@ var ArgvParser = function(spec){
 		__doc_prefix__: '- ',
 
 		// these is run in the same context as the handlers... (XXX ???)
-		__align__: function(a, b){
+		__align__: function(a, b, ...rest){
 			var opts_width = this.__opts_width__ || 4
 			var prefix = this.__doc_prefix__ || ''
+			b = [b, ...rest].join('\n'+ ('\t'.repeat(opts_width+1) + ' '.repeat(prefix.length)))
 			return b ?
 				(a.raw.length < opts_width*8 ?
 					[a +'\t'.repeat(opts_width - Math.floor(a.raw.length/8))+ prefix + b]
@@ -753,17 +754,39 @@ if(typeof(__filename) != 'undefined'
 		ArgvParser({
 			// doc...
 			__usage__: `$scriptname [OPTIONS] [CHAIN] ...`,
-			__doc__: 'Run tests on object.js module.',
+			__doc__: object.normalizeTextIndent(
+				`Run tests on object.js module.
+
+				Tests run by $scriptname can be specified in one of the 
+				following formats:
+
+						<case>
+						<setup>:<test>
+						<setup>:<modifier>:<test>
+
+				Each of the items in the test spec can be a "*" indicating
+				that all relevant items should be used, for example:
+
+						${ '$ ./$scriptname basic:*:*'.gray }
+
+				Here $scriptname is instructed to run all tests and modifiers
+				only on the basic setup.
+
+				Zero or more sets of tests can be specified.
+
+				When no tests specified $scriptname will run all tests.
+				`),
 			__examples__: [
-				['$ ./$scriptname', 
+				['$ ./$scriptname'.gray, 
 					'run all tests.'],
-				['$ ./$scriptname basic:*:*', 
-					'run all tests and modifiers on "basic" setup.'],
-				['$ ./$scriptname -v example', 
+				['$ ./$scriptname basic:*:*'.gray, 
+					'run all tests and modifiers on "basic" setup.',
+					'(see '+ '$scriptname -l'.gray +' for more info)'],
+				['$ ./$scriptname -v example'.gray, 
 					'run "example" test in verbose mode.'],
-				['$ ./$scriptname native:gen3:methods init:gen3:methods', 
+				['$ ./$scriptname native:gen3:methods init:gen3:methods'.gray, 
 					'run two tests/patterns.'],
-				['$ export VERBOSE=1 && ./$scriptname', 
+				['$ export VERBOSE=1 && ./$scriptname'.gray, 
 					'set verbose mode globally and run tests.'],
 			],
 			// options...
@@ -772,7 +795,13 @@ if(typeof(__filename) != 'undefined'
 				doc: 'list available tests.',
 				handler: function(){
 					console.log(object.normalizeTextIndent(
-						`Setups:
+						`Test run by %s can be of the following forms:
+
+							<case>
+							<setup>:<test>
+							<setup>:<modifier>:<test>
+
+						Setups:
 							${ Object.keys(setups).join('\n\
 							') }
 
@@ -787,7 +816,7 @@ if(typeof(__filename) != 'undefined'
 						Standalone test cases:
 							${ Object.keys(cases).join('\n\
 							') }
-						`))
+						`), this.scriptname)
 					process.exit() }},
 			v: 'verbose',
 			verbose: {
