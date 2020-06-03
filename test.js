@@ -94,6 +94,7 @@ var deepKeys = function(obj, stop){
 // 		...
 // 	}
 //
+// XXX add option groups -- nested specs...
 // XXX do we handle = for options with values???
 // XXX move this to it's own lib...
 // XXX need better test processing:
@@ -106,36 +107,78 @@ var ArgvParser = function(spec){
 	spec = Object.assign({
 		// builtin options...
 		h: 'help',
+		// XXX revise...
 		help: {
 			doc: 'print this message and exit.',
 			handler: function(){
-				var opts_width = this.spec.__opts_width__ || 4
+				var spec = this.spec
+				var that = this
 				console.log([
 					`Usage: ${ 
 						typeof(spec.__usage__) == 'function' ? 
 							spec.__usage__.call(this) 
 							: spec.__usage__ }`,
+					// doc...
+					...(spec.__doc__ ?
+						['', typeof(spec.__doc__) == 'function' ?
+							spec.__doc__()
+							: spec.__doc__]
+						: []),
+					// options...
 					'',
 					'Options:',
-					'\t'+ (spec.__getoptions__()
+					...(spec.__getoptions__()
 						.map(function([opts, arg, doc]){
-							opts = '-'+ opts.join(' | -') +' '+ (arg || '')
-							// format options and docs...
-							return opts.length < opts_width*8 ?
-								opts +'\t'.repeat(opts_width - Math.floor(opts.length/8))+ doc
-								: [opts, '\t'.repeat(opts_width)+ doc] })
-						.flat()
-						.join('\n\t')),
-					// XXX links/license/...
-				].join('\n')) 
+							return ['-'+opts.join(' | -') +' '+ (arg || ''), doc] })),
+					// examples...
+					...(this.spec.__examples__ ?
+						['', 'Examples:', ...(
+							this.spec.__examples__ instanceof Array ?
+								spec.__examples__
+									.map(function(e){ 
+										return e instanceof Array ? e : [e] })
+								: spec.__examples__.call(this) )]
+						: []),
+					// footer...
+					...(this.spec.__footer__?
+						['', typeof(this.spec.__footer__) == 'function' ? 
+							spec.__footer__.call(this) 
+							: spec.__footer__]
+						: []) ]
+				.map(function(e){
+					return e instanceof Array ?
+						spec.__align__(...e
+								.map(function(s){ 
+									return s.replace(/\$scriptname/g, that.scriptname) }))
+							// indent lists...
+							.map(function(s){
+								return '\t'+ s })
+						: e })
+				.flat()
+				.join('\n')
+				.replace(/\$scriptname/g, this.scriptname)) 
+
 				process.exit() }},
 
 		// special values and methods...
 		__opts_width__: 3,
+		__doc_prefix__: '- ',
 
 		// these is run in the same context as the handlers... (XXX ???)
+		__align__: function(a, b){
+			var opts_width = this.__opts_width__ || 4
+			var prefix = this.__doc_prefix__ || ''
+			return b ?
+				(a.length < opts_width*8 ?
+					[a +'\t'.repeat(opts_width - Math.floor(a.length/8))+ prefix + b]
+					: [a, '\t'.repeat(opts_width)+ prefix + b])
+				: [a] },
+
 		__usage__: function(){
 			return `${ this.scriptname } [OPTIONS]` },
+		__examples__: undefined,
+		__footer__: undefined,
+
 		__unknown__: function(key){
 			console.error('Unknown option:', key)
 			process.exit(1) }, 
@@ -596,8 +639,15 @@ if(typeof(__filename) != 'undefined'
 	// parse args...
 	var chains = 
 		ArgvParser({
-			__usage__: function(){ 
-				return `Usage: ${ this.scriptname } [OPTIONS] [CHAIN] ...` },
+			// doc...
+			__usage__: `$scriptname [OPTIONS] [CHAIN] ...`,
+			__doc__: 'Run tests on object.js module.',
+			__examples__: [
+				['$ $scriptname', 'run all tests.'],
+				['$ $scriptname basic:*:*', 'run all tests and modifiers on "basic" setup.'],
+				['$ $scriptname -v example', 'run "example" test in verbose mode.'],
+				['$ $scriptname native:gen3:methods init:gen3:methods', 'run two tests/patterns.'],
+			],
 			// options...
 			l: 'list',
 			list: {
@@ -623,7 +673,7 @@ if(typeof(__filename) != 'undefined'
 					process.exit() }},
 			v: 'verbose',
 			verbose: {
-				doc: 'verbose mode.',
+				doc: 'verbose mode (defaults to: $VERBOSE).',
 				handler: function(){
 					module.VERBOSE = true }},
 		})(process.argv)
