@@ -66,43 +66,6 @@ module.VERBOSE = process ?
 //---------------------------------------------------------------------
 // helpers...
 
-/*/ Add colors to String...
-var colors =
-String.colors = {
-	reset: '\x1b[0m',
-	bold: '\x1b[1m',
-	dim: '\x1b[2m',
-	underscore: '\x1b[4m',
-	blink: '\x1b[5m',
-	reverse: '\x1b[7m',
-	hidden: '\x1b[8m',
-
-	black: '\x1b[30m',
-	red: '\x1b[31m',
-	green: '\x1b[32m',
-	yellow: '\x1b[33m',
-	blue: '\x1b[34m',
-	magenta: '\x1b[35m',
-	cyan: '\x1b[36m',
-	white: '\x1b[37m',
-
-	bgblack: '\x1b[40m',
-	bgred: '\x1b[41m',
-	bggreen: '\x1b[42m',
-	bgyellow: '\x1b[43m',
-	bgblue: '\x1b[44m',
-	bgmagenta: '\x1b[45m',
-	bgcyan: '\x1b[46m',
-	bgwhite: '\x1b[47m',
-}
-Object.entries(colors)
-	.forEach(function([color, seq]){
-		Object.defineProperty(String.prototype, color, {
-			get: function(){
-				return seq + (this.endsWith(colors.reset) ? 
-					this 
-					: this + String.colors.reset) } }) })
-//*/
 Object.defineProperty(String.prototype, 'raw', {
 	get: function(){
 		return this.replace(/\x1b\[..?m/g, '') }, })
@@ -115,6 +78,7 @@ var deepKeys = function(obj, stop){
 		res.push(Object.keys(obj))
 		obj = obj.__proto__ }
 	return [...(new Set(res.flat()))] }
+
 
 // compare two arrays by items...
 var arrayCmp = function(a, b){
@@ -130,6 +94,38 @@ var arrayCmp = function(a, b){
 			.length == 0 }
 
 
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+// a constructor is a thing that starts with a capital and has a .prototype
+var constructors = function(obj){
+	return Object.entries(obj)
+		.filter(function([k, o]){
+			return k[0] == k[0].toUpperCase() 
+				&& o.prototype }) }
+
+// an instance is a thing that starts with a lowercase and has a .constructor
+var instances = function(obj){
+	return Object.entries(obj)
+		.filter(function([k, o]){
+			return k[0] == k[0].toLowerCase() 
+				&& o.constructor }) }
+
+
+var makeAssert = function(pre, stats){
+	return function(e, msg, ...args){
+		stats
+			&& (stats.assertions += 1)
+			&& !e
+				&& (stats.failures += 1)
+		module.VERBOSE
+			&& console.log(pre +': '+ msg.bold, ...args)
+		console.assert(e, pre.bold +': '+ msg.bold.yellow, ...args)
+		return e } }
+
+
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 // basic argv parser...
 //
@@ -316,37 +312,8 @@ var ArgvParser = function(spec){
 
 
 
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-
-// a constructor is a thing that starts with a capital and has a .prototype
-var constructors = function(obj){
-	return Object.entries(obj)
-		.filter(function([k, o]){
-			return k[0] == k[0].toUpperCase() 
-				&& o.prototype }) }
-
-// an instance is a thing that starts with a lowercase and has a .constructor
-var instances = function(obj){
-	return Object.entries(obj)
-		.filter(function([k, o]){
-			return k[0] == k[0].toLowerCase() 
-				&& o.constructor }) }
-
-
-var makeAssert = function(pre, stats){
-	return function(e, msg, ...args){
-		stats
-			&& (stats.assertions += 1)
-			&& !e
-				&& (stats.failures += 1)
-		module.VERBOSE
-			&& console.log(pre +': '+ msg.bold, ...args)
-		console.assert(e, pre.bold +': '+ msg.bold.yellow, ...args)
-		return e } }
-
-
-
 //---------------------------------------------------------------------
+// Tests...
 
 var setups = 
 module.setups = {
@@ -617,7 +584,6 @@ module.modifiers = {
 }
 
 
-
 var tests =
 module.tests = {
 	// instance creation...
@@ -681,7 +647,6 @@ module.cases = {
 
 
 //---------------------------------------------------------------------
-
 // Test runner...
 //
 // 	runner()
