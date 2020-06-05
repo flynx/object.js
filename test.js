@@ -795,7 +795,7 @@ if(typeof(__filename) != 'undefined'
 				doc: 'list available tests.',
 				handler: function(){
 					console.log(object.normalizeTextIndent(
-						`Test run by %s can be of the following forms:
+						`Tests run by %s can be of the following forms:
 
 							<case>
 							<setup>:<test>
