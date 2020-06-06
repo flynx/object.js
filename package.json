@@ -5,6 +5,8 @@
   "main": "object.js",
   "scripts": {
     "test": "node ./test.js",
+    "cover-lcov": "c8 -r lcov node ./test.js",
+    "cover": "c8 node ./test.js",
     "prepublishOnly": "npm test"
   },
   "repository": {
@@ -24,6 +26,7 @@
   },
   "homepage": "https://github.com/flynx/object.js#readme",
   "devDependencies": {
-    "colors": "^1.4.0"
+    "colors": "^1.4.0",
+    "c8": "*"
   }
 }

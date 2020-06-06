@@ -767,7 +767,7 @@ if(typeof(__filename) != 'undefined'
 				Each of the items in the test spec can be a "*" indicating
 				that all relevant items should be used, for example:
 
-						${ '$ ./$scriptname basic:*:*'.gray }
+						${ '$ ./$scriptname basic:*:*' }
 
 				Here $scriptname is instructed to run all tests and modifiers
 				only on the basic setup.
@@ -777,17 +777,17 @@ if(typeof(__filename) != 'undefined'
 				When no tests specified $scriptname will run all tests.
 				`),
 			__examples__: [
-				['$ ./$scriptname'.gray, 
-					'run all tests.'],
-				['$ ./$scriptname basic:*:*'.gray, 
-					'run all tests and modifiers on "basic" setup.',
-					'(see '+ '$scriptname -l'.gray +' for more info)'],
-				['$ ./$scriptname -v example'.gray, 
-					'run "example" test in verbose mode.'],
-				['$ ./$scriptname native:gen3:methods init:gen3:methods'.gray, 
-					'run two tests/patterns.'],
-				['$ export VERBOSE=1 && ./$scriptname'.gray, 
-					'set verbose mode globally and run tests.'],
+				['$ ./$scriptname', 
+					'run all tests.'.gray],
+				['$ ./$scriptname basic:*:*', 
+					'run all tests and modifiers on "basic" setup.'.gray,
+					'(see $scriptname -l for more info)'.gray],
+				['$ ./$scriptname -v example', 
+					'run "example" test in verbose mode.'.gray],
+				['$ ./$scriptname native:gen3:methods init:gen3:methods', 
+					'run two tests/patterns.'.gray],
+				['$ export VERBOSE=1 && ./$scriptname', 
+					'set verbose mode globally and run tests.'.gray],
 			],
 			// options...
 			l: 'list',
