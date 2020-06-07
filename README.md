@@ -844,6 +844,15 @@ or:
 - attribute values are identical.
 
 
+Non-strict match
+```
+match(base, obj, true)
+	-> bool
+```
+
+Like the default case but uses _equality_ instead of _identity_ to match
+values.
+
 
 ## Limitations
 

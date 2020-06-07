@@ -1,8 +1,6 @@
-.npm*
+.*
 *.vim
 *.sw[po]
-.git
-.github
 coverage
 node_modules
 npm-debug.log

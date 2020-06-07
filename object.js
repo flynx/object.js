@@ -115,11 +115,19 @@ function(text, tab_size, leading_tabs){
 // 	- attr names are the same and,
 // 	- attr values are identical.
 //
+//
+// 	Non-strict match...
+// 	match(a, b, true)
+//
+// 	This is similar to the default case but uses equality rather than 
+// 	identity to match values.
+//
+//
 // NOTE: this will do a shallow test using Object.keys(..) thus .__proto__
 // 		attributes are ignored...
 var match = 
 module.match =
-function(base, obj){
+function(base, obj, non_strict){
 	// identity...
 	if(base === obj){
 		return true }
@@ -135,7 +143,10 @@ function(base, obj){
 			return [k, obj[k]] })
 	while(o.length > 0){
 		var [k, v] = o.pop()
-		if(!base.hasOwnProperty(k) || base[k] !== v){
+		if(!base.hasOwnProperty(k) 
+				|| (non_strict ? 
+					base[k] != v 
+					: base[k] !== v)){
 			return false } }
 	return true }
 
@@ -162,6 +173,12 @@ module.STOP =
 // 	sources(obj, '__call__', callback)
 // 		-> list
 // 		-> []
+//
+// 	Get full chain...
+// 	sources(obj)
+// 	sources(obj, callback)
+// 		-> list
+//
 // 		
 // 	callback(obj)
 // 		-> STOP
@@ -192,11 +209,17 @@ module.STOP =
 var sources =
 module.sources =
 function(obj, name, callback){
+	// get full chain...
+	if(typeof(name) == 'function'){
+		callback = name
+		name = undefined
+	}
 	var o
 	var res = []
 	while(obj != null){
 		//if(obj.hasOwnProperty(name)){
-		if(obj.hasOwnProperty(name) 
+		if(name === undefined
+				|| obj.hasOwnProperty(name) 
 				|| (name == '__call__' && typeof(obj) == 'function')){
 			// handle callback...
 			o = callback
@@ -258,11 +281,13 @@ function(obj, name, callback, props){
 	var c = typeof(callback) == 'function'
 		&& function(obj){ 
 			return callback(_get(obj, name), obj) }
-	return sources(...(c ?
-			[obj, name, c]
-			: [obj, name]))
-		.map(function(obj){ 
-			return _get(obj, name) }) }
+	return c ?
+		// NOTE: we do not need to handle the callback return values as
+		// 		this is fully done in sources(..)
+		sources(obj, name, c)
+		: sources(obj, name)
+			.map(function(obj){ 
+				return _get(obj, name) }) }
 
 
 // Find the next parent attribute in the prototype chain.

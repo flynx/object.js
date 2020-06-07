@@ -85,13 +85,13 @@ var arrayCmp = function(a, b){
 	var ka = Object.keys(a)
 	var kb = Object.keys(a)
 	return a === b
-		|| ka.length == kb.length
-		&& ka
-			// keep only non matching stuff...
-			.filter(function(k){
-				return a[k] !== b[k] 
-					&& a[k] != a[k] })
-			.length == 0 }
+		|| (a.length == b.length
+			&& ka
+				// keep only non matching stuff...
+				.filter(function(k){
+					return a[k] !== b[k] 
+						&& a[k] != a[k] })
+				.length == 0) }
 
 
 
@@ -407,6 +407,7 @@ module.setups = {
 		Object.entries(objs)
 			.forEach(function([k, o]){
 				assert(typeof(o) == 'function', 'instance is callable', k) })
+
 		return Object.assign(res, objs) },
 
 	// inherit from native constructors...
@@ -465,15 +466,24 @@ module.setups = {
 				x: 'c',
 				method: function(){
 					assert(arrayCmp(
-						object.values(c, 'x').join(''), 
+						object.values(c, 'x'), 
 						['c', 'a', 'b']), 
+							'reach all values of attr')
+					assert(arrayCmp(
+						object.values(c, 'x', function(v, o){
+							return v.toUpperCase() }), 
+						['C', 'A', 'B']), 
 							'reach all values of attr')
 					assert(arrayCmp(
 						object.sources(c, 'method'), 
 						[c, a]), 
 							'reach all values of method')
-					assert(object.parent(c, 'x') == 'b', 'reach parent attr')
-					assert(object.parentCall(c.method, this) == 'a', 'reach parent method', 'c')
+					assert(
+						object.parent(c, 'x') == 'b', 
+							'reach parent attr')
+					assert(
+						object.parentCall(c.method, this) == 'a', 
+							'reach parent method', 'c')
 					return 'c' },
 			}, 
 			d: d = {
@@ -498,9 +508,15 @@ module.setups = {
 			Z: Z = class extends Y {
 				x = 'z'
 				method(){
+					// XXX this is almost the same as for js_prototype...
 					assert(arrayCmp(
-						object.values(c, 'x').join(''), 
+						object.values(c, 'x'), 
 						['z', 'y', 'x']), 
+							'reach all values of attr (class)')
+					assert(arrayCmp(
+						object.values(c, 'x', function(v, o){
+							return v.toUpperCase() }), 
+						['C', 'A', 'B']), 
 							'reach all values of attr (class)')
 					assert(arrayCmp(
 						object.sources(c, 'method'), 
@@ -621,15 +637,39 @@ module.tests = {
 
 	// callables...
 	callables: function(assert, setup){
+		// test special case .values(x, '__call__')
+		var test = function(obj, name){
+			var a, b
+			return assert(arrayCmp(
+				a = object.values(obj, '__call__')
+					.map(function(func){
+						return func.call(obj) })
+					.flat(), 
+				// get all callables in prototype chain and call them...
+				b = object.sources(obj)
+					.filter(function(o){ 
+						return typeof(o) == 'function' 
+							|| o.hasOwnProperty('__call__') })
+					.map(function(o){ 
+						return o.hasOwnProperty('__call__') ?
+							o.__call__.call(obj)
+							// NOTE: not all callables are instances of Function...
+							: Reflect.apply(Function.prototype, o, [obj]) })), 
+				'values of .__call__ of '+ name +': got:', a, 'expected:', b) }
+
 		instances(setup)
-			.forEach(function([k, o]){
+			.filter(function([_, o]){
 				// NOTE: not all callables are instances of Function...
-				typeof(o) == 'function' 
-					&& (o.__non_function ?
-						assert(!(o instanceof Function), 'non-instanceof Function', k)
-						: assert(o instanceof Function, 'instanceof Function', k))
-				typeof(o) == 'function'
-					&& assert(o(), 'call', k) }) 
+				return typeof(o) == 'function' })
+			.forEach(function([k, o]){
+				o.__non_function ?
+					assert(!(o instanceof Function), 'non-instanceof Function', k)
+					: assert(o instanceof Function, 'instanceof Function', k)
+
+				assert(o(), 'call', k) 
+
+				test(o, k)
+			}) 
 		return setup },
 }
 

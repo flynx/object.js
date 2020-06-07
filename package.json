@@ -1,10 +1,10 @@
 {
   "name": "ig-object",
-  "version": "5.0.6",
+  "version": "5.0.7",
   "description": "",
   "main": "object.js",
   "scripts": {
-    "test": "node ./test.js",
+    "test": "c8 node ./test.js",
     "cover-lcov": "c8 -r lcov node ./test.js",
     "cover": "c8 node ./test.js",
     "prepublishOnly": "npm test"
