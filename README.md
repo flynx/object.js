@@ -854,6 +854,22 @@ Like the default case but uses _equality_ instead of _identity_ to match
 values.
 
 
+### `matchPartial(..)`
+
+```
+match(base, obj)
+	-> bool
+
+// non-strict version...
+match(base, obj, true)
+	-> bool
+```
+
+Like `.match(..)` but will check for a partial match, i.e. when `obj` is 
+a non-strict subset of `base`.
+
+
+
 ## Limitations
 
 ### Can not mix unrelated native types

@@ -101,14 +101,16 @@ var arrayCmp = function(a, b){
 var constructors = function(obj){
 	return Object.entries(obj)
 		.filter(function([k, o]){
-			return k[0] == k[0].toUpperCase() 
+			return !k.startsWith('_')
+				&& k[0] == k[0].toUpperCase() 
 				&& o.prototype }) }
 
 // an instance is a thing that starts with a lowercase and has a .constructor
 var instances = function(obj){
 	return Object.entries(obj)
 		.filter(function([k, o]){
-			return k[0] == k[0].toLowerCase() 
+			return !k.startsWith('_')
+				&& k[0] == k[0].toLowerCase() 
 				&& o.constructor }) }
 
 
@@ -319,6 +321,7 @@ var ArgvParser = function(spec){
 var setups = 
 module.setups = {
 	// basic constructor and inheritance...
+	// XXX constructor methods...
 	basic: function(assert){
 		var X, Y, A, B, C
 		return {
@@ -326,9 +329,11 @@ module.setups = {
 			Y: Y = assert(object.C('Y', { }), `C`),
 
 			A: A = assert(object.C('A', Y, { }), `inherit (gen1)`),
-			B: B = assert(object.C('B', A, { }), `inherit (gen2)`),
+			B: B = assert(object.C('B', A, { }, { }), `inherit (gen2)`),
 			C: C = assert(object.C('C', B, { }), `inherit (gen3)`),
 		} },
+
+	// XXX constructor methods...
 
 	// initialization...
 	init: function(assert){
@@ -377,6 +382,9 @@ module.setups = {
 			B: B = assert(object.C('B', {
 				__non_function: true,
 				__call__: function(){
+					assert(
+						object.parentCall(B.prototype, '__call__', this, ...arguments) === undefined, 
+							'call non-existent parent method', 'B')
 					return 'B'
 				},
 			}), 'callable'),
@@ -590,6 +598,64 @@ module.modifiers = {
 					{__created_raw: true}) })
 		return res },
 
+	// mixins...
+	mixin_instance: function(assert, setup, flat){
+		var mixin = setup.__mixin_instance = {
+			__mixin_instance: true,
+
+			// XXX
+		}
+		mixin.__mixin_instance = mixin
+		instances(setup)
+			.forEach(function([n, o]){
+				// mixin once per chain...
+				if(o.__mixin_instance){
+					return }
+				assert(!object.hasMixin(o, mixin), 'pre mixin test', n)
+				assert(flat ?
+						object.mixinFlat(o, mixin)
+						: object.mixin(o, mixin), 
+					flat ? 
+						'mixin (flat)'
+						:'mixin', n)
+				assert(object.hasMixin(o, mixin), 'mixin test', n)
+			})
+		return setup },
+	mixin_instance_flat: function(assert, setup){
+		return this.mixin_instance(assert, setup, true) },
+	mixin_constructor: function(assert, setup, flat){
+		var mixin = setup.__mixin_constructor = {
+			__mixin_constructor: true,
+
+			// XXX
+		}
+		mixin.__mixin_constructor = mixin
+		// XXX do we care about order???
+		constructors(setup)
+			.forEach(function([n, o]){
+				// special case: can't non-flat mixin into an Object...
+				if(!flat && o === Object){
+					return }
+				// mixin once per chain...
+				if(o.prototype.__mixin_constructor){
+					return }
+				assert(!object.hasMixin(o.prototype, mixin), 'pre mixin test', n)
+				assert(flat ?
+						object.mixinFlat(o.prototype, mixin) 
+						: object.mixin(o.prototype, mixin),
+					flat ?
+						'mixin (flat)'
+						: 'mixin', n) 
+				assert(object.hasMixin(o.prototype, mixin), 'mixin test', n)
+			})
+		return setup },
+	mixin_constructor_flat: function(assert, setup){
+		return this.mixin_constructor(assert, setup, true) },
+	/*/ XXX
+	mixout: function(assert, setup){
+		return {}
+	},
+	//*/
 
 	// sanity checks...
 	//

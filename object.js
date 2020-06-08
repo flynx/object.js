@@ -151,6 +151,20 @@ function(base, obj, non_strict){
 	return true }
 
 
+// Like .match(..) but will test if obj's attributes are included in base
+var matchPartial =
+module.matchPartial = 
+function(base, obj, non_strict){
+	return base === obj 
+		|| Object.entries(obj)
+			.filter(function([n, v]){
+				return !base.hasOwnProperty(n) 
+					|| (non_strict ?
+						base[n] != v
+						: base[n] !== v) })
+			.length == 0 }
+
+
 
 //---------------------------------------------------------------------
 // Prototype chain content access...
@@ -502,8 +516,8 @@ function(base, ...objects){
 //		-> undefined
 //
 //
-// NOTE: if base matches directly callback(..) will get undefined as parent
 // NOTE: this will also match base...
+// NOTE: if base matches directly callback(..) will get undefined as parent
 // NOTE: for more docs on the callback(..) see sources(..)
 var mixins =
 module.mixins =
@@ -540,10 +554,20 @@ function(base, object, callback){
 // 		-> bool
 //
 //
+// NOTE: to test for a flat mixin directly use .matchPartial(base, object)
 var hasMixin =
 module.hasMixin =
 function(base, object){
-	return mixins(base, object, function(){ return module.STOP }).length > 0 }
+	return (
+		// normal mixin...
+		mixins(base, object, function(){ return module.STOP })
+			.length > 0
+		// flat mixin search...
+		|| sources(base, function(p){ 
+			return matchPartial(p, object) ? 
+				module.STOP
+				: [] })
+   			.length > 0 )}
 
 
 // Mix-out sets of methods/props/attrs out of an object prototype chain...
@@ -886,7 +910,8 @@ function Constructor(name, a, b, c){
 		!!constructor_proto
 			&& (proto.__proto__ = constructor_proto.prototype) }
 
-	// the constructor base...
+	// the constructor base... 
+	/* c8 ignore next 9 */
 	var _constructor = function Constructor(){
 		// create raw instance...
 		var obj = _constructor.__rawinstance__ ? 
