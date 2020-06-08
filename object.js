@@ -151,7 +151,9 @@ function(base, obj, non_strict){
 	return true }
 
 
-// Like .match(..) but will test if obj's attributes are included in base
+// Like .match(..) but will test if obj is a non-strict subset of base...
+//
+// NOTE: this will only check direct attributes of both base and obj.
 var matchPartial =
 module.matchPartial = 
 function(base, obj, non_strict){

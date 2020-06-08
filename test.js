@@ -321,7 +321,6 @@ var ArgvParser = function(spec){
 var setups = 
 module.setups = {
 	// basic constructor and inheritance...
-	// XXX constructor methods...
 	basic: function(assert){
 		var X, Y, A, B, C
 		return {
@@ -329,11 +328,16 @@ module.setups = {
 			Y: Y = assert(object.C('Y', { }), `C`),
 
 			A: A = assert(object.C('A', Y, { }), `inherit (gen1)`),
-			B: B = assert(object.C('B', A, { }, { }), `inherit (gen2)`),
+			B: B = assert(object.C('B', A, { }, { }), `inherit (gen2) with constructor mixin`),
 			C: C = assert(object.C('C', B, { }), `inherit (gen3)`),
 		} },
 
-	// XXX constructor methods...
+	/*/ XXX constructor methods or add this to basic...
+	methods: function(assert){
+		return {
+		}
+	},
+	//*/
 
 	// initialization...
 	init: function(assert){
