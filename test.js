@@ -633,6 +633,8 @@ module.modifiers = {
 		return res },
 
 	// mixins...
+	// NOTE: running this in flat mode will have side-effects -- overwriting
+	// 		existing attributes and methods...
 	// XXX might be a good idea to get the method name from the context... how?
 	mixin_instance: function(assert, setup, flat, filter, get){
 		filter = filter || instances

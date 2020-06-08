@@ -732,6 +732,9 @@ mixinFlat(<base>, <object>, ..)
 This is like `Object.assign(..)` but copies property descriptors rather 
 than property values.
 
+Also like `Object.assign(..)` this _will_ overwrite attribute values in 
+`<base>`.
+
 
 ### `RawInstance(..)`
 
