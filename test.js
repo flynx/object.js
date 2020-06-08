@@ -115,15 +115,20 @@ var instances = function(obj){
 
 
 var makeAssert = function(pre, stats){
-	return function(e, msg, ...args){
-		stats
-			&& (stats.assertions += 1)
-			&& !e
-				&& (stats.failures += 1)
-		module.VERBOSE
-			&& console.log(pre +': '+ msg.bold, ...args)
-		console.assert(e, pre.bold +': '+ msg.bold.yellow, ...args)
-		return e } }
+	return Object.assign(
+		function(e, msg, ...args){
+			stats
+				&& (stats.assertions += 1)
+				&& !e
+					&& (stats.failures += 1)
+			module.VERBOSE
+				&& console.log(pre +': '+ msg.bold, ...args)
+			console.assert(e, pre.bold +': '+ msg.bold.yellow, ...args)
+			return e },
+		{
+			// XXX should have a real path...
+			path: pre
+		}) }
 
 
 
@@ -595,11 +600,18 @@ module.modifiers = {
 					: mode == 'raw' ?
 						assert(O.__rawinstance__(), `.__rawinstance__()`, k)	
 					: assert(new O(), `new:`, k)
+
 				assert(o instanceof O, `instanceof:`, k)
+
 				O.__proto__ instanceof Function
-					&& assert(o instanceof O.__proto__, `instanceof-nested:`, k)
+					// XXX need to test this for constructor mixins too...
+					&& !(O.__mixin_constructors && !O.__mixin_flat)
+					&& assert(o instanceof o.constructor.__proto__, `instanceof-nested:`, k)
+
 				assert(o.constructor === O, `.constructor:`, k)
+
 				assert(o.__proto__ === O.prototype, `.__proto__:`, k)
+
 				return res }, {}) },
 	instance_no_new: function(assert, setup){
 		return this.instance(assert, setup, 'no_new') },
@@ -616,17 +628,24 @@ module.modifiers = {
 		return res },
 
 	// mixins...
-	mixin_instance: function(assert, setup, flat){
-		var mixin = setup.__mixin_instance = {
-			__mixin_instance: true,
+	mixin_instance: function(assert, setup, flat, filter, get){
+		filter = filter || instances
+		// XXX might be a good idea to get the method name from the context...
+		var attr = '__mixin_' + filter.name
+
+		var mixin = setup[attr] = {
+			[attr]: true,
+			__mixin_flat: !!flat, 
 
 			// XXX
 		}
-		mixin.__mixin_instance = mixin
-		instances(setup)
+
+		mixin[attr] = mixin
+		filter(setup)
 			.forEach(function([n, o]){
+				o = get ? get(o) : o
 				// mixin once per chain...
-				if(o.__mixin_instance){
+				if(!o || o[attr]){
 					return }
 				assert(!object.hasMixin(o, mixin), 'pre mixin test', n)
 				assert(flat ?
@@ -641,33 +660,15 @@ module.modifiers = {
 	mixin_instance_flat: function(assert, setup){
 		return this.mixin_instance(assert, setup, true) },
 	mixin_constructor: function(assert, setup, flat){
-		var mixin = setup.__mixin_constructor = {
-			__mixin_constructor: true,
-
-			// XXX
-		}
-		mixin.__mixin_constructor = mixin
-		// XXX do we care about order???
-		constructors(setup)
-			.forEach(function([n, o]){
-				// special case: can't non-flat mixin into an Object...
-				if(!flat && o === Object){
-					return }
-				// mixin once per chain...
-				if(o.prototype.__mixin_constructor){
-					return }
-				assert(!object.hasMixin(o.prototype, mixin), 'pre mixin test', n)
-				assert(flat ?
-						object.mixinFlat(o.prototype, mixin) 
-						: object.mixin(o.prototype, mixin),
-					flat ?
-						'mixin (flat)'
-						: 'mixin', n) 
-				assert(object.hasMixin(o.prototype, mixin), 'mixin test', n)
-			})
-		return setup },
+		return this.mixin_instance(assert, setup, false, constructors) },
+	mixin_constructor_proto: function(assert, setup, flat){
+		return this.mixin_instance(assert, setup, false, constructors, 
+			function(o){ 
+				// skip mixing into Object.prototype...
+				return o !== Object 
+					&& o.prototype }) },
 	mixin_constructor_flat: function(assert, setup){
-		return this.mixin_constructor(assert, setup, true) },
+		return this.mixin_constructor_proto(assert, setup, true) },
 	/*/ XXX
 	mixout: function(assert, setup){
 		return {}

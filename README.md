@@ -359,6 +359,11 @@ var Mixed = object.Constructor('Mixed', UtilityMixin(Base), {
 var m = Mixed()
 ```
 
+**Notes:**
+- It is not recommended to `.mixin(..)` into constructors directly, use 
+  `.mixinFlat(..)` instead.
+
+
 
 ## Advanced usage
 
@@ -663,6 +668,9 @@ keeping the prototype visibility the same.
 
 This will copy the content of each input object without touching the 
 objects themselves, making them fully reusable.
+
+It is not recommended to `.mixin(..)` into constructors directly, use 
+`.mixinFlat(..)` instead.
 
 
 ### `mixins(..)`

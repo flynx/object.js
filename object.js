@@ -495,6 +495,18 @@ function(base, ...objects){
 // 				
 //
 // NOTE: this will only mix in non-empty objects...
+// NOTE: mixing into a constructor will break object creation via new...
+// 		Example:
+// 			class A {}
+// 			class B extends A {}
+//
+// 			mixin(B, {x: 123})
+//
+// 			var b = new B()			// will break...
+//
+// 		This does not affect object.Constructor(..) chains...
+// NOTE: mixin(Object.prototype, ..) will fail because Object.prototype.__proto__ 
+// 		is imutable...
 var mixin = 
 module.mixin = 
 function(base, ...objects){
