@@ -321,23 +321,48 @@ var ArgvParser = function(spec){
 var setups = 
 module.setups = {
 	// basic constructor and inheritance...
+	//
+	//	X
+	//	Y <- A <- B <- C	
+	//
 	basic: function(assert){
 		var X, Y, A, B, C
 		return {
-			X: X = assert(object.Constructor('A'), `Constructor`),
-			Y: Y = assert(object.C('Y', { }), `C`),
+			X: X = assert(object.Constructor('X'), `.Constructor(..)`),
+			Y: Y = assert(object.C('Y', { 
+				method: function(){
+					var x
+					assert(
+						(x = object.parentCall(Y.prototype.method, this, ...arguments)) === undefined, 
+						'y.method(..): expected:', undefined, 'got:', x)
+					return 'Y'
+				},
+			}), `.C(..)`),
 
-			A: A = assert(object.C('A', Y, { }), `inherit (gen1)`),
-			B: B = assert(object.C('B', A, { }, { }), `inherit (gen2) with constructor mixin`),
-			C: C = assert(object.C('C', B, { }), `inherit (gen3)`),
+			A: A = assert(object.C('A', Y, { 
+				method: function(){
+					var x
+					assert(
+						(x = object.parentCall(A.prototype.method, this, ...arguments)) == 'Y', 
+						'a.method(..): expected:', 'Y', 'got:', x)
+					return 'A'
+				},
+			}), `inherit (gen1)`),
+			B: B = assert(object.C('B', A, { 
+				// XXX constructor methods...
+			}, { 
+				// XXX methods...
+			}), `inherit (gen2) with constructor mixin`),
+			C: C = assert(object.C('C', B, { 
+				method: function(){
+					var x
+					assert(
+						(x = object.parentCall(C.prototype.method, this, ...arguments)) == 'A', 
+						'c.method(..): expected:', 'A', 'got:', x)
+					return 'C'
+				},
+			}), `inherit (gen3)`),
 		} },
-
-	/*/ XXX constructor methods or add this to basic...
-	methods: function(assert){
-		return {
-		}
-	},
-	//*/
 
 	// initialization...
 	init: function(assert){
@@ -438,18 +463,6 @@ module.setups = {
 			return res
 		}, {}) },
 
-	/*/ XXX methods (instance/constructor)...
-	methods: function(assert){
-		return {} },
-	//*/
-	
-	/*/ XXX mixins...
-	mixin: function(assert){
-		return {
-
-		} },
-	//*/
-	
 	// compatibility: native constructors...
 	js_constructors: function(assert){
 		var X, Y, Z, a, b, c, d
