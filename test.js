@@ -495,25 +495,30 @@ module.setups = {
 				__proto__: b,
 				x: 'c',
 				method: function(){
+					var x, y
 					assert(arrayCmp(
-						object.values(c, 'x'), 
-						['c', 'a', 'b']), 
-							'reach all values of attr')
+						x = object.values(c, 'x'), 
+						y = ['c', 'a', 'b']), 
+							'reach all values of attr: expected:', x, 'got:'.bold.yellow, y)
 					assert(arrayCmp(
-						object.values(c, 'x', function(v, o){
+						x = object.values(c, 'x', function(v, o){
 							return v.toUpperCase() }), 
-						['C', 'A', 'B']), 
-							'reach all values of attr')
+						y = ['C', 'A', 'B']), 
+							'reach all values of attr: expected:', x, 'got:'.bold.yellow, y)
 					assert(arrayCmp(
-						object.sources(c, 'method'), 
-						[c, a]), 
-							'reach all values of method')
+						x = object.sources(c, 'method'),
+						// NOTE: not passing an explicit list as we need 
+						// 		to account for mixins...
+						y = object.sources(c)
+								.filter(function(s){ 
+									return s.hasOwnProperty('method') })), 
+							'reach all values of method: expected:', y, 'got:'.bold.yellow, x)
 					assert(
-						object.parent(c, 'x') == 'b', 
-							'reach parent attr')
+						(x = object.parent(c, 'x')) == 'b', 
+							'reach parent attr: expected:', 'b', 'got:'.bold.yellow, x)
 					assert(
-						object.parentCall(c.method, this) == 'a', 
-							'reach parent method', 'c')
+						(x = object.parentCall(c.method, this)) == (y = a.method()), 
+							'reach parent method: expected:', y, 'got:'.bold.yellow, x)
 					return 'c' },
 			}, 
 			d: d = {
@@ -628,16 +633,27 @@ module.modifiers = {
 		return res },
 
 	// mixins...
+	// XXX might be a good idea to get the method name from the context... how?
 	mixin_instance: function(assert, setup, flat, filter, get){
 		filter = filter || instances
-		// XXX might be a good idea to get the method name from the context...
 		var attr = '__mixin_' + filter.name
 
 		var mixin = setup[attr] = {
+			__mixin: true,
 			[attr]: true,
 			__mixin_flat: !!flat, 
 
-			// XXX
+			method: function(){
+				var res = object.parent(mixin.method, this) !== undefined ?
+					assert(
+						object.parentCall(mixin.method, this, ...arguments),
+							'mixin method parent call')
+					: false 
+				return res 
+					|| 'mixin' },
+
+			mixinMethod: function(){
+				return 'mixin' },
 		}
 
 		mixin[attr] = mixin

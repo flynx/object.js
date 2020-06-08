@@ -469,6 +469,7 @@ function(proto, name, that, ...args){
 // NOTE: this will not transfer several the special variables not listed
 // 		by Object.keys(..).
 // 		This includes things like .__proto__
+// NOTE: this can and will overwrite attributes...
 var mixinFlat = 
 module.mixinFlat = 
 function(base, ...objects){
