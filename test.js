@@ -114,23 +114,6 @@ var instances = function(obj){
 				&& o.constructor }) }
 
 
-var makeAssert = function(pre, stats){
-	return Object.assign(
-		function(e, msg, ...args){
-			stats
-				&& (stats.assertions += 1)
-				&& !e
-					&& (stats.failures += 1)
-			module.VERBOSE
-				&& console.log(pre +': '+ msg.bold, ...args)
-			console.assert(e, pre.bold +': '+ msg.bold.yellow, ...args)
-			return e },
-		{
-			// XXX should have a real path...
-			path: pre
-		}) }
-
-
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
@@ -641,6 +624,8 @@ module.modifiers = {
 		var attr = '__mixin_' + filter.name
 
 		var mixin = setup[attr] = {
+			// NOTE: in the real world mixins should have no state, just 
+			// 		methods...
 			__mixin: true,
 			[attr]: true,
 			__mixin_flat: !!flat, 
@@ -673,6 +658,7 @@ module.modifiers = {
 						'mixin (flat)'
 						:'mixin', n)
 				assert(object.hasMixin(o, mixin), 'mixin test', n)
+				assert(o.mixinMethod() == 'mixin', 'mixin method call')
 			})
 		return setup },
 	mixin_instance_flat: function(assert, setup){
@@ -790,6 +776,117 @@ module.cases = {
 
 
 //---------------------------------------------------------------------
+
+// Assert constructor...
+//
+//	Create an assert callable...
+//	Assert()
+//	Assert(path[, stats[, verbose]])
+//		-> assert
+//
+//	Create an assert with extended path...
+//	assert.push(path)
+//		-> assert
+//
+//	Create an assert with shortened path...
+//	assert.pop(path)
+//		-> assert
+//
+//
+// Assertions...
+//
+//	value is truthy...
+//	assert(value, msg, ..)
+//		-> value
+//
+//	Assert truth and catch exceptions...
+//	assert.assert(msg, test())
+//		-> value
+//
+//	Assert if test does not throw...
+//	assert.error(msg, test())
+//		-> error
+//
+//
+var Assert = 
+module.Assert =
+object.Constructor('Assert', {
+	stats: null,
+
+	__verbose: null,
+	get verbose(){
+		return this.__verbose == null ? 
+			module.VERBOSE 
+			: this.__verbose },
+	set verbose(value){
+		value == null ?
+			(delete this.__verbose)
+			: (this.__verbose = value) },
+
+	// path API...
+	__str_path: null,
+	get strPath(){
+		return (this.__str_path = 
+			this.__str_path 
+				|| (this.path || []).join(':')) },
+	path: null,
+	push: function(path){
+		return this.constructor(
+			[
+				...(this.path || []), 
+				...(path instanceof Array ? 
+					path 
+					: [path])
+			], 
+			stats,
+			this.verbose) },
+	pop: function(){
+		return this.constructor(
+			(this.path || []).slice(0, -1), 
+			this.stats,
+			this.verbose) },
+
+	// assertion API...
+	__call__: function(_, value, msg, ...args){
+		// stats...
+		var stats = this.stats
+		stats.assertions = (stats.assertions || 0) + 1
+		!value
+			&& (stats.failures = (stats.failures || 0) + 1)
+
+		// assertions...
+		this.verbose
+			&& console.log(this.strPath +': '+ msg.bold, ...args)
+		console.assert(value, this.strPath.bold +': '+ msg.bold.yellow, ...args)
+
+		return value },
+	assert: function(msg, test){
+		try {
+			return this(test.call(this), msg)
+
+		} catch(err){
+			this(false, msg)
+			return err } },
+	error: function(msg, test){
+		try {
+			test.call(this)
+			return this(false, msg)
+
+		} catch(err){
+			this(true, msg)
+			return err } },
+
+	__init__: function(path, stats, verbose){
+		this.path = path instanceof Array ? 
+			path 
+			: [path]
+		this.stats = stats || {}
+		this.verbose = verbose
+	},
+})
+
+
+
 // Test runner...
 //
 // 	runner()
@@ -841,6 +938,7 @@ function(chain, stats){
 
 	var started = Date.now()
 	// tests...
+	var assert = Assert('[TEST]', stats, module.VERBOSE)
 	chain_length != 1
 		&& Object.keys(tests)
 			.filter(function(t){
@@ -860,19 +958,19 @@ function(chain, stats){
 									return }
 								// run the test...
 								stats.tests += 1
-								// XXX revise order...
-								var _assert = makeAssert(`test: ${s}:${m}:${t}`, stats)
+								var _assert = assert.push([s, m, t])
 								tests[t](_assert, 
 									modifiers[m](_assert, 
 										setups[s](_assert))) }) }) }) 
 	// cases...
+	var assert = Assert('[CASE]', stats, module.VERBOSE)
 	chain_length <= 1
 		&& Object.keys(cases)
 			.filter(function(s){
 				return setup == '*' || setup == s })
 			.forEach(function(c){
 				stats.tests += 1
-				cases[c]( makeAssert(`case: ${c}`, stats) ) }) 
+				cases[c]( assert.push(c) ) }) 
 	// runtime...
 	stats.time += Date.now() - started
 	return stats }
