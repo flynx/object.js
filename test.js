@@ -768,8 +768,22 @@ module.tests = {
 // 		framework so as to be able to use them on more setups...
 var cases =
 module.cases = {
-	'example': function(assert){
-		assert(true, 'example.')
+	'edge-cases': function(assert){
+		var x, y
+
+		// object.match(..)
+		assert(object.match(x = {a: 123, b: '333', c: []}, x) === true, 'match self')
+		assert(object.match(x, {a: x.a, b: x.b, c: []}) == false, 'strict mismatch')
+		assert(object.match(x, {a: 123, b: 333, c: x.c}, true) === true, 'non-strict match')
+
+		// object.matchPartial(..)
+		assert(object.matchPartial(x, {a: x.a}, true) === true, 'non-strict partial match')
+		assert(object.matchPartial(x, {a: x.a, b: x.b, c: x.c}) === true, 'strict partial match')
+
+		// object.parent(..)
+		assert(object.parent({}) === {}.__proto__, 'basic proto')
+		assert.error('.parent(..) of anonymous function', function(){ 
+			object.parent(function(){}, {}) })
 	},
 }
 
@@ -860,7 +874,7 @@ object.Constructor('Assert', {
 		console.assert(value, this.strPath.bold +': '+ msg.bold.yellow, ...args)
 
 		return value },
-	assert: function(msg, test){
+	istrue: function(msg, test){
 		try {
 			return this(test.call(this), msg)
 
