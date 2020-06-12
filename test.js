@@ -147,6 +147,7 @@ var instances = function(obj){
 // XXX do we handle = for options with values???
 // XXX move this to it's own lib...
 // 		argv-handler
+// 		ig-argv
 // 		...
 // XXX need better test processing:
 // 		- line breaks
