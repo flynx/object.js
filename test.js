@@ -157,13 +157,14 @@ var ArgvParser = function(spec){
 	// NOTE: this is intentionally not dynamic...
 	spec = Object.assign({
 		// builtin options...
-		h: 'help',
+		'-h': '-help',
 		// XXX revise...
-		help: {
+		'-help': {
 			doc: 'print this message and exit.',
 			handler: function(){
 				var spec = this.spec
 				var that = this
+				var x
 				console.log([
 					`Usage: ${ 
 						typeof(spec.__usage__) == 'function' ? 
@@ -180,7 +181,11 @@ var ArgvParser = function(spec){
 					'Options:',
 					...(spec.__getoptions__()
 						.map(function([opts, arg, doc]){
-							return ['-'+opts.join(' | -') +' '+ (arg || ''), doc] })),
+							return [opts.join(' | -') +' '+ (arg || ''), doc] })),
+					// commands...
+					...(((x = spec.__getcommands__()) && x.length > 0) ?
+						['', 'Commands:', ...x]
+						: []),
 					// examples...
 					...(this.spec.__examples__ ?
 						['', 'Examples:', ...(
@@ -188,12 +193,12 @@ var ArgvParser = function(spec){
 								spec.__examples__
 									.map(function(e){ 
 										return e instanceof Array ? e : [e] })
-								: spec.__examples__.call(this) )]
+								: spec.__examples__(this) )]
 						: []),
 					// footer...
 					...(this.spec.__footer__?
 						['', typeof(this.spec.__footer__) == 'function' ? 
-							spec.__footer__.call(this) 
+							spec.__footer__(this) 
 							: spec.__footer__]
 						: []) ]
 				.map(function(e){
@@ -212,6 +217,7 @@ var ArgvParser = function(spec){
 				process.exit() }},
 
 		// special values and methods...
+		__opt_pattern__: /^--?/,
 		__opts_width__: 3,
 		__doc_prefix__: '- ',
 
@@ -249,7 +255,12 @@ var ArgvParser = function(spec){
 						handlers[k][0].push(opt)
 						: (handlers[k] = [[opt], h.arg, h.doc || k, h]) })
 			return Object.values(handlers) },
+		// XXX get all instances of ArgvParser in spec... 
+		__getcommands__: function(){
+			return []
+		},
 		__gethandler__: function(key){
+			key = key.replace(this.__opt_pattern__ || /^--?/, '-')
 			var seen = new Set([key])
 			while(key in this 
 					&& typeof(this[key]) == typeof('str')){
@@ -282,7 +293,7 @@ var ArgvParser = function(spec){
 			var arg = argv.shift()
 			// options...
 			if(pattern.test(arg)){
-				var handler = spec.__gethandler__(arg.replace(/^--?/, '')).pop()
+				var handler = spec.__gethandler__(arg).pop()
 						|| spec.__unknown__
 				// get option value...
 				var value = (handler.arg && !pattern.test(argv[0])) ?
@@ -1044,8 +1055,8 @@ if(typeof(__filename) != 'undefined'
 					'set verbose mode globally and run tests.'.gray],
 			],
 			// options...
-			l: 'list',
-			list: {
+			'-l': '-list',
+			'-list': {
 				doc: 'list available tests.',
 				handler: function(){
 					console.log(object.normalizeTextIndent(
@@ -1072,8 +1083,8 @@ if(typeof(__filename) != 'undefined'
 							') }
 						`), this.scriptname)
 					process.exit() }},
-			v: 'verbose',
-			verbose: {
+			'-v': '-verbose',
+			'-verbose': {
 				doc: 'verbose mode (defaults to: $VERBOSE).',
 				handler: function(){
 					module.VERBOSE = true }},
