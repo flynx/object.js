@@ -187,7 +187,9 @@ var ArgvParser = function(spec){
 							return [opts.join(' | -') +' '+ (arg || ''), doc] })),
 					// commands...
 					...(((x = spec.__getcommands__()) && x.length > 0) ?
-						['', 'Commands:', ...x]
+						['', 'Commands:', 
+							...x.map(function([cmd, _, doc]){
+								return [cmd.join(' | '), doc] })]
 						: []),
 					// examples...
 					...(this.spec.__examples__ ?
@@ -248,24 +250,32 @@ var ArgvParser = function(spec){
 			process.exit(1) }, 
 
 		// these are run in the context of spec...
-		__getoptions__: function(pattern){
+		__getoptions__: function(...pattern){
 			var that = this
-			var handlers = {}
-			pattern = pattern 
-				|| this.__opt_pattern__ 
-				|| module.OPTION_PATTERN
-			Object.keys(this)
-				.forEach(function(opt){
-					// skip special methods...
-					if(/^__.*__$/.test(opt) 
-							&& !pattern.test(opt)){
-						return }
-					var [k, h] = that.__gethandler__(opt)
-					handlers[k] ?
-						handlers[k][0].push(opt)
-						: (handlers[k] = [[opt], h.arg, h.doc || k, h]) })
-			return Object.values(handlers) },
-		// XXX get all instances of ArgvParser in spec... 
+			pattern = pattern.length == 0 ?
+				[this.__opt_pattern__
+					|| module.OPTION_PATTERN]
+				: pattern
+			return pattern
+				.map(function(pattern){
+					var handlers = {}
+					Object.keys(that)
+						.forEach(function(opt){
+							// skip special methods...
+							if(/^__.*__$/.test(opt) 
+									|| !pattern.test(opt)){
+								return }
+							var [k, h] = that.__gethandler__(opt)
+							handlers[k] ?
+								handlers[k][0].push(opt)
+								: (handlers[k] = [[opt], h.arg, h.doc || k, h]) })
+					return Object.values(handlers) })
+				.flat(1) },
+		__iscommand__: function(str){
+			return (this.__cmd_pattern__ 
+					|| module.COMMAND_PATTERN)
+				.test(str) 
+				&& str in this },
 		__getcommands__: function(){
 			return this.__getoptions__(
 				this.__cmd_pattern__ 
@@ -286,13 +296,16 @@ var ArgvParser = function(spec){
 			return [key, this[key]] },
 	}, spec)
 
-	// sanity check -- this will detect argument loops...
-	if(!!spec.__pre_check__){
-		spec.__getoptions__()
-		spec.__getcommands__()}
+	// sanity check -- this will detect argument loops for builtin opts 
+	// and commands...
+	spec.__pre_check__
+		&& spec.__getoptions__(
+			spec.__opt_pattern__ || module.OPTION_PATTERN,
+			spec.__cmd_pattern__ || module.COMMAND_PATTERN)
 
 	return function(argv){
-		var pattern = /^--?[a-zA-Z-]*$/
+		var opt_pattern = spec.__opt_pattern__ 
+			|| module.OPTION_PATTERN
 		argv = argv.slice()
 		var context = {
 			spec: spec,
@@ -307,12 +320,18 @@ var ArgvParser = function(spec){
 		var other = []
 		while(argv.length > 0){
 			var arg = argv.shift()
-			// options...
-			if(pattern.test(arg)){
+			var type = opt_pattern.test(arg) ?
+					'opt'
+				: spec.__iscommand__(arg) ?
+					'cmd'
+				: 'other'
+			// options / commands...
+			if(type != 'other'){
+				// get handler...
 				var handler = spec.__gethandler__(arg).pop()
 						|| spec.__unknown__
 				// get option value...
-				var value = (handler.arg && !pattern.test(argv[0])) ?
+				var value = (handler.arg && !opt_pattern.test(argv[0])) ?
 						argv.shift()
 					: undefined
 				// run handler...
@@ -325,6 +344,7 @@ var ArgvParser = function(spec){
 						arg, 
 						argv)
 				continue }
+			// other...
 			other.push(arg) }
 		return other } }
 
@@ -1104,6 +1124,19 @@ if(typeof(__filename) != 'undefined'
 				doc: 'verbose mode (defaults to: $VERBOSE).',
 				handler: function(){
 					module.VERBOSE = true }},
+
+			// XXX commands...
+			'-foo': 'moo',
+			'moo': 'moue',
+			'moue': Object.assign(
+				function(){ 
+					console.log('MOO!!!!!!') 
+					process.exit() },
+				{
+					doc: 'test command...'
+				}),
+			// XXX need to make this nestable...
+			'nested': ArgvParser({ }),
 		})(process.argv)
 
 	// run the tests...
