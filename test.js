@@ -117,6 +117,9 @@ var instances = function(obj){
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
+module.OPTION_PATTERN = /^--?/
+module.COMMAND_PATTERN = /^[a-zA-Z]/
+
 // basic argv parser...
 //
 // Format:
@@ -217,7 +220,9 @@ var ArgvParser = function(spec){
 				process.exit() }},
 
 		// special values and methods...
-		__opt_pattern__: /^--?/,
+		__pre_check__: true,
+		__opt_pattern__: module.OPTION_PATTERN,
+		__cmd_pattern__: module.COMMAND_PATTERN,
 		__opts_width__: 3,
 		__doc_prefix__: '- ',
 
@@ -234,6 +239,7 @@ var ArgvParser = function(spec){
 
 		__usage__: function(){
 			return `${ this.scriptname } [OPTIONS]` },
+		__doc__: undefined,
 		__examples__: undefined,
 		__footer__: undefined,
 
@@ -242,13 +248,17 @@ var ArgvParser = function(spec){
 			process.exit(1) }, 
 
 		// these are run in the context of spec...
-		__getoptions__: function(){
+		__getoptions__: function(pattern){
 			var that = this
 			var handlers = {}
+			pattern = pattern 
+				|| this.__opt_pattern__ 
+				|| module.OPTION_PATTERN
 			Object.keys(this)
 				.forEach(function(opt){
 					// skip special methods...
-					if(/^__.*__$/.test(opt)){
+					if(/^__.*__$/.test(opt) 
+							&& !pattern.test(opt)){
 						return }
 					var [k, h] = that.__gethandler__(opt)
 					handlers[k] ?
@@ -257,10 +267,14 @@ var ArgvParser = function(spec){
 			return Object.values(handlers) },
 		// XXX get all instances of ArgvParser in spec... 
 		__getcommands__: function(){
-			return []
-		},
+			return this.__getoptions__(
+				this.__cmd_pattern__ 
+					|| module.COMMAND_PATTERN) },
 		__gethandler__: function(key){
-			key = key.replace(this.__opt_pattern__ || /^--?/, '-')
+			key = key.replace(
+				this.__opt_pattern__ 
+					|| module.OPTION_PATTERN, 
+				'-')
 			var seen = new Set([key])
 			while(key in this 
 					&& typeof(this[key]) == typeof('str')){
@@ -273,7 +287,9 @@ var ArgvParser = function(spec){
 	}, spec)
 
 	// sanity check -- this will detect argument loops...
-	spec.__getoptions__()
+	if(!!spec.__pre_check__){
+		spec.__getoptions__()
+		spec.__getcommands__()}
 
 	return function(argv){
 		var pattern = /^--?[a-zA-Z-]*$/
