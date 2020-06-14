@@ -589,6 +589,27 @@ module.cases = {
 		assert.error('.parent(..) of anonymous function', function(){ 
 			object.parent(function(){}, {}) })
 	},
+	'deepKeys': function(assert){
+		var a = {
+			a: true
+		}
+		var b = {
+			__proto__: a,
+			b: true,
+		}
+		var c = {
+			__proto__: b,
+			c: true,
+		}
+
+		assert(arrayCmp(object.deepKeys(c), ['a', 'b', 'c']), 'full')
+		assert(arrayCmp(object.deepKeys(c, a), ['a', 'b', 'c']), 'full 2')
+
+		// XXX these are wrong...
+		console.log('>>>>', object.deepKeys(c, a)) // -/-> ['a', 'b', 'c']
+		console.log('>>>>', object.deepKeys(c, b)) // -/-> ['b', 'c']
+		console.log('>>>>', object.deepKeys(c, c)) // -/-> ['c']
+	}
 }
 
 
