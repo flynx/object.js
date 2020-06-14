@@ -118,9 +118,11 @@ var deepKeys =
 module.deepKeys =
 function(obj, stop){
 	var res = []
-	while(obj!= null && obj.__proto__ !== stop){
+	while(obj!= null){
 		res.push(Object.keys(obj))
-		obj = obj.__proto__ }
+		obj = obj.__proto__ 
+		if(obj === stop){
+			break }}
 	return [...(new Set(res.flat()))] }
 
 
