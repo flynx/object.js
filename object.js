@@ -103,6 +103,27 @@ function(text, tab_size, leading_tabs){
 	return module.normalizeIndent(text, tab_size, leading_tabs || 0) }
 
 
+// Get keys from prototype chain...
+//
+// 	deepKeys(obj)
+// 	deepKeys(obj, stop)
+// 		-> keys
+//
+//
+// NOTE: this is like Object.keys(..) but will get keys for all levels 
+// 		till stop if given...
+//
+// XXX should we add this to Object???
+var deepKeys =
+module.deepKeys =
+function(obj, stop){
+	var res = []
+	while(obj !== stop && obj != null){
+		res.push(Object.keys(obj))
+		obj = obj.__proto__ }
+	return [...(new Set(res.flat()))] }
+
+
 // Match two objects...
 //
 // 	match(a, b)

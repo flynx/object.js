@@ -835,13 +835,28 @@ normalizeTextIndent(..)
 
 This ignores `object.LEADING_TABS` and `leading_tabs` is 0 by default.
 
+### `deepKeys(..)`
+
+```
+deepKeys(<obj>)
+	-> <keys>
+```
+
+```
+deepKeys(<obj>, <stop>)
+	-> <keys>
+```
+
+This is like `Object.keys(..)` but will get the keys from the whole 
+prototype chain or until `<stop>` if given.
+
 
 ### `match(..)`
 
 Test if the two objects match in attributes and attribute values
 ```
-match(base, obj)
-	-> bool
+match(<base>, <obj>)
+	-> <bool>
 ```
 
 This relies on first level object structure to match the input object, for 
@@ -857,8 +872,8 @@ or:
 
 Non-strict match
 ```
-match(base, obj, true)
-	-> bool
+match(<base., <obj>, true)
+	-> <bool>
 ```
 
 Like the default case but uses _equality_ instead of _identity_ to match
@@ -868,12 +883,12 @@ values.
 ### `matchPartial(..)`
 
 ```
-match(base, obj)
-	-> bool
+matchPartial(<base>, <obj>)
+	-> <bool>
 
 // non-strict version...
-match(base, obj, true)
-	-> bool
+matchPartial(<base>, <obj>, true)
+	-> <bool>
 ```
 
 Like `.match(..)` but will check for a partial match, i.e. when `obj` is 
