@@ -120,10 +120,9 @@ function(obj, stop){
 	var res = []
 	while(obj != null){
 		res.push(Object.keys(obj))
-		obj = obj.__proto__ 
-		// XXX need to stop but include the stop object...
 		if(obj === stop){
-			break }}
+			break }
+		obj = obj.__proto__ }
 	return [...(new Set(res.flat()))] }
 
 

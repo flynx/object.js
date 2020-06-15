@@ -602,13 +602,11 @@ module.cases = {
 			c: true,
 		}
 
-		assert(arrayCmp(object.deepKeys(c), ['a', 'b', 'c']), 'full')
-		assert(arrayCmp(object.deepKeys(c, a), ['a', 'b', 'c']), 'full 2')
+		assert.array(object.deepKeys(c), ['c', 'b', 'a'], 'full chain')
+		assert.array(object.deepKeys(c, a), ['c', 'b', 'a'], 'full chain')
+		assert.array(object.deepKeys(c, b), ['c', 'b'], 'partial chain')
+		assert.array(object.deepKeys(c, c), ['c'], 'partial chain')
 
-		// XXX these are wrong...
-		console.log('>>>>', object.deepKeys(c, a)) // -/-> ['a', 'b', 'c']
-		console.log('>>>>', object.deepKeys(c, b)) // -/-> ['b', 'c']
-		console.log('>>>>', object.deepKeys(c, c)) // -/-> ['c']
 	}
 }
 
@@ -714,6 +712,10 @@ object.Constructor('Assert', {
 		} catch(err){
 			this(true, msg)
 			return err } },
+	// XXX 
+	array: function(value, expected, msg){
+		return this(arrayCmp(value, expected), 
+			msg +':', 'expected:', expected, 'got:', value) },
 
 	__init__: function(path, stats, verbose){
 		this.path = path instanceof Array ? 
