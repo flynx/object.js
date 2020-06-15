@@ -740,7 +740,10 @@ function(context, constructor, ...args){
 			constructor.__proto__.__rawinstance__(context, ...args)
 		// use parent's constructor...
 		: (typeof(constructor.__proto__) == 'function'
-				&& constructor.__proto__ !== (function(){}).__proto__) ?
+				// XXX for some reason if using (function(){}).__proto__ 
+				// 		instead of Function.prototype below coverage is 
+				// 		not counted for the condition....
+				&& constructor.__proto__ !== Function.prototype) ?
 			Reflect.construct(constructor.__proto__, args, constructor)
 		// default object base...
 		: Reflect.construct(Object, [], constructor)

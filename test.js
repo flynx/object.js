@@ -115,10 +115,21 @@ module.setups = {
 	// basic constructor and inheritance...
 	//
 	//	X
-	//	Y <- A <- B <- C	
+	//	Y <- A <- B <- C <- D <- E	
+	//
+	// This will test:
+	// 	- object creation
+	// 	- basic inheritance
+	// 		- general usecase
+	// 		- .__extends__
+	// 	- method overloading
+	// 		- .parent(..)
+	// 		- .parentCall(..)
+	// 		- .parentProperty(..)
+	// 	- constructor methods (XXX not done...)
 	//
 	basic: function(assert){
-		var X, Y, A, B, C
+		var X, Y, A, B, C, D, E
 		return {
 			X: X = assert(object.Constructor('X'), `.Constructor(..)`),
 			Y: Y = assert(object.C('Y', { 
@@ -132,6 +143,8 @@ module.setups = {
 			}), `.C(..)`),
 
 			A: A = assert(object.C('A', Y, { 
+				get prop(){
+					return 'A.prop' },
 				method: function(){
 					var x
 					assert(
@@ -143,6 +156,8 @@ module.setups = {
 			B: B = assert(object.C('B', A, { 
 				// XXX constructor methods...
 			}, { 
+				get prop(){
+					return 'B.prop' },
 				// XXX methods...
 			}), `inherit (gen2) with constructor mixin`),
 			C: C = assert(object.C('C', B, { 
@@ -151,9 +166,42 @@ module.setups = {
 					assert(
 						(x = object.parentCall(C.prototype.method, this, ...arguments)) == 'A', 
 						'c.method(..): expected:', 'A', 'got:', x)
+
+					assert(this.prop == 'B.prop', 
+						'get property value')
+					// NOTE: these get "next visible" not "outside current object",
+					// 		this is intentional, the "outside" value is simply 
+					// 		accessible via:
+					// 			C.prototype.prop
+					assert(object.parent(C.prototype, 'prop') == 'A.prop', 
+						'get parent property value')
+					assert(object.parentProperty(C.prototype, 'prop').get() == 'A.prop', 
+						'get parent property')
+
 					return 'C'
 				},
 			}), `inherit (gen3)`),
+			D: D = assert(object.C('D', {}, {
+				__extends__: C,
+				method: function(){
+					var x
+					assert(
+						(x = object.parentCall(D.prototype.method, this, ...arguments)) == 'C', 
+						'c.method(..): expected:', 'C', 'got:', x)
+					return 'D'
+				},
+			}), '.__extends__ test'),
+			E: E = assert(object.C('E', {
+				__extends__: C,
+			}, {
+				method: function(){
+					var x
+					assert(
+						(x = object.parentCall(D.prototype.method, this, ...arguments)) === undefined, 
+						'c.method(..): expected:', undefined, 'got:', x)
+					return 'E'
+				},
+			}), '.__extends__ test'),
 		} },
 
 	// initialization...
@@ -257,7 +305,6 @@ module.setups = {
 
 	// compatibility: native constructors...
 	js_constructors: function(assert){
-		var X, Y, Z, a, b, c, d
 		return {
 			Object,
 			Array,
@@ -283,23 +330,23 @@ module.setups = {
 				x: 'c',
 				method: function(){
 					var x, y
-					assert(arrayCmp(
-						x = object.values(c, 'x'), 
-						y = ['c', 'a', 'b']), 
-							'reach all values of attr: expected:', x, 'got:'.bold.yellow, y)
-					assert(arrayCmp(
-						x = object.values(c, 'x', function(v, o){
+					assert.array(
+						object.values(c, 'x'), 
+						['c', 'a', 'b'], 
+							'reach all values of attr')
+					assert.array(
+						object.values(c, 'x', function(v, o){
 							return v.toUpperCase() }), 
-						y = ['C', 'A', 'B']), 
-							'reach all values of attr: expected:', x, 'got:'.bold.yellow, y)
-					assert(arrayCmp(
-						x = object.sources(c, 'method'),
+						['C', 'A', 'B'], 
+							'reach all values of attr')
+					assert.array(
+						object.sources(c, 'method'),
 						// NOTE: not passing an explicit list as we need 
 						// 		to account for mixins...
-						y = object.sources(c)
+						object.sources(c)
 								.filter(function(s){ 
-									return s.hasOwnProperty('method') })), 
-							'reach all values of method: expected:', y, 'got:'.bold.yellow, x)
+									return s.hasOwnProperty('method') }), 
+							'reach all values of method')
 					assert(
 						(x = object.parent(c, 'x')) == 'b', 
 							'reach parent attr: expected:', 'b', 'got:'.bold.yellow, x)
@@ -331,18 +378,18 @@ module.setups = {
 				x = 'z'
 				method(){
 					// XXX this is almost the same as for js_prototype...
-					assert(arrayCmp(
+					assert.array(
 						object.values(c, 'x'), 
-						['z', 'y', 'x']), 
+						['z', 'y', 'x'], 
 							'reach all values of attr (class)')
-					assert(arrayCmp(
+					assert.array(
 						object.values(c, 'x', function(v, o){
 							return v.toUpperCase() }), 
-						['C', 'A', 'B']), 
+						['C', 'A', 'B'], 
 							'reach all values of attr (class)')
-					assert(arrayCmp(
+					assert.array(
 						object.sources(c, 'method'), 
-						[Z.prototype, X.prototype]), 
+						[Z.prototype, X.prototype], 
 							'reach all values of method (class)')
 					assert(
 						object.parent(c, 'x') == super.x, 
@@ -573,6 +620,23 @@ module.tests = {
 var cases =
 module.cases = {
 	'edge-cases': function(assert){
+
+		assert.error('double __extends__ fail', function(){
+			var X = object.C('X', {
+				__extends__: Object,
+			}, {
+				__extends__: Function,
+			})
+		})
+
+		// native constructor...
+		assert.array(
+			object.RawInstance(null, Array, 'a', 'b', 'c'), 
+			['a', 'b', 'c'], 
+			'native constructor')
+		assert(object.RawInstance(null, Number, '123') == 123, 'native constructor')
+
+
 		var x, y
 
 		// object.match(..)
@@ -589,7 +653,7 @@ module.cases = {
 		assert.error('.parent(..) of anonymous function', function(){ 
 			object.parent(function(){}, {}) })
 	},
-	'deepKeys': function(assert){
+	deepKeys: function(assert){
 		var a = {
 			a: true
 		}
