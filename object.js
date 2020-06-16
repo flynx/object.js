@@ -20,12 +20,26 @@
 ((typeof define)[0]=='u'?function(f){module.exports=f(require)}:define)
 (function(require){ var module={} // make module AMD/node compatible...
 /*********************************************************************/
+
+
+// Function methods to link into a constructor producing a callable 
+// defined via .__call__(..)
+//
+// see: Constructor(..) for details.
+module.LINK_FUNCTION_METHODS = [
+	'call',
+	'apply',
+	'bind',
+]
+
+
+
+
+//---------------------------------------------------------------------
 // Helpers...
 
-var TAB_SIZE =
 module.TAB_SIZE = 4
 
-var LEADING_TABS = 
 module.LEADING_TABS = 1
 
 
@@ -58,10 +72,10 @@ var normalizeIndent =
 module.normalizeIndent =
 function(text, tab_size, leading_tabs){
 	tab_size = tab_size == null ? 
-		TAB_SIZE 
+		module.TAB_SIZE 
 		: tab_size
 	leading_tabs = (leading_tabs == null ? 
-			LEADING_TABS 
+			module.LEADING_TABS 
 			: leading_tabs) 
 		* tab_size
 	// prepare text...
@@ -819,6 +833,9 @@ function(context, constructor, ...args){
 // 			values are ignored.
 // 		XXX this may get removed in future versions.
 //
+// 	If true do not link function methods if .__call__(..) is defined
+// 	.__skip_call_attrs__ = bool
+//
 //
 // Special methods (constructor):
 //
@@ -1014,6 +1031,15 @@ function Constructor(name, a, b, c){
 		// also transfer non-default constructor_mixin.__proto__
 		&& constructor_mixin.__proto__ !== Object.prototype
 			&& (_constructor.__proto__ = constructor_mixin.__proto__)
+
+	// link function stuff for convenience...
+	proto.__call__ && !(proto instanceof Function)
+		&& _constructor.__skip_call_attrs__ !== true
+		&& module.LINK_FUNCTION_METHODS
+			.forEach(function(n){
+				proto[n] 
+					|| Object.defineProperty(proto, n, 
+						Object.getOwnPropertyDescriptor(Function.prototype, n)) })
 
 	return _constructor }
 
