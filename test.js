@@ -963,6 +963,7 @@ if(typeof(__filename) != 'undefined'
 						') }
 					`), this.scriptName)
 				process.exit() }},
+
 		'-verbose': {
 			doc: 'verbose mode (defaults to: $VERBOSE).',
 			handler: function(){
