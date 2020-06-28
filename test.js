@@ -67,11 +67,6 @@ module.VERBOSE = process ?
 //---------------------------------------------------------------------
 // helpers...
 
-Object.defineProperty(String.prototype, 'raw', {
-	get: function(){
-		return this.replace(/\x1b\[..?m/g, '') }, })
-
-
 // compare two arrays by items...
 var arrayCmp = function(a, b){
 	var ka = Object.keys(a)
@@ -177,6 +172,9 @@ module.setups = {
 						'get parent property value')
 					assert(object.parentProperty(C.prototype, 'prop').get() == 'A.prop', 
 						'get parent property')
+
+					assert(object.parentProperty(C.prototype, 'does-not-exist') === undefined, 
+						'get non-existent property')
 
 					return 'C'
 				},
@@ -894,111 +892,100 @@ function(chain, stats){
 if(typeof(__filename) != 'undefined'
 		&& __filename == (require.main || {}).filename){
 
-	// parse args...
-	var chains = 
-		argv.ArgvParser({
-			// doc...
-			__usage__: `$scriptname [OPTIONS] [CHAIN] ...`,
-			__doc__: object.normalizeTextIndent(
-				`Run tests on object.js module.
+	var stats = {}
 
-				Tests run by $scriptname can be specified in one of the 
-				following formats:
+	// parse args...
+	argv.Parser({
+		// doc...
+		usage: `$SCRIPTNAME [OPTIONS] [CHAIN] ...`,
+		doc: object.normalizeTextIndent(
+			`Run tests on object.js module.
+
+			Tests run by $SCRIPTNAME can be specified in one of the 
+			following formats:
+
+					<case>
+					<setup>:<test>
+					<setup>:<modifier>:<test>
+
+			Each of the items in the test spec can be a "*" indicating
+			that all relevant items should be used, for example:
+
+					${ '$ ./$SCRIPTNAME basic:*:*' }
+
+			Here $SCRIPTNAME is instructed to run all tests and modifiers
+			only on the basic setup.
+
+			Zero or more sets of tests can be specified.
+
+			When no tests specified $SCRIPTNAME will run all tests.
+			`),
+		examples: [
+			['$ ./$SCRIPTNAME', 
+				'run all tests.'.gray],
+			['$ ./$SCRIPTNAME basic:*:*', 
+				'run all tests and modifiers on "basic" setup.'.gray,
+				'(see $SCRIPTNAME -l for more info)'.gray],
+			['$ ./$SCRIPTNAME -v example', 
+				'run "example" test in verbose mode.'.gray],
+			['$ ./$SCRIPTNAME native:gen3:methods init:gen3:methods', 
+				'run two tests/patterns.'.gray],
+			['$ export VERBOSE=1 && ./$SCRIPTNAME', 
+				'set verbose mode globally and run tests.'.gray],
+		],
+
+		// options...
+		'-l': '-list',
+		'-list': {
+			doc: 'list available tests.',
+			handler: function(){
+				console.log(object.normalizeTextIndent(
+					`Tests run by %s can be of the following forms:
 
 						<case>
 						<setup>:<test>
 						<setup>:<modifier>:<test>
 
-				Each of the items in the test spec can be a "*" indicating
-				that all relevant items should be used, for example:
+					Setups:
+						${ Object.keys(setups).join('\n\
+						') }
 
-						${ '$ ./$scriptname basic:*:*' }
+					Modifiers:
+						${ Object.keys(modifiers).join('\n\
+						') }
 
-				Here $scriptname is instructed to run all tests and modifiers
-				only on the basic setup.
+					Tests:
+						${ Object.keys(tests).join('\n\
+						') }
 
-				Zero or more sets of tests can be specified.
+					Standalone test cases:
+						${ Object.keys(cases).join('\n\
+						') }
+					`), this.scriptName)
+				process.exit() }},
+		'-verbose': {
+			doc: 'verbose mode (defaults to: $VERBOSE).',
+			handler: function(){
+				module.VERBOSE = true }},
+	})
+	.then(function(chains){
+		// run the tests...
+		chains.length > 0 ?
+			chains
+				.forEach(function(chain){
+					runner(chain, stats) })
+			: runner('*', stats)
 
-				When no tests specified $scriptname will run all tests.
-				`),
-			__examples__: [
-				['$ ./$scriptname', 
-					'run all tests.'.gray],
-				['$ ./$scriptname basic:*:*', 
-					'run all tests and modifiers on "basic" setup.'.gray,
-					'(see $scriptname -l for more info)'.gray],
-				['$ ./$scriptname -v example', 
-					'run "example" test in verbose mode.'.gray],
-				['$ ./$scriptname native:gen3:methods init:gen3:methods', 
-					'run two tests/patterns.'.gray],
-				['$ export VERBOSE=1 && ./$scriptname', 
-					'set verbose mode globally and run tests.'.gray],
-			],
-			// options...
-			'-l': '-list',
-			'-list': {
-				doc: 'list available tests.',
-				handler: function(){
-					console.log(object.normalizeTextIndent(
-						`Tests run by %s can be of the following forms:
+		// print stats...
+		console.log('Tests run:', stats.tests, 
+			'  Assertions:', stats.assertions, 
+			'  Failures:', stats.failures,
+			`  (${stats.time}ms)`.bold.black) 
 
-							<case>
-							<setup>:<test>
-							<setup>:<modifier>:<test>
-
-						Setups:
-							${ Object.keys(setups).join('\n\
-							') }
-
-						Modifiers:
-							${ Object.keys(modifiers).join('\n\
-							') }
-
-						Tests:
-							${ Object.keys(tests).join('\n\
-							') }
-
-						Standalone test cases:
-							${ Object.keys(cases).join('\n\
-							') }
-						`), this.scriptname)
-					process.exit() }},
-			'-v': '-verbose',
-			'-verbose': {
-				doc: 'verbose mode (defaults to: $VERBOSE).',
-				handler: function(){
-					module.VERBOSE = true }},
-
-			// XXX commands...
-			'-foo': 'moo',
-			'moo': 'moue',
-			'moue': Object.assign(
-				function(){ 
-					console.log('MOO!!!!!!') 
-					process.exit() },
-				{
-					doc: 'test command...'
-				}),
-			// XXX need to make this nestable...
-			'nested': argv.ArgvParser({ }),
-		})(process.argv)
-
-	// run the tests...
-	var stats = {}
-	chains.length > 0 ?
-		chains
-			.forEach(function(chain){
-				runner(chain, stats) })
-		: runner('*', stats)
-
-	// print stats...
-	console.log('Tests run:', stats.tests, 
-		'  Assertions:', stats.assertions, 
-		'  Failures:', stats.failures,
-		`  (${stats.time}ms)`.bold.black) 
-
-	// report error status to the OS...
-	process.exit(stats.failures)
+		// report error status to the OS...
+		process.exit(stats.failures)
+	})
+	(process.argv)
 }
 
 
