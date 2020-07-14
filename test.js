@@ -911,7 +911,7 @@ if(typeof(__filename) != 'undefined'
 			Each of the items in the test spec can be a "*" indicating
 			that all relevant items should be used, for example:
 
-					${ '$ ./$SCRIPTNAME basic:*:*' }
+					$ ./$SCRIPTNAME basic:*:*
 
 			Here $SCRIPTNAME is instructed to run all tests and modifiers
 			only on the basic setup.
@@ -965,9 +965,12 @@ if(typeof(__filename) != 'undefined'
 				process.exit() }},
 
 		'-verbose': {
-			doc: 'verbose mode (defaults to: $VERBOSE).',
+			doc: 'verbose mode',
+			env: 'VERBOSE',
 			handler: function(){
 				module.VERBOSE = true }},
+
+		'@*': undefined,
 	})
 	.then(function(chains){
 		// run the tests...
@@ -978,7 +981,8 @@ if(typeof(__filename) != 'undefined'
 			: runner('*', stats)
 
 		// print stats...
-		console.log('Tests run:', stats.tests, 
+		console.log(
+			'Tests run:', stats.tests, 
 			'  Assertions:', stats.assertions, 
 			'  Failures:', stats.failures,
 			`  (${stats.time}ms)`.bold.black) 
@@ -986,8 +990,7 @@ if(typeof(__filename) != 'undefined'
 		// report error status to the OS...
 		process.exit(stats.failures)
 	})
-	(process.argv)
-}
+	(process.argv) }
 
 
 
