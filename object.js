@@ -25,6 +25,9 @@
 // Function methods to link into a constructor producing a callable 
 // defined via .__call__(..)
 //
+// These are needed to support the expected popular function API in a 
+// callable potentially not related to a function.
+//
 // see: Constructor(..) for details.
 module.LINK_FUNCTION_METHODS = [
 	'call',
