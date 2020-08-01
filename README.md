@@ -125,6 +125,10 @@ class B extends A {
 		- [Extending the constructor](#extending-the-constructor)
 		- [Inheriting from native constructor objects](#inheriting-from-native-constructor-objects)
 		- [Extending native `.constructor(..)`](#extending-native-constructor)
+	- [Special methods](#special-methods)
+		- [`<object>.__new__(..)`](#object__new__)
+		- [`<object>.__init__(..)`](#object__init__)
+		- [`<object>.__call__(..)`](#object__call__)
 	- [Components](#components)
 		- [`STOP`](#stop)
 		- [`sources(..)`](#sources)
@@ -141,9 +145,12 @@ class B extends A {
 		- [`Constructor(..)` / `C(..)`](#constructor--c)
 	- [Utilities](#utilities)
 		- [`normalizeIndent(..)` / `normalizeTextIndent(..)`](#normalizeindent--normalizetextindent)
+		- [`deepKeys(..)`](#deepkeys)
 		- [`match(..)`](#match)
+		- [`matchPartial(..)`](#matchpartial)
 	- [Limitations](#limitations)
 		- [Can not mix unrelated native types](#can-not-mix-unrelated-native-types)
+	- [More](#more)
 	- [License](#license)
 
 
@@ -220,9 +227,9 @@ var Item = object.Constructor('Item', Base, {
 		return object.parentCall(Item.prototype, 'method', this, ...arguments)
 	},
 
-	__init__: function(){
+	__init__: function(...args){
 		// call the "super" method...
-		object.parentCall(this.__init__, this, ...arguments)
+		object.parentCall(this.__init__, this, ...args)
 
 		this.item_attr = 'instance attribute value'
 	},
@@ -475,6 +482,58 @@ var myArray = object.Constructor('myArray', Array, {
 
 
 
+## Special methods
+
+### `<object>.__new__(..)`
+
+Create new instance object.
+
+```
+<object>.__new__(<context>, ..)
+	-> <instance>
+```
+
+This is called in the context of `<constructor>` as at time of call 
+no instance exists yet. 
+
+`<context>` is the _outer_ context of the call, i.e. the object from which 
+`<constructor>` was referenced before it was called.
+
+For more info see: 
+- [Low level constructor](#low-level-constructor), 
+- [Inheriting from native constructor objects](#inheriting-from-native-constructor-objects)
+- [Extending native `.constructor(..)`](#extending-native-constructor)
+
+
+### `<object>.__init__(..)`
+
+Initialize the instance.
+
+```
+<object>.__init__(..)
+```
+
+Return value is ignored.
+
+
+### `<object>.__call__(..)`
+
+Call the object.
+
+```
+<object>.__call__(<context>, ..)
+	-> <result>
+```
+
+This is called in the context of `<object>`. 
+
+`<context>` is the _outer_ context of the call, i.e. the object from which 
+`<object>` was referenced before it was called.
+
+For more info see: [Callable instances](#callable-instances)
+
+
+
 ## Components
 
 Note that all of the following are generic and will work on any relevant
@@ -485,7 +544,6 @@ For example, this will happily create a normal native array object
 ```javascript
 var l = object.RawInstance(null, Array, 'a', 'b', 'c')
 ```
-
 
 
 ### `STOP`
@@ -580,8 +638,8 @@ values(<object>, '__call__', ..)
 This will return the callable objects themselves or the value of `.__call__`.
 
 
-
 See [`sources(..)`](#sources) for docs on `callback(..)` and special cases.
+
 
 ### `parent(..)`
 
@@ -835,6 +893,7 @@ normalizeTextIndent(..)
 
 This ignores `object.LEADING_TABS` and `leading_tabs` is 0 by default.
 
+
 ### `deepKeys(..)`
 
 ```
@@ -931,6 +990,12 @@ emulation, shows the side-effects of two "features" in _JavaScript_:
 - _hidden_ protocols/functionality (namely: calls, attribute access)
 
 Still, this is worth some thought.
+
+
+
+## More
+
+For more info see the [source...](./object.js)
 
 
 
