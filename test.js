@@ -930,8 +930,8 @@ if(typeof(__filename) != 'undefined'
 				'run "example" test in verbose mode.'.gray],
 			['$ ./$SCRIPTNAME native:gen3:methods init:gen3:methods', 
 				'run two tests/patterns.'.gray],
-			['$ export VERBOSE=1 && ./$SCRIPTNAME', 
-				'set verbose mode globally and run tests.'.gray],
+			//['$ export VERBOSE=1 && ./$SCRIPTNAME', 
+			//	'set verbose mode globally and run tests.'.gray],
 		],
 
 		// options...
@@ -966,9 +966,11 @@ if(typeof(__filename) != 'undefined'
 
 		'-verbose': {
 			doc: 'verbose mode',
-			env: 'VERBOSE',
+			//env: 'VERBOSE',
 			handler: function(){
-				module.VERBOSE = true }},
+				module.VERBOSE = true }
+		},
+		'-quiet': undefined,
 
 		'@*': undefined,
 	})
