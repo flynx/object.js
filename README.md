@@ -144,7 +144,7 @@ class B extends A {
 		- [`RawInstance(..)`](#rawinstance)
 		- [`Constructor(..)` / `C(..)`](#constructor--c)
 	- [Utilities](#utilities)
-		- [`normalizeIndent(..)` / `normalizeTextIndent(..)`](#normalizeindent--normalizetextindent)
+		- [`normalizeIndent(..)` / `normalizeTextIndent(..)` / `doc` / `text`](#normalizeindent--normalizetextindent--doc--text)
 		- [`deepKeys(..)`](#deepkeys)
 		- [`match(..)`](#match)
 		- [`matchPartial(..)`](#matchpartial)
@@ -867,7 +867,7 @@ C(<name>, ..)
 
 ## Utilities
 
-### `normalizeIndent(..)` / `normalizeTextIndent(..)`
+### `normalizeIndent(..)` / `normalizeTextIndent(..)` / `doc` / `text`
 
 Align _code_ to shortest leading white-space
 ```
@@ -892,6 +892,9 @@ normalizeTextIndent(..)
 ```
 
 This ignores `object.LEADING_TABS` and `leading_tabs` is 0 by default.
+
+
+`doc` and `text` are template string versions of `normalizeIndent(..)` and `normalizeTextIndent(..)` respectively.
 
 
 ### `deepKeys(..)`

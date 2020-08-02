@@ -120,6 +120,22 @@ function(text, tab_size, leading_tabs){
 	return module.normalizeIndent(text, tab_size, leading_tabs || 0) }
 
 
+// template string tag versions of the above...
+var doc =
+module.doc =
+function(strings, ...values){
+	return normalizeIndent(strings
+		.map(function(s, i){ return s + (values[i] || '') })
+		.join('')) }
+
+var text =
+module.text =
+function(strings, ...values){
+	return normalizeTextIndent(strings
+		.map(function(s, i){ return s + (values[i] || '') })
+		.join('')) }
+
+
 // Get keys from prototype chain...
 //
 // 	deepKeys(obj)

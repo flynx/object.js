@@ -966,7 +966,7 @@ if(typeof(__filename) != 'undefined'
 
 		'-verbose': {
 			doc: 'verbose mode',
-			//env: 'VERBOSE',
+			env: 'VERBOSE',
 			handler: function(){
 				module.VERBOSE = true }
 		},
