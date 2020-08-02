@@ -898,8 +898,7 @@ if(typeof(__filename) != 'undefined'
 	argv.Parser({
 		// doc...
 		usage: `$SCRIPTNAME [OPTIONS] [CHAIN] ...`,
-		doc: object.normalizeTextIndent(
-			`Run tests on object.js module.
+		doc: object.text`Run tests on object.js module.
 
 			Tests run by $SCRIPTNAME can be specified in one of the 
 			following formats:
@@ -919,7 +918,7 @@ if(typeof(__filename) != 'undefined'
 			Zero or more sets of tests can be specified.
 
 			When no tests specified $SCRIPTNAME will run all tests.
-			`),
+			`,
 		examples: [
 			['$ ./$SCRIPTNAME', 
 				'run all tests.'.gray],
@@ -939,8 +938,8 @@ if(typeof(__filename) != 'undefined'
 		'-list': {
 			doc: 'list available tests.',
 			handler: function(){
-				console.log(object.normalizeTextIndent(
-					`Tests run by %s can be of the following forms:
+				console.log(
+					object.text`Tests run by %s can be of the following forms:
 
 						<case>
 						<setup>:<test>
@@ -961,7 +960,7 @@ if(typeof(__filename) != 'undefined'
 					Standalone test cases:
 						${ Object.keys(cases).join('\n\
 						') }
-					`), this.scriptName)
+					`, this.scriptName)
 				process.exit() }},
 
 		'-verbose': {
