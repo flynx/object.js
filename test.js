@@ -969,7 +969,9 @@ if(typeof(__filename) != 'undefined'
 			handler: function(){
 				module.VERBOSE = true }
 		},
+		// hide stuff we do not need...
 		'-quiet': undefined,
+		'-': undefined,
 
 		'@*': undefined,
 	})
