@@ -1086,7 +1086,7 @@ function Constructor(name, a, b, c){
 						Object.assign(
 							Object.getOwnPropertyDescriptor(Function.prototype, n),
 							{ value: function(){
-								return this.__call__[n](...arguments) }, })) })
+								return this.__call__[n](this, ...arguments) }, })) })
 
 	return _constructor }
 

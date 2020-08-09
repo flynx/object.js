@@ -441,6 +441,14 @@ module.modifiers = {
 	gen3: function(assert, setup){
 		return this.gen2(assert, this.gen2(assert, setup), '3') },
 
+	// create instance clones via Object.create(..)
+	//
+	clones: function(assert, setup){
+		return instances(setup)
+			.reduce(function(res, [k, o]){
+				res[k] = Object.create(o) 
+				return res }, {}) },
+
 	// generate instances...
 	//
 	// NOTE: these are re-used as tests too...
@@ -618,13 +626,19 @@ module.tests = {
 		instances(setup)
 			.filter(function([_, o]){
 				// NOTE: not all callables are instances of Function...
-				return typeof(o) == 'function' })
+				return typeof(o) == 'function' 
+					|| !!o.__call__ })
 			.forEach(function([k, o]){
 				o.__non_function ?
 					assert(!(o instanceof Function), 'non-instanceof Function', k)
 					: assert(o instanceof Function, 'instanceof Function', k)
 
-				assert(o(), 'call', k) 
+				typeof(o) == 'function'
+					&& assert(o(), 'call', k) 
+				
+				assert(o.call(), '.call(..)', k)
+				assert(o.apply(), 'apply(..)', k)
+				assert(o.bind(null)(), '.bind(..)(..)', k)
 
 				test(o, k)
 			}) 
