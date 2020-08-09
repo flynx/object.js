@@ -136,6 +136,7 @@ class B extends A {
 		- [`parent(..)`](#parent)
 		- [`parentProperty(..)`](#parentproperty)
 		- [`parentCall(..)`](#parentcall)
+		- [`parentOf(..)` / `childOf(..)` / `related(..)`](#parentof--childof--related)
 		- [`mixin(..)`](#mixin)
 		- [`mixins(..)`](#mixins)
 		- [`hasMixin(..)`](#hasmixin)
@@ -712,6 +713,22 @@ parentCall(<prototype>, '__call__', <this>)
 
 See [`parent(..)`](#parent) and [`sources(..)`](#sources) for more details.
 
+### `parentOf(..)` / `childOf(..)` / `related(..)`
+
+Test if a is parent of b and/or vice-versa.
+```
+parentOf(<parent>, <child>)
+	-> <bool>
+
+childOf(<child>, <parent>)
+	-> <bool>
+
+related(<a>, <b>)
+	-> <bool>
+```
+
+These are similar to `instanceof` but will test if the two objects are in the 
+same prototype chain and in case of `parentOf(..)`/`childOf(..)` in what order.
 
 ### `mixin(..)`
 

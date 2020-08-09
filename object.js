@@ -510,6 +510,31 @@ function(proto, name, that, ...args){
 		: undefined }
 
 
+// Test if child is related to parent...
+//
+// 	parentOf(parent, child)
+// 		-> bool
+//
+//
+// NOTE: this is like a instanceof b but within the prototype chain
+var parentOf =
+module.parentOf =
+function(parent, child){
+	return new Set(sources(child)).has(parent) }
+
+// Reverse of parentOf(..)
+var childOf =
+module.childOf =
+function(child, parent){
+	return parentOf(parent, child) }
+
+var related =
+module.related =
+function(a, b){
+	return parentOf(a, b) 
+		|| parentOf(b, a) }
+
+
 
 //---------------------------------------------------------------------
 // Mixin utils...

@@ -150,6 +150,27 @@ module.setups = {
 			}), `inherit (gen1)`),
 			B: B = assert(object.C('B', A, { 
 				// XXX constructor methods...
+				testRelations: function(){
+					assert(object.parentOf(A, this), 
+						'parentOf(A, B): expected to be true')
+					assert(object.childOf(this, A), 
+						'childOf(B, A): expected to be true')
+
+					assert(!object.parentOf(X, this), 
+						'parentOf(X, B): expected to be false')
+
+					assert(object.parentOf(A, E), 
+						'parentOf(A, E): expected to be true')
+					assert(object.childOf(E, A), 
+						'childOf(E, A): expected to be true')
+
+					assert(object.related(A, E) && object.related(E, A), 
+						'related(A, E) and related(E, A): expected to be true')
+
+					assert(!object.related(X, E) 
+						&& !object.related(E, X), 
+						'related(X, E) and related(E, X): expected to be flase')
+				},
 			}, { 
 				get prop(){
 					return 'B.prop' },
@@ -737,7 +758,7 @@ object.Constructor('Assert', {
 					path 
 					: [path])
 			], 
-			stats,
+			this.stats,
 			this.verbose) },
 	pop: function(){
 		return this.constructor(
