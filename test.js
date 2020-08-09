@@ -690,7 +690,23 @@ module.cases = {
 		assert.array(object.deepKeys(c, b), ['c', 'b'], 'partial chain')
 		assert.array(object.deepKeys(c, c), ['c'], 'partial chain')
 
-	}
+	},
+	funcMethods: function(assert){
+		var X = object.C('X', {
+			__call__: function(){
+				return true },
+		})
+
+		var x = new X()
+
+		assert(x(), 'x()')
+		assert(x.call(null), 'x.call(null)')
+
+		var xx = Object.create(x)
+
+		assert(typeof(xx.call) == 'function', 'xx.call is a function')
+		assert(xx.call(null), 'xx.call(null)')
+	},
 }
 
 

@@ -1083,7 +1083,10 @@ function Constructor(name, a, b, c){
 			.forEach(function(n){
 				proto[n] 
 					|| Object.defineProperty(proto, n, 
-						Object.getOwnPropertyDescriptor(Function.prototype, n)) })
+						Object.assign(
+							Object.getOwnPropertyDescriptor(Function.prototype, n),
+							{ value: function(){
+								return this.__call__[n](...arguments) }, })) })
 
 	return _constructor }
 
