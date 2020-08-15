@@ -1,40 +1,6 @@
 #!/usr/bin/env node
 /**********************************************************************
 * 
-* This is an experimental test framework...
-*
-* The idea is that we can split the tests into:
-* 	- setups
-* 		Construct as set of testable things.
-* 		On this stage the construction process can be tested.
-* 	- modifiers
-* 		Take a set of testable things as returned by a setup/modifier and
-* 		modify them or produce new things based on the old ones.
-* 		Here the modification process can be tested.
-* 	- tests
-* 		Take a set of things as returned by a setup/modifier and run a 
-* 		set of tests on them.
-* 		This stage tests a specific state and interactions within it.
-* 	- specific cases
-* 		A specific manual construction of a thing, its modification and
-* 		test.
-*
-* Testing is done by building/running a number chains, starting with a 
-* setup, then chaining the results through zero or more modifiers and 
-* finally into a test.
-*
-* The actual testing is dune via assert(..) functions and is not 
-* restricted to the test stage.
-*
-*
-* NOTE: tests can be used as modifiers if they modify state and return 
-* 		the modified input.
-*
-*
-* XXX thins to simplify:
-* 		- would be nice if the actual code could be readable...
-* 		- can we automate assert callas?
-*
 *
 *
 **********************************************************************/
@@ -65,10 +31,6 @@ var arrayCmp = function(a, b){
 						&& a[k] != a[k] })
 				.length == 0) }
 
-
-
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-
 // a constructor is a thing that starts with a capital and has a .prototype
 var constructors = function(obj){
 	return Object.entries(obj)
@@ -89,8 +51,6 @@ var instances = function(obj){
 
 //---------------------------------------------------------------------
 // Tests...
-//
-// XXX for some reason this runs more tests than ./test.old.js...
 
 var setups = test.Setups({
 	// basic constructor and inheritance...
@@ -625,10 +585,6 @@ var tests = test.Tests({
 })
 
 
-// specific independent cases...
-//
-// NOTE: it is a good idea to migrate tests from here into the main 
-// 		framework so as to be able to use them on more setups...
 var cases = test.Cases({
 	'edge-cases': function(assert){
 
