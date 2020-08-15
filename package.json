@@ -1,6 +1,6 @@
 {
   "name": "ig-object",
-  "version": "5.2.2",
+  "version": "5.2.3",
   "description": "",
   "main": "object.js",
   "scripts": {
@@ -28,6 +28,6 @@
   "devDependencies": {
     "c8": "^7.3.0",
     "colors": "^1.4.0",
-    "ig-argv": "^2.12.0"
+    "ig-test": "^1.2.1"
   }
 }

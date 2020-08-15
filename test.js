@@ -43,25 +43,10 @@
 /*********************************************************************/
 
 var colors = require('colors')
-var argv = require('ig-argv')
+
+var test = require('ig-test')
 
 var object = require('./object')
-
-
-
-//---------------------------------------------------------------------
-
-// NOTE: to test in verbose mode do:
-// 			$ export VERBOSE=1 && npm test
-// 		or
-// 			$ export VERBOSE=1 && node test.js
-// 		or set this manually after require('./test') but before running 
-// 		the runner(..)
-// NOTE: this may change in the future...
-module.VERBOSE = process ?
-	process.env.VERBOSE
-	: false
-
 
 
 //---------------------------------------------------------------------
@@ -105,8 +90,7 @@ var instances = function(obj){
 //---------------------------------------------------------------------
 // Tests...
 
-var setups = 
-module.setups = {
+var setups = test.Setups({
 	// basic constructor and inheritance...
 	//
 	//	X
@@ -419,11 +403,10 @@ module.setups = {
 					return 'c' }
 			},
 		}},
-}
+})
 
 
-var modifiers =
-module.modifiers = {
+var modifiers = test.Modifiers({
 	// default...
 	//
 	'as-is': function(assert, setup){
@@ -564,11 +547,10 @@ module.modifiers = {
 	get methods(){ return tests.methods },
 	get constructor_methods(){ return tests.constructor_methods },
 	get callables(){ return tests.callables },
-}
+})
 
 
-var tests =
-module.tests = {
+var tests = test.Tests({
 	// instance creation...
 	instance: modifiers.instance,
 	instance_no_new: modifiers.instance_no_new,
@@ -643,15 +625,14 @@ module.tests = {
 				test(o, k)
 			}) 
 		return setup },
-}
+})
 
 
 // specific independent cases...
 //
 // NOTE: it is a good idea to migrate tests from here into the main 
 // 		framework so as to be able to use them on more setups...
-var cases =
-module.cases = {
+var cases = test.Cases({
 	'edge-cases': function(assert){
 
 		assert.error('double __extends__ fail', function(){
@@ -721,330 +702,15 @@ module.cases = {
 		assert(typeof(xx.call) == 'function', 'xx.call is a function')
 		assert(xx.call(null), 'xx.call(null)')
 	},
-}
-
-
-
-//---------------------------------------------------------------------
-
-// Assert constructor...
-//
-//	Create an assert callable...
-//	Assert()
-//	Assert(path[, stats[, verbose]])
-//		-> assert
-//
-//	Create an assert with extended path...
-//	assert.push(path)
-//		-> assert
-//
-//	Create an assert with shortened path...
-//	assert.pop(path)
-//		-> assert
-//
-//
-// Assertions...
-//
-//	value is truthy...
-//	assert(value, msg, ..)
-//		-> value
-//
-//	Assert truth and catch exceptions...
-//	assert.assert(msg, test())
-//		-> value
-//
-//	Assert if test does not throw...
-//	assert.error(msg, test())
-//		-> error
-//
-//
-var Assert = 
-module.Assert =
-object.Constructor('Assert', {
-	stats: null,
-
-	__verbose: null,
-	get verbose(){
-		return this.__verbose == null ? 
-			module.VERBOSE 
-			: this.__verbose },
-	set verbose(value){
-		value == null ?
-			(delete this.__verbose)
-			: (this.__verbose = value) },
-
-	// path API...
-	__str_path: null,
-	get strPath(){
-		return (this.__str_path = 
-			this.__str_path 
-				|| (this.path || []).join(':')) },
-	path: null,
-	push: function(path){
-		return this.constructor(
-			[
-				...(this.path || []), 
-				...(path instanceof Array ? 
-					path 
-					: [path])
-			], 
-			this.stats,
-			this.verbose) },
-	pop: function(){
-		return this.constructor(
-			(this.path || []).slice(0, -1), 
-			this.stats,
-			this.verbose) },
-
-	// assertion API...
-	__call__: function(_, value, msg, ...args){
-		// stats...
-		var stats = this.stats
-		stats.assertions = (stats.assertions || 0) + 1
-		!value
-			&& (stats.failures = (stats.failures || 0) + 1)
-
-		// assertions...
-		this.verbose
-			&& console.log(this.strPath +': '+ msg.bold, ...args)
-		console.assert(value, this.strPath.bold +': '+ msg.bold.yellow, ...args)
-
-		return value },
-	istrue: function(msg, test){
-		try {
-			return this(test.call(this), msg)
-
-		} catch(err){
-			this(false, msg)
-			return err } },
-	error: function(msg, test){
-		try {
-			test.call(this)
-			return this(false, msg)
-
-		} catch(err){
-			this(true, msg)
-			return err } },
-	// XXX 
-	array: function(value, expected, msg){
-		return this(arrayCmp(value, expected), 
-			msg +':', 'expected:', expected, 'got:', value) },
-
-	__init__: function(path, stats, verbose){
-		this.path = path instanceof Array ? 
-			path 
-			: [path]
-		this.stats = stats || {}
-		this.verbose = verbose
-	},
 })
 
 
 
-// Test runner...
-//
-// 	runner()
-// 	runner('*')
-// 		-> stats
-//
-// 	runner('case')
-// 	runner('setup:test')
-// 	runner('setup:mod:test')
-// 		-> stats
-//
-//
-// This will run 
-// 		test(modifier(setup)) 
-// 			for each test in tests
-// 			for each modifier in modifiers
-// 			for each setup in setups
-// 		case() 
-// 			for each case in cases
-//
-//
-// NOTE: chaining more than one modifier is not yet supported (XXX)
-var runner = 
-module.runner =
-function(chain, stats){
-	// parse chain...
-	chain = (chain == '*' || chain == null) ?
-		[]
-		: chain
-	chain = chain instanceof Array ? 
-		chain 
-		: chain.split(/:/)
-	var chain_length = chain.length
-	var setup = chain.shift() || '*'
-	var test = chain.pop() || '*'
-	var mod = chain.pop() || '*'
-	mod = chain_length == 2 ? 
-		'as-is' 
-		: mod
-
-	// stats...
-	stats = stats || {}
-	Object.assign(stats, {
-		tests: stats.tests || 0,
-		assertions: stats.assertions || 0,
-		failures: stats.failures || 0,
-		time: stats.time || 0,
-	})
-
-	var started = Date.now()
-	// tests...
-	var assert = Assert('[TEST]', stats, module.VERBOSE)
-	chain_length != 1
-		&& Object.keys(tests)
-			.filter(function(t){
-				return test == '*' || test == t })
-			.forEach(function(t){
-				// modifiers...
-				Object.keys(modifiers)
-					.filter(function(m){
-						return mod == '*' || mod == m })
-					.forEach(function(m){
-						// setups...
-						Object.keys(setups)
-							.filter(function(s){
-								return setup == '*' || setup == s })
-							.forEach(function(s){
-								if(typeof(setups[s]) != 'function'){
-									return }
-								// run the test...
-								stats.tests += 1
-								var _assert = assert.push([s, m, t])
-								tests[t](_assert, 
-									modifiers[m](_assert, 
-										setups[s](_assert))) }) }) }) 
-	// cases...
-	var assert = Assert('[CASE]', stats, module.VERBOSE)
-	chain_length <= 1
-		&& Object.keys(cases)
-			.filter(function(s){
-				return setup == '*' || setup == s })
-			.forEach(function(c){
-				stats.tests += 1
-				cases[c]( assert.push(c) ) }) 
-	// runtime...
-	stats.time += Date.now() - started
-	return stats }
-
-
-
 //---------------------------------------------------------------------
 
-// we are run from command line -> test...
-//
-// NOTE: normally this would be require.main === module but we are 
-// 		overriding module in the compatibility wrapper so we have to do 
-// 		things differently...
-//
-// XXX update wrapper to make the condition simpler...
-if(typeof(__filename) != 'undefined'
-		&& __filename == (require.main || {}).filename){
-
-	var stats = {}
-
-	// parse args...
-	argv.Parser({
-		// doc...
-		usage: `$SCRIPTNAME [OPTIONS] [CHAIN] ...`,
-		doc: object.text`Run tests on object.js module.
-
-			Tests run by $SCRIPTNAME can be specified in one of the 
-			following formats:
-
-					<case>
-					<setup>:<test>
-					<setup>:<modifier>:<test>
-
-			Each of the items in the test spec can be a "*" indicating
-			that all relevant items should be used, for example:
-
-					$ ./$SCRIPTNAME basic:*:*
-
-			Here $SCRIPTNAME is instructed to run all tests and modifiers
-			only on the basic setup.
-
-			Zero or more sets of tests can be specified.
-
-			When no tests specified $SCRIPTNAME will run all tests.
-			`,
-		examples: [
-			['$ ./$SCRIPTNAME', 
-				'run all tests.'.gray],
-			['$ ./$SCRIPTNAME basic:*:*', 
-				'run all tests and modifiers on "basic" setup.'.gray,
-				'(see $SCRIPTNAME -l for more info)'.gray],
-			['$ ./$SCRIPTNAME -v example', 
-				'run "example" test in verbose mode.'.gray],
-			['$ ./$SCRIPTNAME native:gen3:methods init:gen3:methods', 
-				'run two tests/patterns.'.gray],
-			//['$ export VERBOSE=1 && ./$SCRIPTNAME', 
-			//	'set verbose mode globally and run tests.'.gray],
-		],
-
-		// options...
-		'-l': '-list',
-		'-list': {
-			doc: 'list available tests.',
-			handler: function(){
-				console.log(
-					object.text`Tests run by %s can be of the following forms:
-
-						<case>
-						<setup>:<test>
-						<setup>:<modifier>:<test>
-
-					Setups:
-						${ Object.keys(setups).join('\n\
-						') }
-
-					Modifiers:
-						${ Object.keys(modifiers).join('\n\
-						') }
-
-					Tests:
-						${ Object.keys(tests).join('\n\
-						') }
-
-					Standalone test cases:
-						${ Object.keys(cases).join('\n\
-						') }
-					`, this.scriptName)
-				process.exit() }},
-
-		'-verbose': {
-			doc: 'verbose mode',
-			env: 'VERBOSE',
-			handler: function(){
-				module.VERBOSE = true }
-		},
-		// hide stuff we do not need...
-		'-quiet': undefined,
-		'-': undefined,
-
-		'@*': undefined,
-	})
-	.then(function(chains){
-		// run the tests...
-		chains.length > 0 ?
-			chains
-				.forEach(function(chain){
-					runner(chain, stats) })
-			: runner('*', stats)
-
-		// print stats...
-		console.log(
-			'Tests run:', stats.tests, 
-			'  Assertions:', stats.assertions, 
-			'  Failures:', stats.failures,
-			`  (${stats.time}ms)`.bold.black) 
-
-		// report error status to the OS...
-		process.exit(stats.failures)
-	})
-	(process.argv) }
+typeof(__filename) != 'undefined'
+	&& __filename == (require.main || {}).filename
+	&& test.run()
 
 
 
