@@ -28,6 +28,6 @@
   "devDependencies": {
     "c8": "^7.3.0",
     "colors": "^1.4.0",
-    "ig-argv": "^2.11.2"
+    "ig-argv": "^2.12.0"
   }
 }

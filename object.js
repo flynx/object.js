@@ -1085,6 +1085,9 @@ function Constructor(name, a, b, c){
 					|| Object.defineProperty(proto, n, 
 						Object.assign(
 							Object.getOwnPropertyDescriptor(Function.prototype, n),
+							// NOTE: we can't use Function[n] directly because
+							// 		they in general test this for relation to
+							// 		function which will fail here...
 							{ value: function(){
 								return this.__call__[n](this, ...arguments) }, })) })
 
