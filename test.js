@@ -89,6 +89,8 @@ var instances = function(obj){
 
 //---------------------------------------------------------------------
 // Tests...
+//
+// XXX for some reason this runs more tests than ./test.old.js...
 
 var setups = test.Setups({
 	// basic constructor and inheritance...
@@ -407,11 +409,6 @@ var setups = test.Setups({
 
 
 var modifiers = test.Modifiers({
-	// default...
-	//
-	'as-is': function(assert, setup){
-		return setup },
-
 	// make gen2-3 constructors...
 	//
 	// NOTE: there is almost no need to test below gen3...
