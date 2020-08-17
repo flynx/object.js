@@ -3,6 +3,12 @@
 * 
 * TODO:
 * 	- test: 
+* 		- ASAP: method calls from methods from different contexts:
+* 			- constructor
+* 			- instance
+* 			- sub-instance
+* 			- callable
+* 			- .call(..) and friends
 * 		- object.mixout(..)
 * 		- object.normalizeTextIndent(..)
 * 		- object.doc`...`
