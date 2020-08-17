@@ -1,6 +1,16 @@
 #!/usr/bin/env node
 /**********************************************************************
 * 
+* TODO:
+* 	- test: 
+* 		- object.mixout(..)
+* 		- object.normalizeTextIndent(..)
+* 		- object.doc`...`
+* 		- object.text`...`
+* 		- callback STOP in object.mixins(..)
+* 		- props arg in object.values(..)
+* 		- RawInstance(..).toString()
+*
 *
 *
 **********************************************************************/
