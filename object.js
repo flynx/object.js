@@ -68,6 +68,9 @@ module.LEADING_TABS = 1
 // 		|								|}
 //
 // NOTE: this will trim out both leading and trailing white-space.
+// NOTE: this is generally code-agnostic with one sigificant 
+// 		exception -- normalizeIndent(..)  will break code written 
+// 		in Whitespace.
 //
 // XXX is this the right place for this???
 // 		...when moving take care that ImageGrid's core.doc uses this...
