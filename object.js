@@ -68,6 +68,9 @@ module.LEADING_TABS = 1
 // 		|								|}
 //
 // NOTE: this will trim out both leading and trailing white-space.
+// NOTE: this is generally code-agnostic with one sigificant 
+// 		exception -- normalizeIndent(..)  will break code written 
+// 		in Whitespace.
 //
 // XXX is this the right place for this???
 // 		...when moving take care that ImageGrid's core.doc uses this...
@@ -86,7 +89,10 @@ function(text, tab_size, leading_tabs){
 	text = tab != '' ?
 		text.replace(/\t/g, tab)
 		: text
-	var lines = text.trim().split(/\n/)
+	var lines = text.trimEnd().split(/\n/)
+	// remove leading blank lines...	
+	while(lines[0].trim() == ''){
+		lines.shift() }
 	// count common indent...
 	var l = lines 
 		.reduce(function(l, e, i){
