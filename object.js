@@ -52,14 +52,14 @@ module.LEADING_TABS = 1
 // 		-> text
 //
 //
-// This will remove common indent from each like of text, this is useful 
+// This will remove common indent from each line of text, this is useful 
 // for printing function code of functions that were defined at deep 
 // levels of indent.
 //
 // This will ignore the indent of the first line.
 //
 // If the last line is indented higher or equal to the rest of the text 
-// we will user leading_tabs (defaults to LEADING_TABS) to indent the 
+// we will use leading_tabs (defaults to LEADING_TABS) to indent the 
 // rest of the text.
 // This will indent the following styles correctnly:
 //
