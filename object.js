@@ -86,7 +86,10 @@ function(text, tab_size, leading_tabs){
 	text = tab != '' ?
 		text.replace(/\t/g, tab)
 		: text
-	var lines = text.trim().split(/\n/)
+	var lines = text.trimEnd().split(/\n/)
+	// remove leading blank lines...	
+	while(lines[0].trim() == ''){
+		lines.shift() }
 	// count common indent...
 	var l = lines 
 		.reduce(function(l, e, i){
