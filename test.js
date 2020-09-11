@@ -671,6 +671,23 @@ var cases = test.Cases({
 		assert(typeof(xx.call) == 'function', 'xx.call is a function')
 		assert(xx.call(null), 'xx.call(null)')
 	},
+
+	text_cases: [
+		[`a
+			b
+		c`, 
+		'a\n\tb\nc'],
+		[`a
+			b
+			c`, 
+		'a\n\tb\n\tc'],
+	],
+	text: function(assert){
+		this.text_cases.map(function([orig, target]){
+			assert(object.doc([orig]) == target)
+			assert(object.text([orig]) == target)
+		})
+	},
 })
 
 
