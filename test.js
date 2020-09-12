@@ -673,20 +673,52 @@ var cases = test.Cases({
 	},
 
 	text_cases: [
-		[`a
-			b
-		c`, 
-		'a\n\tb\nc'],
-		[`a
-			b
-			c`, 
-		'a\n\tb\n\tc'],
+		// NOTE: there is no way to know what is the indent of 'a'
+		// 		relative to the rest of the text...
+		// 		...without reading the source file, and that should
+		// 		be avoided.
+		// XXX FAIL: for some reason the two line case does not work...
+		{ input: `a
+				c`,
+			all: 'a\nc', },
+		{ input: `a
+				c`, 
+			all: 'a\nc' },
+
+		{ input: `a
+				b
+				c`, 
+			all: 'a\nb\nc' },
+
+
+		{ input: `
+				a
+					c`, 
+			all: 'a\n    c' },
+
+		{ input: `a
+					b
+				c`, 
+			all: `a\n    b\nc` },
 	],
 	text: function(assert){
-		this.text_cases.map(function([orig, target]){
-			assert(object.doc([orig]) == target)
-			assert(object.text([orig]) == target)
-		})
+		this.text_cases
+			.map(function({input, doc, text, all}, i){
+				var res
+
+				;(doc || all)
+					&& assert((res = object.doc([input])) == (doc || all), 
+						'doc(text_cases['+i+']):\n'
+						+ res
+						+'\n---\n'
+						+ (doc || all))
+				;(text || all)
+					&& assert((res = object.text([input])) == (text || all), 
+						'text(text_cases['+i+']):\n'
+						+ res
+						+'\n---\n'
+						+ (text || all))
+			})
 	},
 })
 
