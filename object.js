@@ -93,6 +93,11 @@ function(text, tab_size, leading_tabs){
 	// trim the tail and remove leading blank lines...	
 	var lines = text.trimEnd().split(/\n/)
 	while(lines[0].trim() == ''){
+		// XXX we have two options here:
+		// 			- indent everyline including the first non-blank
+		// 			- do not indent anything (current)
+		// 		...not sure which is best...
+		leading_tabs = 0
 		lines.shift() }
 	// count common indent...
 	var l = lines 
@@ -101,17 +106,20 @@ function(text, tab_size, leading_tabs){
 			return e.trim().length == 0 
 						// ignore 0 indent of first line...
 						|| (i == 0 && indent == 0) ?
-					l || indent 
+					l
 				// last line -- ignore leading_tabs if lower indent...
-				// XXX BUG this does messes things up for 2 liners...
+				// XXX does not work correctly when:
+				// 		- two lines
+				// 		- l is 0
+				// 		- non-zero leading_tabs...
 				: i == lines.length-1
 						&& indent >= l ? 
-					Math.max(indent - leading_tabs, 0) 
+					Math.min(l, Math.max(indent - leading_tabs, 0))
 				// initial state...
 				: l < 0 ? 
 					indent 
 				// min...
-				: Math.min(l, indent) }, -1)
+				: Math.min(l, indent) }, -1) || 0
 	// normalize...
 	return lines
 		.map(function(line, i){

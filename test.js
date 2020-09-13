@@ -673,13 +673,30 @@ var cases = test.Cases({
 	},
 
 	text_cases: [
+		// sanity checks...
+		{ input: 'abc',
+			all: 'abc'},
+		{ input: '\n\t\tabc',
+			all: 'abc'},
+
 		// NOTE: there is no way to know what is the indent of 'a'
 		// 		relative to the rest of the text...
-		// 		...without reading the source file, and that should
-		// 		be avoided.
 		{ input: `a
 				c`,
 			text: 'a\nc', 
+			// XXX fail...
+			doc: 'a\n    c'},
+		{ input: `a\nc`,
+			text: 'a\nc', 
+			doc: 'a\nc'},
+		{ input: `\
+				a
+					c`,
+			all: 'a\n    c'},
+		{ input: `
+				a
+					c`,
+			text: 'a\n    c', 
 			doc: 'a\n    c'},
 		{ input: `a
 				b
@@ -688,13 +705,10 @@ var cases = test.Cases({
 	   		doc: 'a\n    b\n    c' },
 
 
-		// XXX text(..): c is not indented... 
 		{ input: `
 				a
 					c`, 
 			all: 'a\n    c' },
-		// XXX text(..): losing all lines but 0 and -1...
-		// XXX text(..): c is not indented... 
 		{ input: `
 				a
 				b
@@ -707,6 +721,11 @@ var cases = test.Cases({
 			all: 'a\n    b\n    c' },
 
 		{ input: `a
+					b
+				c`, 
+			all: `a\n    b\nc` },
+		{ input: `
+				a
 					b
 				c`, 
 			all: `a\n    b\nc` },
