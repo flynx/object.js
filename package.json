@@ -5,8 +5,7 @@
   "main": "object.js",
   "scripts": {
     "test": "c8 node ./test.js",
-    "cover-lcov": "c8 -r lcov node ./test.js",
-    "cover": "c8 node ./test.js",
+    "cover": "c8 -r text -r lcov node ./test.js",
     "prepublishOnly": "npm test"
   },
   "repository": {
