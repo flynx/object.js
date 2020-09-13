@@ -724,11 +724,30 @@ var cases = test.Cases({
 					b
 				c`, 
 			all: `a\n    b\nc` },
+		{ input: `a
+					b
+					b
+					b
+				c`, 
+			all: `a\n    b\n    b\n    b\nc` },
+		{ input: `a
+					b
+						b
+					b
+				c`, 
+			all: `a\n    b\n        b\n    b\nc` },
 		{ input: `
 				a
 					b
 				c`, 
 			all: `a\n    b\nc` },
+		{ input: `a
+					b
+				c
+				d`, 
+			text: `a\n    b\nc\nd`,
+			// XXX not sure about this...
+			doc: `a\n        b\n    c\n    d` },
 	],
 	text: function(assert){
 		this.text_cases
