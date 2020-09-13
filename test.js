@@ -700,6 +700,11 @@ var cases = test.Cases({
 				b
 					c`, 
 			all: 'a\nb\n    c' },
+		{ input: `
+				a
+					b
+					c`, 
+			all: 'a\n    b\n    c' },
 
 		{ input: `a
 					b
