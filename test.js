@@ -672,6 +672,7 @@ var cases = test.Cases({
 		assert(xx.call(null), 'xx.call(null)')
 	},
 
+	// XXX two-liners still not fully passing...
 	text_cases: [
 		// NOTE: there is no way to know what is the indent of 'a'
 		// 		relative to the rest of the text...
@@ -681,6 +682,7 @@ var cases = test.Cases({
 		{ input: `a
 				c`,
 			all: 'a\nc', },
+
 		{ input: `a
 				c`, 
 			all: 'a\nc' },
@@ -717,9 +719,7 @@ var cases = test.Cases({
 						'text(text_cases['+i+']):\n'
 						+ res
 						+'\n---\n'
-						+ (text || all))
-			})
-	},
+						+ (text || all)) }) },
 })
 
 
