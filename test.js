@@ -672,31 +672,34 @@ var cases = test.Cases({
 		assert(xx.call(null), 'xx.call(null)')
 	},
 
-	// XXX two-liners still not fully passing...
 	text_cases: [
 		// NOTE: there is no way to know what is the indent of 'a'
 		// 		relative to the rest of the text...
 		// 		...without reading the source file, and that should
 		// 		be avoided.
-		// XXX FAIL: for some reason the two line case does not work...
 		{ input: `a
 				c`,
-			all: 'a\nc', },
-
-		{ input: `a
-				c`, 
-			all: 'a\nc' },
-
+			text: 'a\nc', 
+			doc: 'a\n    c'},
 		{ input: `a
 				b
 				c`, 
-			all: 'a\nb\nc' },
+			text: 'a\nb\nc',
+	   		doc: 'a\n    b\n    c' },
 
 
+		// XXX text(..): c is not indented... 
 		{ input: `
 				a
 					c`, 
 			all: 'a\n    c' },
+		// XXX text(..): losing all lines but 0 and -1...
+		// XXX text(..): c is not indented... 
+		{ input: `
+				a
+				b
+					c`, 
+			all: 'a\nb\n    c' },
 
 		{ input: `a
 					b
@@ -710,16 +713,24 @@ var cases = test.Cases({
 
 				;(doc || all)
 					&& assert((res = object.doc([input])) == (doc || all), 
-						'doc(text_cases['+i+']):\n'
-						+ res
-						+'\n---\n'
-						+ (doc || all))
+						'doc(text_cases['+i+']):'
+							+'\n---input---\n'
+							+ input
+							+'\n---Expected---\n'
+							+ (doc || all)
+							+'\n---Got---\n'
+							+ res
+							+'\n---')
 				;(text || all)
 					&& assert((res = object.text([input])) == (text || all), 
-						'text(text_cases['+i+']):\n'
-						+ res
-						+'\n---\n'
-						+ (text || all)) }) },
+						'text(text_cases['+i+']):'
+							+'\n---input---\n'
+							+ input
+							+'\n---Expected---\n'
+							+ (text || all)
+							+'\n---Got---\n'
+							+ res
+							+'\n---') }) },
 })
 
 

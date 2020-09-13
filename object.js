@@ -67,6 +67,7 @@ module.LEADING_TABS = 1
 // 		|	return a + b }				|	return a + b
 // 		|								|}
 //
+//
 // NOTE: this will trim out both leading and trailing white-space.
 // NOTE: this is generally code-agnostic with one sigificant 
 // 		exception -- normalizeIndent(..)  will break code written 
@@ -100,10 +101,12 @@ function(text, tab_size, leading_tabs){
 			return e.trim().length == 0 
 						// ignore 0 indent of first line...
 						|| (i == 0 && indent == 0) ?
-					l 
+					l || indent 
 				// last line -- ignore leading_tabs if lower indent...
-				: i == lines.length-1 && indent > l ? 
-					Math.max(l-leading_tabs, 0) 
+				// XXX BUG this does messes things up for 2 liners...
+				: i == lines.length-1
+						&& indent >= l ? 
+					Math.max(indent - leading_tabs, 0) 
 				// initial state...
 				: l < 0 ? 
 					indent 
@@ -111,9 +114,9 @@ function(text, tab_size, leading_tabs){
 				: Math.min(l, indent) }, -1)
 	// normalize...
 	return lines
-		.map(function(line, i){ 
+		.map(function(line, i){
 			return i == 0 ? 
-				line 
+				line
 				: line.slice(l) })
 		.join('\n')
 		.trim() }
