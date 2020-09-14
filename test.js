@@ -696,19 +696,18 @@ var cases = test.Cases({
 		{ input: `
 				a
 					c`,
-			text: 'a\n    c', 
-			doc: 'a\n    c'},
+			all: 'a\n    c'},
+		{ input: `
+				a
+					c`, 
+			all: 'a\n    c' },
+
 		{ input: `a
 				b
 				c`, 
 			text: 'a\nb\nc',
 	   		doc: 'a\n    b\n    c' },
 
-
-		{ input: `
-				a
-					c`, 
-			all: 'a\n    c' },
 		{ input: `
 				a
 				b
@@ -724,6 +723,15 @@ var cases = test.Cases({
 					b
 				c`, 
 			all: `a\n    b\nc` },
+		{ input: `a
+					b
+						c`, 
+			all: `a\nb\n    c` },
+		{ input: `
+				a
+					b
+						c`, 
+			all: `a\n    b\n        c` },
 		{ input: `a
 					b
 					b
