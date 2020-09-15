@@ -92,7 +92,8 @@ function(text, tab_size, leading_tabs){
 		: text
 	// trim the tail and remove leading blank lines...	
 	var lines = text.trimEnd().split(/\n/)
-	while(lines[0].trim() == ''){
+	while(lines.length > 0 
+			&& lines[0].trim() == ''){
 		// XXX we have two options here:
 		// 			- indent everyline including the first non-blank
 		// 			- do not indent anything (current)

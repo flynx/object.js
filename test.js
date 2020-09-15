@@ -673,6 +673,8 @@ var cases = test.Cases({
 	// XXX still need to test tab_size values (0, ...)
 	text_cases: [
 		// sanity checks...
+		{ input: '',
+			all: ''},
 		{ input: 'abc',
 			all: 'abc'},
 		{ input: '\n\t\tabc',
@@ -758,28 +760,33 @@ var cases = test.Cases({
 	text: function(assert){
 		this.text_cases
 			.map(function({input, doc, text, all}, i){
-				var res
+				doc = doc != null ? 
+					doc 
+					: all
+				text = text != null ? 
+					text 
+					:  all
 
-				;(doc || all)
-					&& assert((res = object.doc([input])) == (doc || all), 
-						'doc(text_cases['+i+']):'
+				var test = function(func, input, expect){
+					var res
+					return assert((res = object[func](input)) == expect, 
+						func +'(text_cases['+i+']):'
 							+'\n---input---\n'
-							+ input
+							+ (input instanceof Array ?
+								input[0]
+								: input)
 							+'\n---Expected---\n'
-							+ (doc || all)
+							+ expect
 							+'\n---Got---\n'
 							+ res
-							+'\n---')
-				;(text || all)
-					&& assert((res = object.text([input])) == (text || all), 
-						'text(text_cases['+i+']):'
-							+'\n---input---\n'
-							+ input
-							+'\n---Expected---\n'
-							+ (text || all)
-							+'\n---Got---\n'
-							+ res
-							+'\n---') }) },
+							+'\n---') }
+
+				doc != null
+					&& test('normalizeIndent', input, doc)
+					&& test('doc', [input], doc)
+				text != null
+					&& test('normalizeTextIndent', input, text)
+					&& test('text', [input], text) }) },
 })
 
 
