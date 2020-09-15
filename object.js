@@ -86,7 +86,7 @@ function(text, tab_size, leading_tabs){
 			: leading_tabs) 
 		* tab_size
 	// prepare text...
-	var tab = ' '.repeat(tab_size)
+	var tab = ' '.repeat(tab_size || 0)
 	text = tab != '' ?
 		text.replace(/\t/g, tab)
 		: text

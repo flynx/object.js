@@ -9,10 +9,8 @@
 * 			- sub-instance
 * 			- callable
 * 			- .call(..) and friends
+* 		- normalizeIndent(..)/normalizeTextIndent(..) -- tab_size values...
 * 		- object.mixout(..)
-* 		- object.normalizeTextIndent(..)
-* 		- object.doc`...`
-* 		- object.text`...`
 * 		- callback STOP in object.mixins(..)
 * 		- props arg in object.values(..)
 * 		- RawInstance(..).toString()
@@ -672,6 +670,7 @@ var cases = test.Cases({
 		assert(xx.call(null), 'xx.call(null)')
 	},
 
+	// XXX still need to test tab_size values (0, ...)
 	text_cases: [
 		// sanity checks...
 		{ input: 'abc',
@@ -684,7 +683,6 @@ var cases = test.Cases({
 		{ input: `a
 				c`,
 			text: 'a\nc', 
-			// XXX fail...
 			doc: 'a\n    c'},
 		{ input: `a\nc`,
 			text: 'a\nc', 
