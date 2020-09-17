@@ -599,6 +599,37 @@ var tests = test.Tests({
 })
 
 
+var makeTextTest = function(spec){
+	var {input, doc, text, all} = spec
+	return function(assert){
+		doc = doc != null ? 
+			doc 
+			: all
+		text = text != null ? 
+			text 
+			:  all
+		var test = function(func, input, expect){
+			var res
+			return assert((res = object[func](input)) == expect, 
+				func +'(..):'
+					+'\n---input---\n'
+					+ (input instanceof Array ?
+						input[0]
+						: input)
+					+'\n---Expected---\n'
+					+ expect
+					+'\n---Got---\n'
+					+ res
+					+'\n---') }
+
+		doc != null
+			&& test('normalizeIndent', input, doc)
+			&& test('doc', [input], doc)
+		text != null
+			&& test('normalizeTextIndent', input, text)
+			&& test('text', [input], text) } }
+
+
 var cases = test.Cases({
 	'edge-cases': function(assert){
 
@@ -670,6 +701,10 @@ var cases = test.Cases({
 		assert(xx.call(null), 'xx.call(null)')
 	},
 
+	// text utils...
+	/* XXX might be a good idea to do a separate test suite for this to 
+	// 		be able to reference individual cases...
+	// 		...or to re-organize this thing differently....
 	// XXX still need to test tab_size values (0, ...)
 	text_cases: [
 		// sanity checks...
@@ -787,6 +822,112 @@ var cases = test.Cases({
 				text != null
 					&& test('normalizeTextIndent', input, text)
 					&& test('text', [input], text) }) },
+	//*/
+
+	// XXX naming is not clear -- should be close to automatic...
+	// XXX still need to test tab_size values (0, ...)
+	// sanity checks...
+	text_01: makeTextTest({ 
+		input: '',
+		all: '', }),
+	text_02: makeTextTest({ 
+		input: 'abc',
+		all: 'abc'}),
+	text_03: makeTextTest({ 
+		input: '\n\t\tabc',
+		all: 'abc'}),
+
+	// NOTE: there is no way to know what is the indent of 'a'
+	// 		relative to the rest of the text...
+	text_04: makeTextTest({ 
+		input: `a
+				c`,
+		text: 'a\nc', 
+		doc: 'a\n    c'}),
+	text_05: makeTextTest({ 
+		input: `a\nc`,
+		text: 'a\nc', 
+		doc: 'a\nc'}),
+	text_06: makeTextTest({ 
+		input: `\
+				a
+					c`,
+		all: 'a\n    c'}),
+	text_07: makeTextTest({ 
+		input: `
+				a
+					c`,
+		all: 'a\n    c'}),
+	text_08: makeTextTest({ 
+		input: `
+				a
+					c`, 
+		all: 'a\n    c' }),
+
+	text_09: makeTextTest({ 
+		input: `a
+				b
+				c`, 
+		text: 'a\nb\nc',
+		doc: 'a\n    b\n    c' }),
+
+	text_10: makeTextTest({ 
+		input: `
+				a
+				b
+					c`, 
+		all: 'a\nb\n    c' }),
+	text_11: makeTextTest({ 
+		input: `
+				a
+					b
+					c`, 
+		all: 'a\n    b\n    c' }),
+
+	text_12: makeTextTest({ 
+		input: `a
+					b
+				c`, 
+		all: `a\n    b\nc` }),
+	text_13: makeTextTest({ 
+		input: `a
+					b
+						c`, 
+		all: `a\nb\n    c` }),
+	text_14: makeTextTest({ 
+		input: `
+				a
+					b
+						c`, 
+		all: `a\n    b\n        c` }),
+	text_15: makeTextTest({ 
+		input: `a
+					b
+					b
+					b
+				c`, 
+		all: `a\n    b\n    b\n    b\nc` }),
+	text_16: makeTextTest({ 
+		input: `a
+					b
+						b
+					b
+				c`, 
+		all: `a\n    b\n        b\n    b\nc` }),
+	text_17: makeTextTest({ 
+		input: `
+				a
+					b
+				c`, 
+		all: `a\n    b\nc` }),
+	text_18: makeTextTest({ 
+		input: `a
+					b
+				c
+				d`, 
+		text: `a\n    b\nc\nd`,
+		// XXX not sure about this...
+		doc: `a\n        b\n    c\n    d` }),
 })
 
 
