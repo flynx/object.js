@@ -25,7 +25,7 @@
   },
   "homepage": "https://github.com/flynx/object.js#readme",
   "devDependencies": {
-    "c8": "^7.3.0",
+    "c8": "^7.3.3",
     "colors": "^1.4.0",
     "ig-test": "^1.4.4"
   }
