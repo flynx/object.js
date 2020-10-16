@@ -599,37 +599,6 @@ var tests = test.Tests({
 })
 
 
-var makeTextTest = function(spec){
-	var {input, doc, text, all} = spec
-	return function(assert){
-		doc = doc != null ? 
-			doc 
-			: all
-		text = text != null ? 
-			text 
-			:  all
-		var test = function(func, input, expect){
-			var res
-			return assert((res = object[func](input)) == expect, 
-				func +'(..):'
-					+'\n---input---\n'
-					+ (input instanceof Array ?
-						input[0]
-						: input)
-					+'\n---Expected---\n'
-					+ expect
-					+'\n---Got---\n'
-					+ res
-					+'\n---') }
-
-		doc != null
-			&& test('normalizeIndent', input, doc)
-			&& test('doc', [input], doc)
-		text != null
-			&& test('normalizeTextIndent', input, text)
-			&& test('text', [input], text) } }
-
-
 var cases = test.Cases({
 	'edge-cases': function(assert){
 
@@ -700,112 +669,120 @@ var cases = test.Cases({
 		assert(typeof(xx.call) == 'function', 'xx.call is a function')
 		assert(xx.call(null), 'xx.call(null)')
 	},
+})
 
-	// text utils...
-	// XXX might be a good idea to do a separate test suite for this to 
-	// 		be able to reference individual cases...
-	// 		...this would require a way to pass args to the nested test 
-	// 		set or to extend the argument semantics/syntax in some way to 
-	// 		support this...
-	// XXX still need to test tab_size values (0, ...)
-	// 		...a good candidate for modifiers...
-	// XXX naming is not clear -- should be close to automatic...
-	// XXX still need to test tab_size values (0, ...)
+
+
+//---------------------------------------------------------------------
+// text utils...
+// XXX should we split this out???
+
+var text = test.TestSet()
+
+
+// helper...
+var t = function(d){ return d }
+
+// XXX still need to test tab_size values (0, ...)
+// 		...a good candidate for modifiers...
+// XXX naming is not clear -- should be close to automatic...
+// XXX still need to test tab_size values (0, ...)
+text.setups({
 	// sanity checks...
-	text_01: makeTextTest({ 
+	'""': t({
 		input: '',
 		all: '', }),
-	text_02: makeTextTest({ 
+	'"abc"': t({
 		input: 'abc',
 		all: 'abc'}),
-	text_03: makeTextTest({ 
+	'leading whitespace': t({
 		input: '\n\t\tabc',
 		all: 'abc'}),
 
 	// NOTE: there is no way to know what is the indent of 'a'
 	// 		relative to the rest of the text...
-	text_04: makeTextTest({ 
+	text_04: t({ 
 		input: `a
 				c`,
 		text: 'a\nc', 
 		doc: 'a\n    c'}),
-	text_05: makeTextTest({ 
+	text_05: t({ 
 		input: `a\nc`,
 		text: 'a\nc', 
 		doc: 'a\nc'}),
-	text_06: makeTextTest({ 
+	text_06: t({ 
 		input: `\
 				a
 					c`,
 		all: 'a\n    c'}),
-	text_07: makeTextTest({ 
+	text_07: t({ 
 		input: `
 				a
 					c`,
 		all: 'a\n    c'}),
-	text_08: makeTextTest({ 
+	text_08: t({ 
 		input: `
 				a
 					c`, 
 		all: 'a\n    c' }),
 
-	text_09: makeTextTest({ 
+	text_09: t({ 
 		input: `a
 				b
 				c`, 
 		text: 'a\nb\nc',
 		doc: 'a\n    b\n    c' }),
 
-	text_10: makeTextTest({ 
+	text_10: t({ 
 		input: `
 				a
 				b
 					c`, 
 		all: 'a\nb\n    c' }),
-	text_11: makeTextTest({ 
+	text_11: t({ 
 		input: `
 				a
 					b
 					c`, 
 		all: 'a\n    b\n    c' }),
 
-	text_12: makeTextTest({ 
+	text_12: t({ 
 		input: `a
 					b
 				c`, 
 		all: `a\n    b\nc` }),
-	text_13: makeTextTest({ 
+	text_13: t({ 
 		input: `a
 					b
 						c`, 
 		all: `a\nb\n    c` }),
-	text_14: makeTextTest({ 
+	text_14: t({ 
 		input: `
 				a
 					b
 						c`, 
 		all: `a\n    b\n        c` }),
-	text_15: makeTextTest({ 
+	text_15: t({ 
 		input: `a
 					b
 					b
 					b
 				c`, 
 		all: `a\n    b\n    b\n    b\nc` }),
-	text_16: makeTextTest({ 
+	text_16: t({ 
 		input: `a
 					b
 						b
 					b
 				c`, 
 		all: `a\n    b\n        b\n    b\nc` }),
-	text_17: makeTextTest({ 
+	text_17: t({ 
 		input: `
 				a
 					b
 				c`, 
 		all: `a\n    b\nc` }),
-	text_18: makeTextTest({ 
+	text_18: t({ 
 		input: `a
 					b
 				c
@@ -814,6 +791,41 @@ var cases = test.Cases({
 		// XXX not sure about this...
 		doc: `a\n        b\n    c\n    d` }),
 })
+
+
+var testText = function(assert, func, input, expect){
+	var res
+	return assert((res = object[func](input)) == expect, 
+		func +'(..):'
+			+'\n---input---\n'
+			+ (input instanceof Array ?
+				input[0]
+				: input)
+			+'\n---Expected---\n'
+			+ expect
+			+'\n---Got---\n'
+			+ res
+			+'\n---') }
+
+text.tests({
+	doc: function(assert, data){
+		var e = data.doc != null ?
+			data.doc
+			: data.all
+		data.doc != null
+			&& testText(assert, 'normalizeIndent', data.input, data.doc)
+			&& testText(assert, 'doc', [data.input], data.doc) },
+	text: function(assert, data){
+		var e = data.text != null ?
+			data.text
+			: data.all
+		e != null
+			&& testText(assert, 'normalizeTextIndent', data.input, e)
+			&& testText(assert, 'text', [data.input], e) },
+})
+
+
+test.Case('text', text)
 
 
 
