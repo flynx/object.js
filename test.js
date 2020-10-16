@@ -61,10 +61,28 @@ var instances = function(obj){
 				&& k[0] == k[0].toLowerCase() 
 				&& o.constructor }) }
 
+// data wrapper...
+var data = function(d){ return d }
+
+// text test runner...
+var testText = function(assert, func, input, expect){
+	var res
+	return assert((res = object[func](input)) == expect, 
+		func +'(..):'
+			+'\n---input---\n'
+			+ (input instanceof Array ?
+				input[0]
+				: input)
+			+'\n---Expected---\n'
+			+ expect
+			+'\n---Got---\n'
+			+ res
+			+'\n---') }
+
 
 
 //---------------------------------------------------------------------
-// Tests...
+// General tests...
 
 var setups = test.Setups({
 	// basic constructor and inheritance...
@@ -674,14 +692,10 @@ var cases = test.Cases({
 
 
 //---------------------------------------------------------------------
-// text utils...
-// XXX should we split this out???
+// Text util tests...
 
 var text = test.TestSet()
-
-
-// helper...
-var t = function(d){ return d }
+test.Case('text', text)
 
 // XXX still need to test tab_size values (0, ...)
 // 		...a good candidate for modifiers...
@@ -689,100 +703,100 @@ var t = function(d){ return d }
 // XXX still need to test tab_size values (0, ...)
 text.setups({
 	// sanity checks...
-	'""': t({
+	'""': data({
 		input: '',
 		all: '', }),
-	'"abc"': t({
+	'"abc"': data({
 		input: 'abc',
 		all: 'abc'}),
-	'leading whitespace': t({
+	'leading whitespace': data({
 		input: '\n\t\tabc',
 		all: 'abc'}),
 
 	// NOTE: there is no way to know what is the indent of 'a'
 	// 		relative to the rest of the text...
-	text_04: t({ 
+	text_04: data({ 
 		input: `a
 				c`,
 		text: 'a\nc', 
 		doc: 'a\n    c'}),
-	text_05: t({ 
+	text_05: data({ 
 		input: `a\nc`,
 		text: 'a\nc', 
 		doc: 'a\nc'}),
-	text_06: t({ 
+	text_06: data({ 
 		input: `\
 				a
 					c`,
 		all: 'a\n    c'}),
-	text_07: t({ 
+	text_07: data({ 
 		input: `
 				a
 					c`,
 		all: 'a\n    c'}),
-	text_08: t({ 
+	text_08: data({ 
 		input: `
 				a
 					c`, 
 		all: 'a\n    c' }),
 
-	text_09: t({ 
+	text_09: data({ 
 		input: `a
 				b
 				c`, 
 		text: 'a\nb\nc',
 		doc: 'a\n    b\n    c' }),
 
-	text_10: t({ 
+	text_10: data({ 
 		input: `
 				a
 				b
 					c`, 
 		all: 'a\nb\n    c' }),
-	text_11: t({ 
+	text_11: data({ 
 		input: `
 				a
 					b
 					c`, 
 		all: 'a\n    b\n    c' }),
 
-	text_12: t({ 
+	text_12: data({ 
 		input: `a
 					b
 				c`, 
 		all: `a\n    b\nc` }),
-	text_13: t({ 
+	text_13: data({ 
 		input: `a
 					b
 						c`, 
 		all: `a\nb\n    c` }),
-	text_14: t({ 
+	text_14: data({ 
 		input: `
 				a
 					b
 						c`, 
 		all: `a\n    b\n        c` }),
-	text_15: t({ 
+	text_15: data({ 
 		input: `a
 					b
 					b
 					b
 				c`, 
 		all: `a\n    b\n    b\n    b\nc` }),
-	text_16: t({ 
+	text_16: data({ 
 		input: `a
 					b
 						b
 					b
 				c`, 
 		all: `a\n    b\n        b\n    b\nc` }),
-	text_17: t({ 
+	text_17: data({ 
 		input: `
 				a
 					b
 				c`, 
 		all: `a\n    b\nc` }),
-	text_18: t({ 
+	text_18: data({ 
 		input: `a
 					b
 				c
@@ -792,20 +806,6 @@ text.setups({
 		doc: `a\n        b\n    c\n    d` }),
 })
 
-
-var testText = function(assert, func, input, expect){
-	var res
-	return assert((res = object[func](input)) == expect, 
-		func +'(..):'
-			+'\n---input---\n'
-			+ (input instanceof Array ?
-				input[0]
-				: input)
-			+'\n---Expected---\n'
-			+ expect
-			+'\n---Got---\n'
-			+ res
-			+'\n---') }
 
 text.tests({
 	doc: function(assert, data){
@@ -823,9 +823,6 @@ text.tests({
 			&& testText(assert, 'normalizeTextIndent', data.input, e)
 			&& testText(assert, 'text', [data.input], e) },
 })
-
-
-test.Case('text', text)
 
 
 
