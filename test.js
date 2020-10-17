@@ -712,6 +712,12 @@ text.setups({
 	'leading whitespace': data({
 		input: '\n\t\tabc',
 		all: 'abc'}),
+	'trailing whitespace': data({
+		input: 'abc\n\t  \n',
+		all: 'abc'}),
+	'leading and trailing whitespace': data({
+		input: '\n\t  \tabc\n\t  \n',
+		all: 'abc'}),
 
 	// NOTE: there is no way to know what is the indent of 'a'
 	// 		relative to the rest of the text...
