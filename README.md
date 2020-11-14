@@ -566,6 +566,7 @@ sources(<object>, <name>, <callback>)
 ```
 callback(<source>)
 	-> STOP 
+	-> STOP(<value>)
 	-> undefined
 	-> <value>
 ```
@@ -576,6 +577,9 @@ one of the following:
 - `object.STOP`  
   This will make `sources(..)` stop and return the `<list>` up to and 
   including the object that triggered the _stop_.
+- `object.STOP(<value>)`  
+  Same as returning `object.STOP` but will put the `<value>` at the end of 
+  the returned list instead of the input object.
 - `undefined`  
   Add the object triggering `callback(..)` in `<list>` as-is and continue. 
 - array  
@@ -625,6 +629,7 @@ values(<object>, <name>, <callback>, true)
 ```
 callback(<descriptor>, <source>)
 	-> STOP 
+	-> STOP(value)
 	-> undefined
 	-> <value>
 ```

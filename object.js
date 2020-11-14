@@ -248,8 +248,9 @@ function(base, obj, non_strict){
 
 // object to trigger iteration stop...
 //
-module.STOP = 
-	{doc: 'stop iteration.'}
+// NOTE: this is a placeholder for documnetation/context purposes, see 
+// 		the actual implementation at the end of the module...
+module.STOP = undefined
 
 
 // Get a list of source objects for a prop/attr name...
@@ -273,6 +274,7 @@ module.STOP =
 // 		
 // 	callback(obj)
 // 		-> STOP
+// 		-> STOP(value)
 // 		-> ..
 // 		
 //
@@ -281,6 +283,8 @@ module.STOP =
 // callback(..) return values:
 // 	- STOP			- stop the search and return the match list terminated
 // 						with the object triggering the stop.
+// 	- STOP(value)	- stop the search and return the match list terminated
+// 						with the value passed to STOP(..)
 // 	- undefined		- return the triggering object as-is
 // 						NOTE: this is the same as returning [obj]
 // 	- array			- merge array content into the result insteaad of 
@@ -319,9 +323,12 @@ function(obj, name, callback){
 			res.push(
 				(o === undefined || o === module.STOP) ?
 					[obj]
-					: o )
+				: o instanceof module.STOP ?
+					o.value
+				: o )
 			// stop...
-			if(o === module.STOP){
+			if(o === module.STOP 
+					|| o instanceof module.STOP){
 				return res.flat() } }
 		obj = obj.__proto__ }
 	return res.flat() }
@@ -343,6 +350,7 @@ function(obj, name, callback){
 // 		
 // 	callback(value/prop, obj)
 // 		-> STOP
+// 		-> STOP(value)
 // 		-> ..
 // 		
 //
@@ -352,20 +360,6 @@ function(obj, name, callback){
 //
 //
 // NOTE: for more docs on the callback(..) see sources(..)
-//
-// XXX BUG: passing a callback here breaks the return value at the STOP...
-// 		essentially this is a question of how can we return STOP and the 
-// 		value to be returned at the same time???
-// 		...ways to go:
-// 			- store the last return from callback(..) and if it's STOP 
-// 				patch the last value (HACK-ish)
-// 			- skip the last value...
-// 				...this will complicate the logic quite a bit as the user
-// 				will need to STOP after the last position...
-// 			- return STOP(value) or [STOP, value]
-// 				...requires the user not to forget...
-// 			- ignore the callback return value...
-// 				...this seems the most uniform, but this can break things...
 var values =
 module.values =
 function(obj, name, callback, props){
@@ -384,12 +378,16 @@ function(obj, name, callback, props){
 			: obj[name] }
 	// wrap the callback if given...
 	var c = typeof(callback) == 'function'
-		&& function(obj){ 
-			return callback(_get(obj, name), obj) }
+		&& function(obj){
+			var val = _get(obj, name)
+			var res = callback(val, obj) 
+			return res === module.STOP ?
+				// wrap the expected stop result if the user did not do it...
+				module.STOP(val)
+				: res }
 	return c ?
 		// NOTE: we do not need to handle the callback return values as
 		// 		this is fully done by c(..) in sources(..)
-		// XXX BUG: if this stops the last value will be the obj and not the prop...
 		sources(obj, name, c)
 		: sources(obj, name)
 			.map(function(obj){ 
@@ -668,8 +666,11 @@ function(base, object, callback){
 				res.push(
 					(o === undefined || o === module.STOP) ? 
 						[base]
-						: o )
-				if(o === module.STOP){
+					: o instanceof module.STOP ?
+						o.value
+					: o )
+				if(o === module.STOP 
+						|| o instanceof module.STOP){
 					return res.flat() } 
 				// match found, no need to test further...
 				break } }
@@ -1126,6 +1127,16 @@ function Constructor(name, a, b, c){
 								return this.__call__[n](this, ...arguments) }, })) })
 
 	return _constructor }
+
+
+
+//---------------------------------------------------------------------
+//
+module.STOP = Constructor('STOP', {
+	doc: 'stop iteration.',
+	__init__: function(value){
+		this.value = value },
+})
 
 
 
