@@ -651,6 +651,30 @@ var cases = test.Cases({
 		assert(object.parent({}) === {}.__proto__, 'basic proto')
 		assert.error('.parent(..) of anonymous function', function(){ 
 			object.parent(function(){}, {}) })
+
+		// object.values(..)
+		var obj = Object.create({x: 123})
+		obj.x = 321
+
+		assert.array(
+			object.values(obj, 'x', true)
+				.map(function(e){ return e.value }),
+			// XXX essert ignores the order here -- this should fail...
+			[123, 321], '.values(.., true) ')
+
+		// XXX BUG: this returns the object and not the value...
+		console.log('>>>>>', object.values(obj, 'x', function(){ return object.STOP }))
+		// XXX BUG: this returns the object and not the prop descriptor...
+		console.log('>>>>>', object.values(obj, 'x', function(){ return object.STOP }, true))
+
+		assert(
+			object.values(obj, 'x', function(){ return object.STOP })[0] == 321,
+			// XXX essert ignores the order here -- this should fail...
+			'.values(.., func) ')
+		assert(
+			object.values(obj, 'x', function(){ return object.STOP }, true)[0].value == 321,
+			// XXX essert ignores the order here -- this should fail...
+			'.values(.., func, true) ')
 	},
 	deepKeys: function(assert){
 		var a = {

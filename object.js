@@ -352,6 +352,20 @@ function(obj, name, callback){
 //
 //
 // NOTE: for more docs on the callback(..) see sources(..)
+//
+// XXX BUG: passing a callback here breaks the return value at the STOP...
+// 		essentially this is a question of how can we return STOP and the 
+// 		value to be returned at the same time???
+// 		...ways to go:
+// 			- store the last return from callback(..) and if it's STOP 
+// 				patch the last value (HACK-ish)
+// 			- skip the last value...
+// 				...this will complicate the logic quite a bit as the user
+// 				will need to STOP after the last position...
+// 			- return STOP(value) or [STOP, value]
+// 				...requires the user not to forget...
+// 			- ignore the callback return value...
+// 				...this seems the most uniform, but this can break things...
 var values =
 module.values =
 function(obj, name, callback, props){
@@ -374,7 +388,8 @@ function(obj, name, callback, props){
 			return callback(_get(obj, name), obj) }
 	return c ?
 		// NOTE: we do not need to handle the callback return values as
-		// 		this is fully done in sources(..)
+		// 		this is fully done by c(..) in sources(..)
+		// XXX BUG: if this stops the last value will be the obj and not the prop...
 		sources(obj, name, c)
 		: sources(obj, name)
 			.map(function(obj){ 
