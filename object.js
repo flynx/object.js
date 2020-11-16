@@ -1131,7 +1131,7 @@ function Constructor(name, a, b, c){
 
 
 //---------------------------------------------------------------------
-//
+// For more info see .sources(..) above...
 module.STOP = Constructor('STOP', {
 	doc: 'stop iteration.',
 	__init__: function(value){
