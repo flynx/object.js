@@ -659,17 +659,21 @@ var cases = test.Cases({
 		assert.array(
 			object.values(obj, 'x', true)
 				.map(function(e){ return e.value }),
-			// XXX essert ignores the order here -- this should fail...
+			// XXX assert ignores the order here -- this should fail...
 			[123, 321], '.values(.., true) ')
 
 		assert(
 			object.values(obj, 'x', function(){ return object.STOP })[0] == 321,
-			// XXX essert ignores the order here -- this should fail...
+			// XXX assert ignores the order here -- this should fail...
 			'.values(.., func) ')
 		assert(
 			object.values(obj, 'x', function(){ return object.STOP }, true)[0].value == 321,
-			// XXX essert ignores the order here -- this should fail...
+			// XXX assert ignores the order here -- this should fail...
 			'.values(.., func, true) ')
+		assert(
+			object.values(obj, 'x', function(){ return object.STOP(555) }, true)[0] == 555,
+			// XXX assert ignores the order here -- this should fail...
+			'.values(.., func, true) with explicit stop value')
 	},
 	deepKeys: function(assert){
 		var a = {
