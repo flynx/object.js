@@ -1,6 +1,6 @@
 {
   "name": "ig-object",
-  "version": "5.4.0",
+  "version": "5.4.1",
   "description": "",
   "main": "object.js",
   "scripts": {
@@ -25,7 +25,7 @@
   },
   "homepage": "https://github.com/flynx/object.js#readme",
   "devDependencies": {
-    "c8": "^7.3.4",
+    "c8": "^7.3.5",
     "colors": "^1.4.0",
     "ig-test": "^1.4.6"
   }

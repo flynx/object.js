@@ -710,6 +710,42 @@ var cases = test.Cases({
 		assert(typeof(xx.call) == 'function', 'xx.call is a function')
 		assert(xx.call(null), 'xx.call(null)')
 	},
+	mixins: function(assert){
+
+		var A = assert(object.Mixin('A', {
+			a: 'aaa',
+		}))
+		assert(A.data.a == 'aaa')
+
+		var B = assert(object.Mixin('B', {
+			b: 'bbb'
+		}))
+		assert(B.data.b == 'bbb')
+
+		var C = assert(object.Mixin('C', 
+			A,
+			B,
+			{
+				get c(){
+					return 'ccc' },
+			}))
+		assert(C.data.a == 'aaa')
+		assert(C.data.b == 'bbb')
+		assert(C.data.c == 'ccc')
+
+		var x = assert(C({}))
+
+		assert(x.a == 'aaa')
+		assert(x.b == 'bbb')
+		assert(x.c == 'ccc')
+
+		var y = assert(C({}, 'flat'))
+
+		assert(y.a == 'aaa')
+		assert(y.b == 'bbb')
+		assert(y.c == 'ccc')
+
+	},
 })
 
 

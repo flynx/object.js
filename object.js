@@ -1153,6 +1153,10 @@ function(base, ...objects){
 //	mixin(obj)
 //		-> obj
 //
+//	mixin(mode, obj)
+//	mixin(obj, mode)
+//		-> obj
+//
 //
 // Example:
 //
@@ -1182,6 +1186,8 @@ Constructor('Mixin', {
 
 	// mixin to target...
 	__call__: function(_, target, mode=this.mode){
+		typeof(target) == typeof('str')
+			&& ([mode, target] = arguments)
 		return mode == 'flat' ?
 			mixinFlat(target, this.data)
 			: mixin(target, this.data) },
