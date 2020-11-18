@@ -569,178 +569,6 @@ function(a, b){
 
 
 //---------------------------------------------------------------------
-// Mixin utils...
-
-// Mix a set of methods/props/attrs into an object...
-// 
-//	mixinFlat(base, object, ...)
-//		-> base
-//
-//
-// NOTE: essentially this is just like Object.assign(..) but copies 
-// 		properties directly rather than copying property values...
-// NOTE: this will not transfer several the special variables not listed
-// 		by Object.keys(..).
-// 		This includes things like .__proto__
-// NOTE: this can and will overwrite attributes...
-var mixinFlat = 
-module.mixinFlat = 
-function(base, ...objects){
-	return objects
-		.reduce(function(base, cur){
-			Object.keys(cur)
-				.map(function(k){
-					Object.defineProperty(base, k,
-						Object.getOwnPropertyDescriptor(cur, k)) })
-			return base }, base) }
-
-
-// Mix sets of methods/props/attrs into an object as prototypes...
-//
-// 	mixin(base, object, ..)
-// 		-> base
-//
-//
-// This will create a new object per set of methods given and 
-// mixinFlat(..) the method set into this object leaving the 
-// original objects intact.
-// 
-// 		base <-- object1_copy <-- .. <-- objectN_copy <- base.__proto__
-// 				
-//
-// NOTE: this will only mix in non-empty objects...
-// NOTE: mixing into a constructor will break object creation via new...
-// 		Example:
-// 			class A {}
-// 			class B extends A {}
-//
-// 			mixin(B, {x: 123})
-//
-// 			var b = new B()			// will break...
-//
-// 		This does not affect object.Constructor(..) chains...
-// NOTE: mixin(Object.prototype, ..) will fail because Object.prototype.__proto__ 
-// 		is imutable...
-var mixin = 
-module.mixin = 
-function(base, ...objects){
-	base.__proto__ = objects
-		.reduce(function(res, cur){
-			return Object.keys(cur).length > 0 ?
-				module.mixinFlat(Object.create(res), cur) 
-				: res }, base.__proto__) 
-	return base }
-
-
-// Get matching mixins...
-//
-// 	mixins(base, object[, callback])
-// 	mixins(base, list[, callback])
-// 		-> list
-//
-//
-//	callback(base, obj, parent)
-//		-> STOP
-//		-> undefined
-//
-//
-// NOTE: this will also match base...
-// NOTE: if base matches directly callback(..) will get undefined as parent
-// NOTE: for more docs on the callback(..) see sources(..)
-var mixins =
-module.mixins =
-function(base, object, callback){
-	object = object instanceof Array ?
-		object
-		: [object]
-	var res = []
-	var o
-	var parent
-	while(base != null){
-		// match each object...
-		for(var obj of object){
-			if(match(base, obj)){
-				o = callback 
-					&& callback(base, obj, parent)
-				// manage results...
-				res.push(
-					(o === undefined || o === module.STOP) ? 
-						[base]
-					: o instanceof module.STOP ?
-						o.value
-					: o )
-				if(o === module.STOP 
-						|| o instanceof module.STOP){
-					return res.flat() } 
-				// match found, no need to test further...
-				break } }
-		parent = base
-		base = base.__proto__ }
-	return res.flat() }
-
-
-// Check of base has mixin...
-//
-// 	hasMixin(base, mixin)
-// 		-> bool
-//
-//
-// NOTE: to test for a flat mixin directly use .matchPartial(base, object)
-var hasMixin =
-module.hasMixin =
-function(base, object){
-	return (
-		// normal mixin...
-		mixins(base, object, function(){ return module.STOP })
-			.length > 0
-		// flat mixin search...
-		|| sources(base, function(p){ 
-			return matchPartial(p, object) ? 
-				module.STOP
-				: [] })
-   			.length > 0 )}
-
-
-// Mix-out sets of methods/props/attrs out of an object prototype chain...
-//
-// 	Mix-out first occurrence of each matching object...
-// 	mixout(base, object, ..)
-// 	mixout(base, 'first', object, ..)
-// 		-> base
-//
-// 	Mix-out all occurrences of each matching object...
-// 	mixout(base, 'all', object, ..)
-// 		-> base
-//
-//
-// NOTE: this is the opposite to mixin(..)
-// NOTE: this used mixins(..) / match(..) to find the relevant mixins, 
-// 		see those for more info...
-var mixout =
-module.mixout =
-function(base, ...objects){
-	var all = objects[0] == 'all' ?
-			!!objects.shift()
-		: objects[0] == 'first' ?
-			!objects.shift()
-		: false
-	var remove = []
-	mixins(base, objects, function(match, obj, parent){
-		parent && remove.push(parent)
-		// when removing the first occurrence, don't check for obj again...
-		all || objects.splice(objects.indexOf(obj), 1) })
-	// NOTE: we are removing on a separate stage so as not to mess with
-	// 		mixins(..) iterating...
-	remove
-		// XXX not sure why this is needed, needs thought...
-		.reverse()
-		.forEach(function(p){
-			p.__proto__ = p.__proto__.__proto__ })
-	return base }
-
-
-
-//---------------------------------------------------------------------
 // Constructor...
 
 // Make an uninitialized instance object...
@@ -789,11 +617,14 @@ function(context, constructor, ...args){
 	var _mirror_doc = function(func, target){
 		Object.defineProperty(func, 'toString', {
 			value: function(...args){
+				// user-defined .toString...
+				if(target.prototype.toString !== Function.prototype.toString){
+					return target.prototype.toString.call(this, ...args) }
 				var f = typeof(target.prototype) == 'function' ? 
 					target.prototype
 					: target.prototype.__call__
 				return typeof(f) == 'function' ?
-						module.normalizeIndent(f.toString(...args))
+					module.normalizeIndent(f.toString(...args))
 					: undefined },
 			enumerable: false,
 		})
@@ -1059,8 +890,8 @@ function Constructor(name, a, b, c){
 			&& obj.__init__(...arguments)
 		return obj }
 
-	_constructor.name = name
-	// just in case the browser refuses to change the name, we'll make
+	Object.defineProperty(_constructor, 'name', { value: name })
+	// just in case the browser/node refuses to change the name, we'll make
 	// it a different offer ;)
 	_constructor.name == 'Constructor'
 		// NOTE: this eval(..) should not be a risk as its inputs are
@@ -1132,10 +963,239 @@ function Constructor(name, a, b, c){
 
 //---------------------------------------------------------------------
 // For more info see .sources(..) above...
-module.STOP = Constructor('STOP', {
+module.STOP = 
+Constructor('STOP', {
 	doc: 'stop iteration.',
 	__init__: function(value){
 		this.value = value },
+})
+
+
+
+//---------------------------------------------------------------------
+// Mixin utils...
+
+// Mix a set of methods/props/attrs into an object...
+// 
+//	mixinFlat(base, object, ...)
+//		-> base
+//
+//
+// NOTE: essentially this is just like Object.assign(..) but copies 
+// 		properties directly rather than copying property values...
+// NOTE: this will not transfer several the special variables not listed
+// 		by Object.keys(..).
+// 		This includes things like .__proto__
+// NOTE: this can and will overwrite attributes...
+var mixinFlat = 
+module.mixinFlat = 
+function(base, ...objects){
+	return objects
+		.reduce(function(base, cur){
+			Object.keys(cur)
+				.map(function(k){
+					Object.defineProperty(base, k,
+						Object.getOwnPropertyDescriptor(cur, k)) })
+			return base }, base) }
+
+
+// Mix sets of methods/props/attrs into an object as prototypes...
+//
+// 	mixin(base, object, ..)
+// 		-> base
+//
+//
+// This will create a new object per set of methods given and 
+// mixinFlat(..) the method set into this object leaving the 
+// original objects intact.
+// 
+// 		base <-- object1_copy <-- .. <-- objectN_copy <- base.__proto__
+// 				
+//
+// NOTE: this will only mix in non-empty objects...
+// NOTE: mixing into a constructor will break object creation via new...
+// 		Example:
+// 			class A {}
+// 			class B extends A {}
+//
+// 			mixin(B, {x: 123})
+//
+// 			var b = new B()			// will break...
+//
+// 		This does not affect object.Constructor(..) chains...
+// NOTE: mixin(Object.prototype, ..) will fail because Object.prototype.__proto__ 
+// 		is imutable...
+var mixin = 
+module.mixin = 
+function(base, ...objects){
+	base.__proto__ = objects
+		.reduce(function(res, cur){
+			return Object.keys(cur).length > 0 ?
+				module.mixinFlat(Object.create(res), cur) 
+				: res }, base.__proto__) 
+	return base }
+
+
+// Get matching mixins...
+//
+// 	mixins(base, object[, callback])
+// 	mixins(base, list[, callback])
+// 		-> list
+//
+//
+//	callback(base, obj, parent)
+//		-> STOP
+//		-> undefined
+//
+//
+// NOTE: this will also match base...
+// NOTE: if base matches directly callback(..) will get undefined as parent
+// NOTE: for more docs on the callback(..) see sources(..)
+var mixins =
+module.mixins =
+function(base, object, callback){
+	object = object instanceof Array ?
+		object
+		: [object]
+	var res = []
+	var o
+	var parent
+	while(base != null){
+		// match each object...
+		for(var obj of object){
+			if(match(base, obj)){
+				o = callback 
+					&& callback(base, obj, parent)
+				// manage results...
+				res.push(
+					(o === undefined || o === module.STOP) ? 
+						[base]
+					: o instanceof module.STOP ?
+						o.value
+					: o )
+				if(o === module.STOP 
+						|| o instanceof module.STOP){
+					return res.flat() } 
+				// match found, no need to test further...
+				break } }
+		parent = base
+		base = base.__proto__ }
+	return res.flat() }
+
+
+// Check of base has mixin...
+//
+// 	hasMixin(base, mixin)
+// 		-> bool
+//
+//
+// NOTE: to test for a flat mixin directly use .matchPartial(base, object)
+var hasMixin =
+module.hasMixin =
+function(base, object){
+	return (
+		// normal mixin...
+		mixins(base, object, function(){ return module.STOP })
+			.length > 0
+		// flat mixin search...
+		|| sources(base, function(p){ 
+			return matchPartial(p, object) ? 
+				module.STOP
+				: [] })
+   			.length > 0 )}
+
+
+// Mix-out sets of methods/props/attrs out of an object prototype chain...
+//
+// 	Mix-out first occurrence of each matching object...
+// 	mixout(base, object, ..)
+// 	mixout(base, 'first', object, ..)
+// 		-> base
+//
+// 	Mix-out all occurrences of each matching object...
+// 	mixout(base, 'all', object, ..)
+// 		-> base
+//
+//
+// NOTE: this is the opposite to mixin(..)
+// NOTE: this used mixins(..) / match(..) to find the relevant mixins, 
+// 		see those for more info...
+var mixout =
+module.mixout =
+function(base, ...objects){
+	var all = objects[0] == 'all' ?
+			!!objects.shift()
+		: objects[0] == 'first' ?
+			!objects.shift()
+		: false
+	var remove = []
+	mixins(base, objects, function(match, obj, parent){
+		parent && remove.push(parent)
+		// when removing the first occurrence, don't check for obj again...
+		all || objects.splice(objects.indexOf(obj), 1) })
+	// NOTE: we are removing on a separate stage so as not to mess with
+	// 		mixins(..) iterating...
+	remove
+		// XXX not sure why this is needed, needs thought...
+		.reverse()
+		.forEach(function(p){
+			p.__proto__ = p.__proto__.__proto__ })
+	return base }
+
+
+// Mixin wrapper/object...
+//
+//	Create a new mixin...
+//	Mixin(name, data, ..)
+//		-> mixin
+//
+//	Apply the mixin to an object...
+//	mixin(obj)
+//		-> obj
+//
+//
+// Example:
+//
+// 	var BasicMixin = Mixin('BasicMixin', {
+// 		...
+// 	})
+//
+//	var o = {
+//		...
+//	}
+//
+//	BasicMixin(o)
+//
+//
+var Mixin =
+module.Mixin =
+Constructor('Mixin', {
+	name: null,
+	data: null,
+
+	mode: 'proto',
+
+	isMixed: function(target){
+		return hasMixin(target, this.data) },
+	mixout: function(target){
+		return mixout(target, this.data) },
+
+	// mixin to target...
+	__call__: function(_, target, mode=this.mode){
+		return mode == 'flat' ?
+			mixinFlat(target, this.data)
+			: mixin(target, this.data) },
+
+	__init__: function(name, ...data){
+		// NOTE: .defineProperty(..) is used because this is a function
+		// 		and function's .name is not too configurable...
+		// XXX do we need to configure this better???
+		Object.defineProperty(this, 'name', { value: name })
+		this.data = mixinFlat({}, 
+			...data.map(function(e){ 
+				return e instanceof Mixin ? 
+					e.data 
+					: e })) },
 })
 
 
