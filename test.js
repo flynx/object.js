@@ -714,13 +714,15 @@ var cases = test.Cases({
 
 		var A = assert(object.Mixin('A', {
 			a: 'aaa',
-		}))
-		assert(A.data.a == 'aaa')
+		}), 'Mixin("A", ...)')
+		assert(A.data.a == 'aaa', 'A content')
+		assert(A.mode == 'proto', 'A mode')
 
-		var B = assert(object.Mixin('B', {
+		var B = assert(object.Mixin('B', 'flat', {
 			b: 'bbb'
-		}))
-		assert(B.data.b == 'bbb')
+		}), 'Mixin("B", "flat", ..)')
+		assert(B.data.b == 'bbb', 'B content')
+		assert(B.mode == 'flat', 'B mode')
 
 		var C = assert(object.Mixin('C', 
 			A,
@@ -728,22 +730,35 @@ var cases = test.Cases({
 			{
 				get c(){
 					return 'ccc' },
-			}))
-		assert(C.data.a == 'aaa')
-		assert(C.data.b == 'bbb')
-		assert(C.data.c == 'ccc')
+			}), 'Mixin("C", A, B, ...)')
+		assert(C.data.a == 'aaa', 'C content from A')
+		assert(C.data.b == 'bbb', 'C content from B')
+		assert(C.data.c == 'ccc', 'C content local')
 
-		var x = assert(C({}))
+		var x = assert(C({}), 'C({})')
 
-		assert(x.a == 'aaa')
-		assert(x.b == 'bbb')
-		assert(x.c == 'ccc')
+		assert(x.a == 'aaa', 'mixin content from C')
+		assert(x.b == 'bbb', 'mixin content from C')
+		assert(x.c == 'ccc', 'mixin content from C')
 
-		var y = assert(C({}, 'flat'))
+		// flat mode...
+		var y = assert(C('flat', {}), `C("flat", {})`)
 
-		assert(y.a == 'aaa')
-		assert(y.b == 'bbb')
-		assert(y.c == 'ccc')
+		assert(y.a == 'aaa', 'mixin content from C')
+		assert(y.b == 'bbb', 'mixin content from C')
+		assert(y.c == 'ccc', 'mixin content from C')
+
+
+		// mixout...
+		assert('a' in x == true, 'pre-mixout content present')
+		assert('b' in x == true, 'pre-mixout content present')
+		assert('c' in x == true, 'pre-mixout content present')
+
+		assert(C.mixout(x) === x, 'C.mixout(..)')
+
+		assert('a' in x == false, 'post-mixout content gone')
+		assert('b' in x == false, 'post-mixout content gone')
+		assert('c' in x == false, 'post-mixout content gone')
 
 	},
 })
