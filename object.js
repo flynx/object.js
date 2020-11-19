@@ -890,8 +890,11 @@ function Constructor(name, a, b, c){
 			&& obj.__init__(...arguments)
 		return obj }
 
-	Object.defineProperty(_constructor, 'name', { value: name })
-	/*/ XXX is this still needed???
+	// XXX this changes the name but does not seem to affect the displayed
+	// 		doc in chrome...
+	// 		FF does not seem to be affected by either version of code...
+	//Object.defineProperty(_constructor, 'name', { value: name })
+	_constructor.name = name
 	// just in case the browser/node refuses to change the name, we'll make
 	// it a different offer ;)
 	_constructor.name == 'Constructor'
@@ -901,7 +904,6 @@ function Constructor(name, a, b, c){
 		&& eval('_constructor = '+ _constructor
 				.toString()
 				.replace(/Constructor/g, name))
-	//*/
 	// set .toString(..)...
 	// NOTE: do this only if .toString(..) is not defined by user...
 	// XXX revise this test...
