@@ -891,6 +891,7 @@ function Constructor(name, a, b, c){
 		return obj }
 
 	Object.defineProperty(_constructor, 'name', { value: name })
+	/*/ XXX is this still needed???
 	// just in case the browser/node refuses to change the name, we'll make
 	// it a different offer ;)
 	_constructor.name == 'Constructor'
@@ -900,6 +901,7 @@ function Constructor(name, a, b, c){
 		&& eval('_constructor = '+ _constructor
 				.toString()
 				.replace(/Constructor/g, name))
+	//*/
 	// set .toString(..)...
 	// NOTE: do this only if .toString(..) is not defined by user...
 	// XXX revise this test...
