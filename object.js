@@ -1149,42 +1149,62 @@ function(base, ...objects){
 //	Mixin(name, data, ..)
 //		-> mixin
 //
-//	Apply the mixin to an object...
+//	Create a new mixin setting the default mode...
+//	Mixin(name, mode, data, ..)
+//		-> mixin
+//
+//
+//	Apply mixin in the prototype chain (default)...
 //	mixin(obj)
+//	mixin('proto', obj)
 //		-> obj
 //
-//	mixin(mode, obj)
-//	mixin(obj, mode)
+//	Copy date from mixin into obj directly...
+//	mixin('flat', obj)
 //		-> obj
+//
 //
 //
 // Example:
 //
-// 	var BasicMixin = Mixin('BasicMixin', {
+// 		var BasicMixin = Mixin('BasicMixin', {
+// 			...
+// 		})
+//
 // 		...
-// 	})
 //
-//	var o = {
-//		...
-//	}
+//		var o = {
+//			...
+//		}
 //
-//	BasicMixin(o)
+//		BasicMixin(o)
 //
 //
+// NOTE: the constructor will allways create a new .data object but will 
+// 		not do a deep copy into it -- see mixin(..) / mixinFlat(..)
 var Mixin =
 module.Mixin =
 Constructor('Mixin', {
 	name: null,
+
+	// mixin data...
 	data: null,
 
+	// data "copy" mode...
+	//
+	// This can be:
+	// 	'proto'		- mix data into prototype chain (default)
+	// 	'flat'		- use mixinFlat(..) to copy data
 	mode: 'proto',
 
+	// base API...
+	//
 	isMixed: function(target){
 		return hasMixin(target, this.data) },
 	mixout: function(target){
 		return mixout(target, this.data) },
 
-	// mixin to target...
+	// mix into target...
 	__call__: function(_, target, mode=this.mode){
 		typeof(target) == typeof('str')
 			&& ([_, mode, target] = arguments)
@@ -1193,12 +1213,20 @@ Constructor('Mixin', {
 			: mixin(target, this.data) },
 
 	__init__: function(name, ...data){
+		// Mixin(name, mode, ...) -- handle default mode...
+		typeof(data[0]) == typeof('str')
+			&& (this.mode = data.shift())
+		// name...
 		// NOTE: .defineProperty(..) is used because this is a function
 		// 		and function's .name is not too configurable...
-		// XXX do we need to configure this prop better???
+		// NOTE: we do not need to configure this any more, .defineProperty(..)
+		// 		merges the descriptor into the original keeping any values not
+		// 		explicitly overwritten...
 		Object.defineProperty(this, 'name', { value: name })
+		// create/merge .data...
 		this.data = mixinFlat({}, 
 			...data.map(function(e){ 
+				// handle bare objects and mixins differently...
 				return e instanceof Mixin ? 
 					e.data 
 					: e })) },

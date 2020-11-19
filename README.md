@@ -130,7 +130,7 @@ class B extends A {
 		- [`<object>.__init__(..)`](#object__init__)
 		- [`<object>.__call__(..)`](#object__call__)
 	- [Components](#components)
-		- [`STOP`](#stop)
+		- [`STOP` / `STOP(..)`](#stop--stop)
 		- [`sources(..)`](#sources)
 		- [`values(..)`](#values)
 		- [`parent(..)`](#parent)
@@ -554,7 +554,7 @@ var l = object.RawInstance(null, Array, 'a', 'b', 'c')
 ```
 
 
-### `STOP`
+### `STOP` / `STOP(..)`
 
 Used in [`sources(..)`](#sources), [`values(..)`](#values) and 
 [`mixins(..)`](#mixins) to stop the search before it reaches the top of 
