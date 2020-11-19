@@ -41,6 +41,21 @@ module.LINK_FUNCTION_METHODS = [
 //---------------------------------------------------------------------
 // Helpers...
 
+// bootstrapping utility...
+//
+// Since we can face chicken-egg issues here, this should keep things 
+// both consistent in terms of flow and in terms of actual logical 
+// consistency...
+//
+var BOOTSTRAP = 
+function(func){
+	var b = BOOTSTRAP.__delayed = BOOTSTRAP.__delayed || []
+	func ?
+		b.push(func)
+		: b.map(function(f){ f() }) }
+
+
+
 module.TAB_SIZE = 4
 
 module.LEADING_TABS = 1
@@ -248,9 +263,19 @@ function(base, obj, non_strict){
 
 // object to trigger iteration stop...
 //
-// NOTE: this is a placeholder for documnetation/context purposes, see 
-// 		the actual implementation at the end of the module...
-module.STOP = undefined
+// NOTE: we need Constructor(..) to make this so will deffer this to the 
+// 		end...
+BOOTSTRAP(function(){
+
+	module.STOP = 
+	Constructor('STOP', {
+		doc: 'stop iteration.',
+		__init__: function(value){
+			this.value = value },
+	})
+
+})
+
 
 
 // Get a list of source objects for a prop/attr name...
@@ -968,14 +993,25 @@ function Constructor(name, a, b, c){
 	return _constructor }
 
 
+// complete the constructor...
+//
+// NOTE: currently this is a complement to the top level functions.
+Object.assign(Constructor, {
+	sources,
+	values,
 
-//---------------------------------------------------------------------
-// For more info see .sources(..) above...
-module.STOP = 
-Constructor('STOP', {
-	doc: 'stop iteration.',
-	__init__: function(value){
-		this.value = value },
+	parent,
+	parentProperty,
+	parentCall,
+
+	parentOf,
+	childOf,
+	related,
+
+	match,
+	matchPartial,
+
+	deepKeys,
 })
 
 
@@ -1196,10 +1232,8 @@ var Mixin =
 module.Mixin =
 Constructor('Mixin', {
 	// static methods...
-	// XXX should we add the above mixin funcs as static methods here???
-	// 		...not sure yet...
-	// XXX if this proves usefull should we chose one or keep both locations???
-	// XXX EXPERIMENTAL...
+	//
+	// NOTE: currently this is a complement to the top level functions.
 	mixin,
 	mixinFlat,
 	mixout,
@@ -1253,6 +1287,12 @@ Constructor('Mixin', {
 					e.data 
 					: e })) },
 })
+
+
+
+//---------------------------------------------------------------------
+
+BOOTSTRAP()
 
 
 
