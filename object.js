@@ -1182,9 +1182,23 @@ function(base, ...objects){
 //
 // NOTE: the constructor will allways create a new .data object but will 
 // 		not do a deep copy into it -- see mixin(..) / mixinFlat(..)
+//
+// XXX should this move to its own modue???
 var Mixin =
 module.Mixin =
 Constructor('Mixin', {
+	// static methods...
+	// XXX should we add the above mixin funcs as static methods here???
+	// 		...not sure yet...
+	// XXX if this proves usefull should we chose one or keep both locations???
+	// XXX EXPERIMENTAL...
+	mixin,
+	mixinFlat,
+	mixout,
+	mixins,
+	hasMixin,
+
+}, {
 	name: null,
 
 	// mixin data...
@@ -1200,17 +1214,17 @@ Constructor('Mixin', {
 	// base API...
 	//
 	isMixed: function(target){
-		return hasMixin(target, this.data) },
+		return this.constructor.hasMixin(target, this.data) },
 	mixout: function(target){
-		return mixout(target, this.data) },
+		return this.constructor.mixout(target, this.data) },
 
 	// mix into target...
 	__call__: function(_, target, mode=this.mode){
 		typeof(target) == typeof('str')
 			&& ([_, mode, target] = arguments)
 		return mode == 'flat' ?
-			mixinFlat(target, this.data)
-			: mixin(target, this.data) },
+			this.constructor.mixinFlat(target, this.data)
+			: this.constructor.mixin(target, this.data) },
 
 	__init__: function(name, ...data){
 		// Mixin(name, mode, ...) -- handle default mode...
@@ -1224,7 +1238,7 @@ Constructor('Mixin', {
 		// 		explicitly overwritten...
 		Object.defineProperty(this, 'name', { value: name })
 		// create/merge .data...
-		this.data = mixinFlat({}, 
+		this.data = this.constructor.mixinFlat({}, 
 			...data.map(function(e){ 
 				// handle bare objects and mixins differently...
 				return e instanceof Mixin ? 
