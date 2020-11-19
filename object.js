@@ -1195,7 +1195,7 @@ Constructor('Mixin', {
 	__init__: function(name, ...data){
 		// NOTE: .defineProperty(..) is used because this is a function
 		// 		and function's .name is not too configurable...
-		// XXX do we need to configure this better???
+		// XXX do we need to configure this prop better???
 		Object.defineProperty(this, 'name', { value: name })
 		this.data = mixinFlat({}, 
 			...data.map(function(e){ 

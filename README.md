@@ -137,13 +137,18 @@ class B extends A {
 		- [`parentProperty(..)`](#parentproperty)
 		- [`parentCall(..)`](#parentcall)
 		- [`parentOf(..)` / `childOf(..)` / `related(..)`](#parentof--childof--related)
+		- [`RawInstance(..)`](#rawinstance)
+		- [`Constructor(..)` / `C(..)`](#constructor--c)
 		- [`mixin(..)`](#mixin)
 		- [`mixins(..)`](#mixins)
 		- [`hasMixin(..)`](#hasmixin)
 		- [`mixout(..)`](#mixout)
 		- [`mixinFlat(..)`](#mixinflat)
-		- [`RawInstance(..)`](#rawinstance)
-		- [`Constructor(..)` / `C(..)`](#constructor--c)
+		- [`Mixin(..)`](#mixin-1)
+		- [`<mixin>(..)`](#mixin-2)
+		- [`<mixin>.mode`](#mixinmode)
+		- [`<mixin>.mixout(..)`](#mixinmixout)
+		- [`<mixin>.isMixed(..)`](#mixinismixed)
 	- [Utilities](#utilities)
 		- [`normalizeIndent(..)` / `normalizeTextIndent(..)` / `doc` / `text`](#normalizeindent--normalizetextindent--doc--text)
 		- [`deepKeys(..)`](#deepkeys)
@@ -318,6 +323,8 @@ case.
 
 
 ### Mix-ins
+
+<!-- XXX do an example using Mixin(..) -->
 
 Prototype-based mixin...
 ```javascript
@@ -735,6 +742,77 @@ related(<a>, <b>)
 These are similar to `instanceof` but will test if the two objects are in the 
 same prototype chain and in case of `parentOf(..)`/`childOf(..)` in what order.
 
+
+### `RawInstance(..)`
+
+Make a raw (un-initialized) instance
+```
+RawInstance(<context>, <constructor>, ..)
+	-> <object>
+```
+
+`RawInstance(..)` will do the following:
+- Create an instance object
+	- get result of `.__new__(..)` if defined, or
+	- if prototype is a function or `.__call__(..)` is defined, create a 
+	  wrapper function, or
+	- if constructor's `.__proto__` has a `.__rawinstance__(..)` use it
+	  to create an instance, or
+	- if constructor's `.__proto__` is a function (constructor) use it 
+	  to create an instance, or
+	- use `{}`.
+- Link the object into the prototype chain
+
+
+_Un-initialized_ means this will not call `.__init__(..)`
+
+
+`RawInstance(..)` can be called with and without `new`.
+
+
+### `Constructor(..)` / `C(..)`
+
+Define an object constructor
+```
+Constructor(<name>)
+Constructor(<name>, <prototype>)
+Constructor(<name>, <parent-constructor>, <prototype>)
+Constructor(<name>, <parent-constructor>, <constructor-mixin>, <prototype>)
+Constructor(<name>, <constructor-mixin>, <prototype>)
+	-> <constructor>
+```
+
+`Constructor(..)` essentially does the following:
+- Creates a _constructor_ function,
+- Sets constructor `.name` and `.toString(..)` for introspection,
+- Creates `.__rawinstance__(..)` wrapper to `RawInstance(..)`
+- Sets constructor `.__proto__`, `.prototype` and `.prototype.constructor`,
+- Mixes in _constructor-mixin_ if given.
+
+The resulting _constructor_ function when called will:
+- call constructor's `.__rawinstance__(..)` if defined or `RawInstance(..)` 
+  to create an instance,
+- call instance's `.__init__(..)` if present.
+
+
+Note that `Constructor(<name>, <prototype>)` is intentionally set as default
+instead of having the _parent-constructor_ as the last argument, this is 
+done for two reasons:
+- The main cause to inherit from a constructor is to extend it,
+- In real code the `Constructor(<name>, <prototype>)` is more common than
+  empty inheritance.
+
+
+Shorthand to `Constructor(..)`
+```
+C(<name>, ..)
+	-> <constructor>
+```
+
+
+`Constructor(..)` / `C(..)` can be called with and without `new`.
+
+
 ### `mixin(..)`
 
 _Mixin_ objects into a prototype chain
@@ -816,76 +894,113 @@ Also like `Object.assign(..)` this _will_ overwrite attribute values in
 `<base>`.
 
 
-### `RawInstance(..)`
+### `Mixin(..)`
 
-Make a raw (un-initialized) instance
+Create a mixin wrapper.
 ```
-RawInstance(<context>, <constructor>, ..)
-	-> <object>
-```
-
-`RawInstance(..)` will do the following:
-- Create an instance object
-	- get result of `.__new__(..)` if defined, or
-	- if prototype is a function or `.__call__(..)` is defined, create a 
-	  wrapper function, or
-	- if constructor's `.__proto__` has a `.__rawinstance__(..)` use it
-	  to create an instance, or
-	- if constructor's `.__proto__` is a function (constructor) use it 
-	  to create an instance, or
-	- use `{}`.
-- Link the object into the prototype chain
-
-
-_Un-initialized_ means this will not call `.__init__(..)`
-
-
-`RawInstance(..)` can be called with and without `new`.
-
-
-### `Constructor(..)` / `C(..)`
-
-Define an object constructor
-```
-Constructor(<name>)
-Constructor(<name>, <prototype>)
-Constructor(<name>, <parent-constructor>, <prototype>)
-Constructor(<name>, <parent-constructor>, <constructor-mixin>, <prototype>)
-Constructor(<name>, <constructor-mixin>, <prototype>)
-	-> <constructor>
+Mixin(<name>, <obj>, ..)
+	-> <mixin>
 ```
 
-`Constructor(..)` essentially does the following:
-- Creates a _constructor_ function,
-- Sets constructor `.name` and `.toString(..)` for introspection,
-- Creates `.__rawinstance__(..)` wrapper to `RawInstance(..)`
-- Sets constructor `.__proto__`, `.prototype` and `.prototype.constructor`,
-- Mixes in _constructor-mixin_ if given.
+This will create a more convenient `<mixin>` object.
 
-The resulting _constructor_ function when called will:
-- call constructor's `.__rawinstance__(..)` if defined or `RawInstance(..)` 
-  to create an instance,
-- call instance's `.__init__(..)` if present.
+The following two are the same
+```javascript
+var mixin = {
+	// ...
+}
 
-
-Note that `Constructor(<name>, <prototype>)` is intentionally set as default
-instead of having the _parent-constructor_ as the last argument, this is 
-done for two reasons:
-- The main cause to inherit from a constructor is to extend it,
-- In real code the `Constructor(<name>, <prototype>)` is more common than
-  empty inheritance.
-
-
-Shorthand to `Constructor(..)`
+var obj = mixinFlat({
+	// ...
+}, mixin)
 ```
-C(<name>, ..)
-	-> <constructor>
+and
+```javascript
+var mixin = Mixin('mixin', {
+	// ...
+})
+
+var obj = mixin('flat', {
+	// ...
+})
 ```
 
+The former approach is better suited for inline mixing in, where one could
+use `Object.assign(..)` while the later is more convenient for working with
+library and reusable _mixin_ object as it is more readable and more centralized.
 
-`Constructor(..)` / `C(..)` can be called with and without `new`.
+This also makes combining mixins simpler
+```javascript
+var A = Mixin('A', {
+	// ...
+})
+
+var B = Mixin('B', {
+	// ...
+})
+
+// this is a combination of A and B...
+var C = Mixin('C', A, B, {
+	// NOTE: this "block" is optional...
+	// ...
+})
+```
+
+Note that for multiple mixins used in `Mixin(..)` as well as in 
+[`mixin(..)`](#mixin)/[`mixinFlat(..)`](#mixinflat), mixins from right to 
+left, e.g. in the above example `B` will overwrite intersecting data in `A`, 
+... etc.
 
 
+### `<mixin>(..)`
+
+Mixin into `<target>` as a prototype
+```
+<mixin>(<target>)
+<mixin>('proto', <target>)
+	-> <target>
+```
+
+Mixin into `<target>` as directly (flatly)
+```
+<mixin>('flat', <target>)
+	-> <target>
+```
+
+These are similar to using [`mixin(..)`](#mixin) or [`mixinFlat(..)`](#mixin)
+respectively.
+
+
+### `<mixin>.mode`
+
+Sets the default mode for `<mixin>(..)`.
+
+Can be:
+- `proto`  
+	mix into prototype objects, like [`mixin(..)`](#mixin)
+- `flat`  
+	mix into object directly, like [`mixinFlat(..)`](#mixinflat)
+
+
+### `<mixin>.mixout(..)`
+
+Remove `<mixin>` from `<target>`
+```
+<mixin>.mixout(<target>)
+	-> <target>
+```
+
+This is the same as [`mixout(..)`](#mixout)
+
+### `<mixin>.isMixed(..)`
+
+Check if `<mixin>` is mixed into `<target>`
+```
+<mixin>.isMixed(<target>)
+	-> <bool>
+```
+
+This is the same as [`hasMixin(..)`](#hasmixin)
 
 ## Utilities
 
