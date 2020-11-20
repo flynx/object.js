@@ -41,10 +41,10 @@ module.LINK_FUNCTION_METHODS = [
 //---------------------------------------------------------------------
 // Helpers...
 
-// bootstrapping utility...
+// Bootstrapping utility...
 //
 // Since we can face chicken-egg issues here, this should keep things 
-// both consistent in terms of flow and in terms of actual logical 
+// both consistent in terms of doc flow and in terms of actual logical 
 // consistency...
 //
 var BOOTSTRAP = 
@@ -55,6 +55,8 @@ function(func){
 		: b.map(function(f){ f() }) }
 
 
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 module.TAB_SIZE = 4
 
@@ -179,8 +181,6 @@ function(strings, ...values){
 //
 // NOTE: this is like Object.keys(..) but will get keys for all levels 
 // 		till stop if given...
-//
-// XXX should we add this to Object???
 var deepKeys =
 module.deepKeys =
 function(obj, stop){
@@ -261,10 +261,16 @@ function(base, obj, non_strict){
 //---------------------------------------------------------------------
 // Prototype chain content access...
 
-// object to trigger iteration stop...
+// trigger iteration stop...
 //
 // NOTE: we need Constructor(..) to make this so will deffer this to the 
 // 		end...
+//
+// XXX should we unify this and how types.js/Array does things with 
+// 		StopTteration???
+// 		...I'm not sure I like the StopIteration approach as adding a 
+// 		try/catch block and rethrowing excptions masks their origin and 
+// 		context and makes things harder when tracking down errors...
 BOOTSTRAP(function(){
 
 	module.STOP = 
@@ -690,7 +696,7 @@ function(context, constructor, ...args){
 		// use parent's constructor...
 		: (typeof(constructor.__proto__) == 'function'
 				// XXX for some reason if using (function(){}).__proto__ 
-				// 		instead of Function.prototype below coverage is 
+				// 		instead of Function.prototype below, coverage is 
 				// 		not counted for the condition....
 				&& constructor.__proto__ !== Function.prototype) ?
 			Reflect.construct(constructor.__proto__, args, constructor)
@@ -993,7 +999,7 @@ function Constructor(name, a, b, c){
 	return _constructor }
 
 
-// complete the constructor...
+// Complete the constructor...
 //
 // NOTE: currently this is a complement to the top level functions.
 Object.assign(Constructor, {
@@ -1237,6 +1243,7 @@ Constructor('Mixin', {
 	mixin,
 	mixinFlat,
 	mixout,
+
 	mixins,
 	hasMixin,
 
