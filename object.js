@@ -1273,7 +1273,7 @@ Constructor('Mixin', {
 	// This can be:
 	// 	'proto'		- mix data into prototype chain (default)
 	// 	'flat'		- use mixinFlat(..) to copy data
-	// 	'softflat'	- like 'flat' but uses mixinFlat('soft', ..)
+	// 	'soft'	- like 'flat' but uses mixinFlat('soft', ..)
 	mode: 'proto',
 
 	// base API...
@@ -1289,7 +1289,7 @@ Constructor('Mixin', {
 			&& ([_, mode, target] = arguments)
 		return mode == 'flat' ?
 				this.constructor.mixinFlat(target, this.data)
-			: mode == 'softflat' ?
+			: mode == 'soft' ?
 				this.constructor.mixinFlat('soft', target, this.data)
 			: this.constructor.mixin(target, this.data) },
 
