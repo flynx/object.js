@@ -1027,8 +1027,16 @@ Object.assign(Constructor, {
 
 // Mix a set of methods/props/attrs into an object...
 // 
+//	Mix objects into base...
 //	mixinFlat(base, object, ...)
 //		-> base
+//
+//	Soft mix objects into base...
+//	mixinFlat('soft', base, object, ...)
+//		-> base
+//
+//
+// 'soft' mode only mixies in props if base does not define them already
 //
 //
 // NOTE: essentially this is just like Object.assign(..) but copies 
@@ -1040,12 +1048,19 @@ Object.assign(Constructor, {
 var mixinFlat = 
 module.mixinFlat = 
 function(base, ...objects){
+	var soft = base === 'soft'
+	if(soft){
+		base = objects.shift() 
+		objects = objects
+			.slice()
+			.reverse() }
 	return objects
 		.reduce(function(base, cur){
 			Object.keys(cur)
 				.map(function(k){
-					Object.defineProperty(base, k,
-						Object.getOwnPropertyDescriptor(cur, k)) })
+					;(!soft || !base.hasOwnProperty(k))
+						&& Object.defineProperty(base, k,
+							Object.getOwnPropertyDescriptor(cur, k)) })
 			return base }, base) }
 
 
@@ -1258,6 +1273,7 @@ Constructor('Mixin', {
 	// This can be:
 	// 	'proto'		- mix data into prototype chain (default)
 	// 	'flat'		- use mixinFlat(..) to copy data
+	// 	'softflat'	- like 'flat' but uses mixinFlat('soft', ..)
 	mode: 'proto',
 
 	// base API...
@@ -1272,7 +1288,9 @@ Constructor('Mixin', {
 		typeof(target) == typeof('str')
 			&& ([_, mode, target] = arguments)
 		return mode == 'flat' ?
-			this.constructor.mixinFlat(target, this.data)
+				this.constructor.mixinFlat(target, this.data)
+			: mode == 'softflat' ?
+				this.constructor.mixinFlat('soft', target, this.data)
 			: this.constructor.mixin(target, this.data) },
 
 	__init__: function(name, ...data){

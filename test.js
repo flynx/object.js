@@ -760,6 +760,12 @@ var cases = test.Cases({
 		assert('b' in x == false, 'post-mixout content gone')
 		assert('c' in x == false, 'post-mixout content gone')
 
+		var z = assert(C('softflat', {a:'zzz'}), `C("flat", {})`)
+
+		assert(z.a == 'zzz', 'no overwrite')
+		assert(z.b == 'bbb', 'mixin content from C')
+		assert(z.c == 'ccc', 'mixin content from C')
+
 	},
 })
 
