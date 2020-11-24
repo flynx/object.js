@@ -261,7 +261,7 @@ function(base, obj, non_strict){
 //---------------------------------------------------------------------
 // Prototype chain content access...
 
-// trigger iteration stop...
+// Value trigger iteration stop and to carry results...
 //
 // NOTE: we need Constructor(..) to make this so will deffer this to the 
 // 		end...
@@ -962,9 +962,11 @@ function Constructor(name, a, b, c){
 		})
 	// set generic raw instance constructor...
 	_constructor.__rawinstance__ instanceof Function
-		|| (_constructor.__rawinstance__ = 
-			function(context, ...args){
-				return RawInstance(context, this, ...args) })
+		|| Object.defineProperty(_constructor, '__rawinstance__', {
+				value: function(context, ...args){
+					return RawInstance(context, this, ...args) },
+				enumerable: false,
+			})
 	!!constructor_proto
 		&& (_constructor.__proto__ = constructor_proto)
 	_constructor.prototype = proto

@@ -766,6 +766,13 @@ var cases = test.Cases({
 		assert(z.b == 'bbb', 'mixin content from C')
 		assert(z.c == 'ccc', 'mixin content from C')
 
+		/*/ XXX
+		assert(C.mixout(z) === z, 'C.mixout(..) partial')
+
+		assert('a' in z, 'post-mixout (partial) non mixed content retained')
+		assert('b' in z == false, 'post-mixout (partial) content gone')
+		assert('c' in z == false, 'post-mixout (partial) content gone')
+		//*/
 	},
 })
 
