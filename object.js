@@ -90,18 +90,26 @@ module.LEADING_TABS = 1
 // 		exception -- normalizeIndent(..)  will break code written 
 // 		in Whitespace.
 //
+// XXX BUG?
+// 			`a					`a						`a
+// 			|    b			->	|b			expected?	|    b
+// 			|        c`			|    c`					|        c`
+// 		while:
+// 			`a					`a
+// 			|    b			->	|    b		as expected.
+// 			|    c`				|    c`
+// 		this leads to functions like the following to get messed up:
+// 			|function(a){
+// 			|	return a
+// 			|		|| 'moo' }
+//
 // XXX is this the right place for this???
 // 		...when moving take care that ImageGrid's core.doc uses this...
 var normalizeIndent =
 module.normalizeIndent =
-function(text, tab_size, leading_tabs){
-	tab_size = tab_size == null ? 
-		module.TAB_SIZE 
-		: tab_size
-	leading_tabs = (leading_tabs == null ? 
-			module.LEADING_TABS 
-			: leading_tabs) 
-		* tab_size
+function(text, {tab_size=module.TAB_SIZE, leading_tabs=module.LEADING_TABS, pad_tabs=0}={}){
+	leading_tabs *= tab_size
+	var padding = ' '.repeat(pad_tabs*tab_size)
 	// prepare text...
 	var tab = ' '.repeat(tab_size || 0)
 	text = tab != '' ?
@@ -140,20 +148,21 @@ function(text, tab_size, leading_tabs){
 				// min...
 				: Math.min(l, indent) }, -1) || 0
 	// normalize...
-	return lines
-		.map(function(line, i){
-			return i == 0 ? 
-				line
-				: line.slice(l) })
-		.join('\n')
-		.trim() }
+	return padding 
+		+lines
+			.map(function(line, i){
+				return i == 0 ? 
+					line
+					: line.slice(l) })
+			.join('\n'+ padding)
+			.trim() }
 
 
 // shorthand more suted for text...
 var normalizeTextIndent =
 module.normalizeTextIndent =
-function(text, tab_size, leading_tabs){
-	return module.normalizeIndent(text, tab_size, leading_tabs || 0) }
+function(text, opts={leading_tabs: 0}){
+	return module.normalizeIndent(text, opts) }
 
 
 // template string tag versions of the above...
