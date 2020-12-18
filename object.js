@@ -268,6 +268,22 @@ function(base, obj, non_strict){
 
 
 //---------------------------------------------------------------------
+// Helper objects/constructors...
+
+BOOTSTRAP(function(){
+
+	// Error with some JS quirks fixed...
+	//
+	module.Error =
+	Constructor('Error', Error, {
+		get name(){
+			return this.constructor.name },
+	})
+
+})
+
+
+//---------------------------------------------------------------------
 // Prototype chain content access...
 
 // Value trigger iteration stop and to carry results...
