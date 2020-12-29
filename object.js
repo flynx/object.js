@@ -274,10 +274,19 @@ BOOTSTRAP(function(){
 
 	// Error with some JS quirks fixed...
 	//
+	// XXX EXPERIMENTAL
 	module.Error =
 	Constructor('Error', Error, {
 		get name(){
 			return this.constructor.name },
+
+		// XXX BUG? is this an error that with this everything seems to work
+		// 		while without this instances of this work fine while instances 
+		// 		of "sub-classes" do not set the .stack correctly???
+		// 		...is this a JS quirk or am I missing something???
+		__new__: function(context, ...args){
+			return Reflect.construct(module.Error.__proto__, args, this.constructor) },
+			//return Reflect.construct(Error, args, this.constructor) },
 	})
 
 })
@@ -286,18 +295,10 @@ BOOTSTRAP(function(){
 //---------------------------------------------------------------------
 // Prototype chain content access...
 
-// Value trigger iteration stop and to carry results...
-//
-// NOTE: we need Constructor(..) to make this so will deffer this to the 
-// 		end...
-//
-// XXX should we unify this and how types.js/Array does things with 
-// 		StopTteration???
-// 		...I'm not sure I like the StopIteration approach as adding a 
-// 		try/catch block and rethrowing excptions masks their origin and 
-// 		context and makes things harder when tracking down errors...
 BOOTSTRAP(function(){
 
+	// Value trigger iteration stop and to carry results...
+	//
 	module.STOP = 
 	Constructor('STOP', {
 		doc: 'stop iteration.',
