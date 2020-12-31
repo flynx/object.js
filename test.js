@@ -774,6 +774,42 @@ var cases = test.Cases({
 		assert('c' in z == false, 'post-mixout (partial) content gone')
 		//*/
 	},
+
+	'extending-call': function(assert){
+		var A = object.C('A', {
+			__call__: function(){
+				return ['A'] },
+		})
+
+		var B = object.C('B', A, {
+			__call__: function(){
+				return object.parentCall(B.prototype, '__call__', this).concat(['B']) },
+				//return object.parentCall(B.prototype.__call__, this).concat(['B']) },
+		})
+
+		var C = object.C('C', B, {
+			__call__: function(){
+				// XXX BUG: this will break..
+				// 		the broblem is in that:
+				// 			object.parent(C.prototype, '__call__', this)
+				// 			object.parent(C.prototype.__call__, this)
+				// 		..are not the same...
+				return object.parentCall(C.prototype.__call__, this).concat(['C']) },
+		})
+
+		var a = A()
+		var b = B()
+		var c = C()
+
+		// XXX BUG....
+		assert(
+			object.parent(C.prototype, '__call__', c) 
+				=== object.parent(C.prototype.__call__, c), '...')
+
+		assert.array(a(), ['A'], 'call')
+		assert.array(b(), ['A', 'B'], 'call')
+		assert.array(c(), ['A', 'B', 'C'], 'call')
+	},
 })
 
 
