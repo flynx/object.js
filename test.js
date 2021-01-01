@@ -794,6 +794,9 @@ var cases = test.Cases({
 				// 			object.parent(C.prototype, '__call__', this)
 				// 			object.parent(C.prototype.__call__, this)
 				// 		..are not the same...
+				// 		the problem is that .source(..) call @object.js:531 
+				// 		will get the instance (c) when getting by method while 
+				// 		it should get the parent, i.e. c.__proto__ / c.constructor.prototype
 				return object.parentCall(C.prototype.__call__, this).concat(['C']) },
 		})
 
@@ -801,7 +804,7 @@ var cases = test.Cases({
 		var b = B()
 		var c = C()
 
-		// XXX BUG....
+		// XXX BUG: this will fail....
 		assert(
 			object.parent(C.prototype, '__call__', c) 
 				=== object.parent(C.prototype.__call__, c), '...')
