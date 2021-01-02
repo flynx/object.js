@@ -514,6 +514,9 @@ function(obj, name, callback, props){
 // 		and to the method after the match.
 // NOTE: this is super(..) replacement, usable in any context without 
 // 		restriction -- super(..) is restricted to class methods only...
+//
+// XXX BUG: the two flows with parent(proto.__call__, ..) and 
+// 		parent(proto, '__call__', ..) yeild different results...
 var parent =
 module.parent =
 function(proto, name){
