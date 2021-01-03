@@ -329,7 +329,7 @@ BOOTSTRAP(function(){
 // 		-> list
 //
 // 		
-// 	callback(obj)
+// 	callback(obj, i)
 // 		-> STOP
 // 		-> STOP(value)
 // 		-> ..
@@ -366,6 +366,7 @@ function(obj, name, callback){
 		callback = name
 		name = undefined
 	}
+	var i = 0
 	var o
 	var res = []
 	while(obj != null){
@@ -375,7 +376,7 @@ function(obj, name, callback){
 				|| (name == '__call__' && typeof(obj) == 'function')){
 			// handle callback...
 			o = callback
-				&& callback(obj)
+				&& callback(obj, i++)
 			// manage results...
 			res.push(
 				(o === undefined || o === module.STOP) ?
@@ -435,9 +436,9 @@ function(obj, name, callback, props){
 			: obj[name] }
 	// wrap the callback if given...
 	var c = typeof(callback) == 'function'
-		&& function(obj){
+		&& function(obj, i){
 			var val = _get(obj, name)
-			var res = callback(val, obj) 
+			var res = callback(val, obj, i) 
 			return res === module.STOP ?
 				// wrap the expected stop result if the user did not do it...
 				module.STOP(val)
@@ -514,12 +515,12 @@ function(obj, name, callback, props){
 // 		and to the method after the match.
 // NOTE: this is super(..) replacement, usable in any context without 
 // 		restriction -- super(..) is restricted to class methods only...
-//
-// XXX BUG: the two flows with parent(proto.__call__, ..) and 
-// 		parent(proto, '__call__', ..) yeild different results...
-// 		...this appears to affect only the .__call__(..) method...
-// 		the problem seems to be that we are getting the first non-match 
-// 		when we want the first match after current...
+// NOTE: contrary to sources(..) in the .__call__ case, this will skip 
+// 		the base callable instance, this will make both the following
+// 		cases identical:
+// 			parent(C.prototype.__call__, obj)
+// 		and:
+// 			parent(C.prototype, '__call__')
 var parent =
 module.parent =
 function(proto, name){
@@ -535,15 +536,21 @@ function(proto, name){
 			throw new  Error('parent(..): need a method with non-empty .name') }
 		// get first matching source...
 		proto = sources(that, name, 
-				function(obj){ 
-					return obj[name] === proto
+				function(obj, i){ 
+					// NOTE: the .hasOwnProperty(..) test is here so as 
+					// 		to skip the base callable when searching for 
+					// 		.__call__ that is returned as a special case 
+					// 		by sourcei(..) and this should have no effect 
+					// 		or other cases...
+					// NOTE: this will only skip the root callable...
+					return (i > 0 || obj.hasOwnProperty(name))
+						&& obj[name] === proto
 						&& module.STOP })
 			.pop() }
 	// get first source...
-	var c = 0
 	var res = sources(proto, name, 
-			function(obj){ 
-				return c++ == 1 
+			function(obj, i){ 
+				return i == 1 
 					&& module.STOP })
 		.pop() 
 	return !res ?
@@ -564,10 +571,9 @@ var parentProperty =
 module.parentProperty =
 function(proto, name){
 	// get second source...
-	var c = 0
 	var res = sources(proto, name, 
-			function(obj){ 
-				return c++ == 1 
+			function(obj, i){ 
+				return i == 1 
 					&& module.STOP })
 		.pop() 
 	return res ?
