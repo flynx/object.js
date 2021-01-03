@@ -517,6 +517,9 @@ function(obj, name, callback, props){
 //
 // XXX BUG: the two flows with parent(proto.__call__, ..) and 
 // 		parent(proto, '__call__', ..) yeild different results...
+// 		...this appears to affect only the .__call__(..) method...
+// 		the problem seems to be that we are getting the first non-match 
+// 		when we want the first match after current...
 var parent =
 module.parent =
 function(proto, name){
