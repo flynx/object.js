@@ -961,7 +961,7 @@ Mixin into `<target>` as a prototype
 	-> <target>
 ```
 
-Mixin into `<target>` as directly (flatly)
+Mixin into `<target>` directly (flatly)
 ```
 <mixin>('flat', <target>)
 	-> <target>
