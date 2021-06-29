@@ -266,6 +266,34 @@ function(base, obj, non_strict){
 			.length == 0 }
 
 
+// like Object.create(..) but also handles callable objects correctly...
+//
+var create =
+module.create =
+function(obj){
+	// calable...
+	if(typeof(obj) == 'function'){
+		var func = function(){
+			return Object.hasOwnProperty.call(func, '__call__') ?
+				func.__call__.call(func, ...arguments)
+				: 'call' in obj ?
+					obj.call(func, ...arguments)
+				// NOTE: if obj does not inherit from Function .call 
+				// 		might not be available...
+				: Function.prototype.call.call(obj, func, ...arguments) }
+		func.__proto__ = obj
+		// XXX not sure about this yet...
+		Object.defineProperty(func, 'toString', {
+			value: function(){
+				return Object.hasOwnProperty.call(func, '__call__') ?
+					this.__call__.toString()
+					: this.__proto__.toString() },
+			enumerable: false,
+		})
+		return func }
+	return Object.create(obj) }
+
+
 
 //---------------------------------------------------------------------
 // Helper objects/constructors...
@@ -1058,6 +1086,8 @@ Object.assign(Constructor, {
 	matchPartial,
 
 	deepKeys,
+
+	create,
 })
 
 

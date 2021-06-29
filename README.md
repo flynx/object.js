@@ -7,9 +7,7 @@ This is an alternative to the ES6 `class` syntax in JavaScript and provides
 several advantages:  
 - _Uniform and minimalistic_ definition "syntax" based on basic JavaScript 
   object literals. No special cases, special syntax or _"the same but slightly
-  different"_ ways to do things, trying to adhere to 
-  [POLS](https://en.wikipedia.org/wiki/Principle_of_least_astonishment)
-  as much as possible,
+  different"_ ways to do things, trying to adhere to [POLS] as much as possible,
 - _Transparently_ based on JavaScript's prototypical inheritance model,
 - Produces fully introspectable constructors/instances,
 - Does not try to emulate constructs foreign to JavaScript (i.e. classes),
@@ -110,6 +108,7 @@ class B extends A {
 </tr>
 </table>
 
+[POLS]: https://en.wikipedia.org/wiki/Principle_of_least_astonishment
 
 
 ## Contents
@@ -131,29 +130,30 @@ class B extends A {
     - [`<object>.__call__(..)`](#object__call__)
   - [Components](#components)
     - [`STOP` / `STOP(..)`](#stop--stop)
-    - [`sources(..)`](#sources)
-    - [`values(..)`](#values)
-    - [`parent(..)`](#parent)
-    - [`parentProperty(..)`](#parentproperty)
-    - [`parentCall(..)`](#parentcall)
-    - [`parentOf(..)` / `childOf(..)` / `related(..)`](#parentof--childof--related)
-    - [`RawInstance(..)`](#rawinstance)
     - [`Constructor(..)` / `C(..)`](#constructor--c)
-    - [`mixin(..)`](#mixin)
-    - [`mixins(..)`](#mixins)
-    - [`hasMixin(..)`](#hasmixin)
-    - [`mixout(..)`](#mixout)
-    - [`mixinFlat(..)`](#mixinflat)
-    - [`Mixin(..)`](#mixin-1)
-    - [`<mixin>(..)`](#mixin-2)
+    - [`create(..)` / `Constructor.create(..)`](#create--constructorcreate)
+    - [`sources(..)` / `Constructor.sources(..)`](#sources--constructorsources)
+    - [`values(..)` / `Constructor.values(..)`](#values--constructorvalues)
+    - [`parent(..)` / `Constructor.parent(..)`](#parent--constructorparent)
+    - [`parentProperty(..)` / `Constructor.parentProperty(..)`](#parentproperty--constructorparentproperty)
+    - [`parentCall(..)` / `Constructor.parentCall(..)`](#parentcall--constructorparentcall)
+    - [`parentOf(..)` / `childOf(..)` / `related(..)` and `Constructor.*(..)` variants](#parentof--childof--related-and-constructor-variants)
+    - [`RawInstance(..)`](#rawinstance)
+    - [`Mixin(..)`](#mixin)
+    - [`<mixin>(..)`](#mixin-1)
     - [`<mixin>.mode`](#mixinmode)
     - [`<mixin>.mixout(..)`](#mixinmixout)
     - [`<mixin>.isMixed(..)`](#mixinismixed)
+    - [`mixin(..)` / `Mixin.mixin(..)`](#mixin--mixinmixin)
+    - [`mixinFlat(..)` / `Mixin.mixinFlat(..)`](#mixinflat--mixinmixinflat)
+    - [`mixout(..)` / `Mixin.mixout(..)`](#mixout--mixinmixout)
+    - [`mixins(..)` / `Mixin.mixins(..)`](#mixins--mixinmixins)
+    - [`hasMixin(..)` / `Mixin.hasMixin(..)`](#hasmixin--mixinhasmixin)
   - [Utilities](#utilities)
     - [`normalizeIndent(..)` / `normalizeTextIndent(..)` / `doc` / `text`](#normalizeindent--normalizetextindent--doc--text)
-    - [`deepKeys(..)`](#deepkeys)
-    - [`match(..)`](#match)
-    - [`matchPartial(..)`](#matchpartial)
+    - [`deepKeys(..)` / `Constructor.deepKeys(..)`](#deepkeys--constructordeepkeys)
+    - [`match(..)` / `Constructor.match(..)`](#match--constructormatch)
+    - [`matchPartial(..)` / `Constructor.matchPartial(..)`](#matchpartial--constructormatchpartial)
   - [Limitations](#limitations)
     - [Can not mix unrelated native types](#can-not-mix-unrelated-native-types)
   - [More](#more)
@@ -357,9 +357,10 @@ We can also remove the mixin...
 o.mixout(b, utilityMixin)
 ```
 
-The mixed-in data is removed iff a [matching](#match) object is found in 
-the chain with the same attributes as `utilityMixin` and with each 
-attribute matching identity with the corresponding attribute in the mixin.
+The mixed-in data is removed iff a [matching](#match--constructormatch) 
+object is found in the chain with the same attributes as `utilityMixin` and 
+with each attribute matching identity with the corresponding attribute in 
+the mixin.
 
 
 Constructor-based mixin...
@@ -556,12 +557,79 @@ var l = object.RawInstance(null, Array, 'a', 'b', 'c')
 
 ### `STOP` / `STOP(..)`
 
-Used in [`sources(..)`](#sources), [`values(..)`](#values) and 
-[`mixins(..)`](#mixins) to stop the search before it reaches the top of 
+Used in [`sources(..)`](#sources--constructorsources), 
+[`values(..)`](#values--constructorvalues) and 
+[`mixins(..)`](#mixins--mixinmixins) 
+to stop the search before it reaches the top of 
 the prototype chain.
 
 
-### `sources(..)`
+
+### `Constructor(..)` / `C(..)`
+
+Define an object constructor
+```
+Constructor(<name>)
+Constructor(<name>, <prototype>)
+Constructor(<name>, <parent-constructor>, <prototype>)
+Constructor(<name>, <parent-constructor>, <constructor-mixin>, <prototype>)
+Constructor(<name>, <constructor-mixin>, <prototype>)
+	-> <constructor>
+```
+
+`Constructor(..)` essentially does the following:
+- Creates a _constructor_ function,
+- Sets constructor `.name` and `.toString(..)` for introspection,
+- Creates `.__rawinstance__(..)` wrapper to `RawInstance(..)`
+- Sets constructor `.__proto__`, `.prototype` and `.prototype.constructor`,
+- Mixes in _constructor-mixin_ if given.
+
+The resulting _constructor_ function when called will:
+- call constructor's `.__rawinstance__(..)` if defined or `RawInstance(..)` 
+  to create an instance,
+- call instance's `.__init__(..)` if present.
+
+
+Note that `Constructor(<name>, <prototype>)` is intentionally set as default
+instead of having the _parent-constructor_ as the last argument, this is 
+done for two reasons:
+- The main cause to inherit from a constructor is to extend it,
+- In real code the `Constructor(<name>, <prototype>)` is more common than
+  empty inheritance.
+
+
+Shorthand to `Constructor(..)`
+```bnf
+C(<name>, ..)
+	-> <constructor>
+```
+
+
+`Constructor(..)` / `C(..)` and their products can be called with and without 
+`new`.
+
+
+
+### `create(..)` / `Constructor.create(..)`
+
+Create a new object from the given
+
+```bnf
+create(<base>)
+    -> <obj>
+```
+
+This is similar to [`Object.create(..)`] but handles callables correctly, i.e. if 
+`<base>` is a callable then `<obj>` will also be callable.
+
+`<obj>` respects the call protocol, and will call `<obj>.__call__(..)` if defined.
+
+
+[`Object.create(..)`]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/create
+
+
+
+### `sources(..)` / `Constructor.sources(..)` 
 
 Get sources for attribute
 ```
@@ -609,7 +677,7 @@ implementation details, i.e. both function prototype or `.__call__(..)`
 methods will be matched.
 
 
-### `values(..)`
+### `values(..)` / `Constructor.values(..)` 
 
 Get values for attribute in prototype chain
 ```
@@ -651,10 +719,11 @@ values(<object>, '__call__', ..)
 This will return the callable objects themselves or the value of `.__call__`.
 
 
-See [`sources(..)`](#sources) for docs on `callback(..)` and special cases.
+See [`sources(..)`](#sources--constructorsources) for docs on `callback(..)` 
+and special cases.
 
 
-### `parent(..)`
+### `parent(..)` / `Constructor.parent(..)` 
 
 Get parent attribute value or method
 ```
@@ -690,10 +759,11 @@ parent(<prototype>, '__call__')
 	-> undefined
 ```
 
-See [`sources(..)`](#sources) for more info on the special case.
+See [`sources(..)`](#sources--constructorsources) for more info on the 
+special case.
 
 
-### `parentProperty(..)`
+### `parentProperty(..)` / `Constructor.parentProperty(..)` 
 
 Get parent property descriptor
 ```
@@ -703,7 +773,7 @@ parentProperty(<prototype>, <name>)
 ```
 
 
-### `parentCall(..)`
+### `parentCall(..)` / `Constructor.parentCall(..)` 
 
 Get parent method and call it
 ```
@@ -723,9 +793,10 @@ parentCall(<prototype>, '__call__', <this>)
 	-> undefined
 ```
 
-See [`parent(..)`](#parent) and [`sources(..)`](#sources) for more details.
+See [`parent(..)`](#parent--constructorparent) and 
+[`sources(..)`](#sources--constructorsources) for more details.
 
-### `parentOf(..)` / `childOf(..)` / `related(..)`
+### `parentOf(..)` / `childOf(..)` / `related(..)` and `Constructor.*(..)` variants
 
 Test if a is parent of b and/or vice-versa.
 ```
@@ -768,130 +839,6 @@ _Un-initialized_ means this will not call `.__init__(..)`
 
 
 `RawInstance(..)` can be called with and without `new`.
-
-
-### `Constructor(..)` / `C(..)`
-
-Define an object constructor
-```
-Constructor(<name>)
-Constructor(<name>, <prototype>)
-Constructor(<name>, <parent-constructor>, <prototype>)
-Constructor(<name>, <parent-constructor>, <constructor-mixin>, <prototype>)
-Constructor(<name>, <constructor-mixin>, <prototype>)
-	-> <constructor>
-```
-
-`Constructor(..)` essentially does the following:
-- Creates a _constructor_ function,
-- Sets constructor `.name` and `.toString(..)` for introspection,
-- Creates `.__rawinstance__(..)` wrapper to `RawInstance(..)`
-- Sets constructor `.__proto__`, `.prototype` and `.prototype.constructor`,
-- Mixes in _constructor-mixin_ if given.
-
-The resulting _constructor_ function when called will:
-- call constructor's `.__rawinstance__(..)` if defined or `RawInstance(..)` 
-  to create an instance,
-- call instance's `.__init__(..)` if present.
-
-
-Note that `Constructor(<name>, <prototype>)` is intentionally set as default
-instead of having the _parent-constructor_ as the last argument, this is 
-done for two reasons:
-- The main cause to inherit from a constructor is to extend it,
-- In real code the `Constructor(<name>, <prototype>)` is more common than
-  empty inheritance.
-
-
-Shorthand to `Constructor(..)`
-```
-C(<name>, ..)
-	-> <constructor>
-```
-
-
-`Constructor(..)` / `C(..)` can be called with and without `new`.
-
-
-### `mixin(..)`
-
-_Mixin_ objects into a prototype chain
-```
-mixin(<base>, <object>, ..)
-	-> <base>
-```
-
-This will link the base `.__proto__` to the last _mixin_ in chain, 
-keeping the prototype visibility the same.
-
-This will copy the content of each input object without touching the 
-objects themselves, making them fully reusable.
-
-It is not recommended to `.mixin(..)` into constructors directly, use 
-`.mixinFlat(..)` instead.
-
-
-### `mixins(..)`
-
-Get matching mixins
-```
-mixins(<base>, <object>)
-mixins(<base>, [<object>, ..])
-mixins(<base>, <object>, <callback>)
-mixins(<base>, [<object>, ..], <callback>)
-	-> list
-```
-
-```
-callback(<match>, <object>, <parent>)
-	-> STOP 
-	-> undefined
-	-> <value>
-```
-
-See [`sources(..)`](#sources) for docs on `callback(..)`
-
-
-### `hasMixin(..)`
-
-Check if _base_ object has _mixin_
-```
-hasMixin(<base>, <mixin>)
-	-> <bool>
-```
-
-
-### `mixout(..)`
-
-Remove the _first_ match matching input _mixin_ from _base_ 
-of _base_
-```
-mixout(<base>, <object>, ..)
-mixout(<base>, 'first', <object>, ..)
-	-> <base>
-```
-
-Remove _all_ occurrences of each matching input _mixin_ from _base_
-```
-mixout(<base>, 'all', <object>, ..)
-	-> <base>
-```
-
-This is the opposite of `mixin(..)`
-
-
-### `mixinFlat(..)`
-
-Mixin contents of objects into one _base_ object
-```
-mixinFlat(<base>, <object>, ..)
-	-> <base>
-```
-This is like `Object.assign(..)` but copies property descriptors rather 
-than property values.
-
-Also like `Object.assign(..)` this _will_ overwrite attribute values in 
-`<base>`.
 
 
 ### `Mixin(..)`
@@ -947,9 +894,9 @@ var C = Mixin('C', A, B, {
 ```
 
 Note that for multiple mixins used in `Mixin(..)` as well as in 
-[`mixin(..)`](#mixin)/[`mixinFlat(..)`](#mixinflat), mixins from right to 
-left, e.g. in the above example `B` will overwrite intersecting data in `A`, 
-... etc.
+[`mixin(..)`](#mixin--mixinmixin)/[`mixinFlat(..)`](#mixinflat--mixinmixinflat),
+mixins from right to left, e.g. in the above example `B` will overwrite 
+intersecting data in `A`, ... etc.
 
 
 ### `<mixin>(..)`
@@ -967,8 +914,8 @@ Mixin into `<target>` directly (flatly)
 	-> <target>
 ```
 
-These are similar to using [`mixin(..)`](#mixin) or [`mixinFlat(..)`](#mixin)
-respectively.
+These are similar to using [`mixin(..)`](#mixin--mixinmixin) or 
+[`mixinFlat(..)`](#mixinflat--mixinmixinflat) respectively.
 
 
 ### `<mixin>.mode`
@@ -977,9 +924,9 @@ Sets the default mode for `<mixin>(..)`.
 
 Can be:
 - `proto`  
-	mix into prototype objects, like [`mixin(..)`](#mixin)
+	mix into prototype objects, like [`mixin(..)`](#mixin--mixinmixin)
 - `flat`  
-	mix into object directly, like [`mixinFlat(..)`](#mixinflat)
+	mix into object directly, like [`mixinFlat(..)`](#mixinflat--mixinmixinflat)
 
 
 ### `<mixin>.mixout(..)`
@@ -990,7 +937,8 @@ Remove `<mixin>` from `<target>`
 	-> <target>
 ```
 
-This is the same as [`mixout(..)`](#mixout)
+This is the same as [`mixout(..)`](#mixout--mixinmixout)
+
 
 ### `<mixin>.isMixed(..)`
 
@@ -1000,7 +948,90 @@ Check if `<mixin>` is mixed into `<target>`
 	-> <bool>
 ```
 
-This is the same as [`hasMixin(..)`](#hasmixin)
+This is the same as [`hasMixin(..)`](#hasmixin--mixinhasmixin)
+
+
+### `mixin(..)` / `Mixin.mixin(..)`
+
+_Mixin_ objects into a prototype chain
+```
+mixin(<base>, <object>, ..)
+	-> <base>
+```
+
+This will link the base `.__proto__` to the last _mixin_ in chain, 
+keeping the prototype visibility the same.
+
+This will copy the content of each input object without touching the 
+objects themselves, making them fully reusable.
+
+It is not recommended to `.mixin(..)` into constructors directly, use 
+`.mixinFlat(..)` instead.
+
+
+### `mixinFlat(..)` / `Mixin.mixinFlat(..)`
+
+Mixin contents of objects into one _base_ object
+```
+mixinFlat(<base>, <object>, ..)
+	-> <base>
+```
+This is like `Object.assign(..)` but copies property descriptors rather 
+than property values.
+
+Also like `Object.assign(..)` this _will_ overwrite attribute values in 
+`<base>`.
+
+
+### `mixout(..)` / `Mixin.mixout(..)`
+
+Remove the _first_ match matching input _mixin_ from _base_ 
+of _base_
+```
+mixout(<base>, <object>, ..)
+mixout(<base>, 'first', <object>, ..)
+	-> <base>
+```
+
+Remove _all_ occurrences of each matching input _mixin_ from _base_
+```
+mixout(<base>, 'all', <object>, ..)
+	-> <base>
+```
+
+This is the opposite of `mixin(..)`
+
+
+### `mixins(..)` / `Mixin.mixins(..)`
+
+Get matching mixins
+```
+mixins(<base>, <object>)
+mixins(<base>, [<object>, ..])
+mixins(<base>, <object>, <callback>)
+mixins(<base>, [<object>, ..], <callback>)
+	-> list
+```
+
+```
+callback(<match>, <object>, <parent>)
+	-> STOP 
+	-> undefined
+	-> <value>
+```
+
+See [`sources(..)`](#sources--constructorsources) for docs on `callback(..)`
+
+
+### `hasMixin(..)` / `Mixin.hasMixin(..)`
+
+Check if _base_ object has _mixin_
+```
+hasMixin(<base>, <mixin>)
+	-> <bool>
+```
+
+
 
 ## Utilities
 
@@ -1034,7 +1065,7 @@ This ignores `object.LEADING_TABS` and `leading_tabs` is 0 by default.
 `doc` and `text` are template string versions of `normalizeIndent(..)` and `normalizeTextIndent(..)` respectively.
 
 
-### `deepKeys(..)`
+### `deepKeys(..)` / `Constructor.deepKeys(..)`
 
 ```
 deepKeys(<obj>)
@@ -1050,7 +1081,7 @@ This is like `Object.keys(..)` but will get the keys from the whole
 prototype chain or until `<stop>` if given.
 
 
-### `match(..)`
+### `match(..)` / `Constructor.match(..)`
 
 Test if the two objects match in attributes and attribute values
 ```
@@ -1079,7 +1110,7 @@ Like the default case but uses _equality_ instead of _identity_ to match
 values.
 
 
-### `matchPartial(..)`
+### `matchPartial(..)` / `Constructor.matchPartial(..)`
 
 ```
 matchPartial(<base>, <obj>)
@@ -1143,7 +1174,7 @@ For more info see the [source...](./object.js)
 
 [BSD 3-Clause License](./LICENSE)
 
-Copyright (c) 2016-2020, Alex A. Naanou,  
+Copyright (c) 2016-2021, Alex A. Naanou,  
 All rights reserved.
 
 
