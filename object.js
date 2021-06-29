@@ -267,6 +267,8 @@ function(base, obj, non_strict){
 
 
 // like Object.create(..) but also handles callable objects correctly...
+//
+// XXX revise .toString(..) creation...
 var create =
 module.create =
 function(obj){
@@ -284,9 +286,10 @@ function(obj){
 					func.__call__(this, ...arguments)
 				: 'call' in obj ?
 					obj.call(func, ...arguments)
-				// NOTE: if obj does not inherit from Function .call 
-				// 		might not be available...
+				// NOTE: if obj does not inherit from Function .call(..)
+				// 		might not be available directly...
 				: Function.prototype.call.call(obj, func, ...arguments) }
+		// rename...
 		func.name = name
 		func.name != name
 			&& (func = eval('('+ 
@@ -294,7 +297,6 @@ function(obj){
 					.toString()
 					.replace(/function\(/, `function ${name}(`) +')'))
 		func.__proto__ = obj
-		// XXX not sure about this yet...
 		Object.defineProperty(func, 'toString', {
 			value: function(){
 				return Object.hasOwnProperty.call(func, '__call__') ?
@@ -303,6 +305,7 @@ function(obj){
 			enumerable: false,
 		})
 		return func }
+	// normal objects...
 	return Object.create(obj) }
 
 
