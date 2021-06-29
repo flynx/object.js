@@ -268,19 +268,28 @@ function(base, obj, non_strict){
 
 // like Object.create(..) but also handles callable objects correctly...
 //
+// XXX add ability to name the resulting function...
 var create =
 module.create =
 function(obj){
+	// name given...
+	if(typeof(obj) == 'string' && arguments.length > 1){
+		var name
+		;[name, obj] = arguments }
 	// calable...
 	if(typeof(obj) == 'function'){
 		var func = function(){
-			return Object.hasOwnProperty.call(func, '__call__') ?
-				func.__call__.call(func, ...arguments)
+			return '__call__' in func ?
+					func.__call__(this, ...arguments)
 				: 'call' in obj ?
 					obj.call(func, ...arguments)
 				// NOTE: if obj does not inherit from Function .call 
 				// 		might not be available...
 				: Function.prototype.call.call(obj, func, ...arguments) }
+
+		// XXX set the name....
+		// XXX
+
 		func.__proto__ = obj
 		// XXX not sure about this yet...
 		Object.defineProperty(func, 'toString', {
