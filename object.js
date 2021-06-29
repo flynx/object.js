@@ -268,6 +268,14 @@ function(base, obj, non_strict){
 
 // like Object.create(..) but also handles callable objects correctly...
 //
+// 	create(obj)
+// 		-> obj
+//
+// 	create(func)
+// 	create(name, func)
+// 		-> func
+//
+//
 // XXX revise .toString(..) creation...
 var create =
 module.create =
@@ -305,7 +313,7 @@ function(obj){
 			enumerable: false,
 		})
 		return func }
-	// normal objects...
+	// normal object...
 	return Object.create(obj) }
 
 
