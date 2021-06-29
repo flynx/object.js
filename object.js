@@ -1015,9 +1015,11 @@ function Constructor(name, a, b, c){
 	_constructor.name = name
 	// just in case the browser/node refuses to change the name, we'll make
 	// them a different offer ;)
+	// NOTE: it is not possible to abstract this eval(..) into something 
+	// 		like renameFunction(..) as reconstructing the function will
+	// 		lose it's closure that we depend on here...
 	// NOTE: this eval(..) should not be a risk as its inputs are
 	// 		static and never infuenced by external inputs...
-	// NOTE: this will fail with non-identifier names...
 	_constructor.name != name
 		&& (_constructor = eval('('+ 
 			_constructor
