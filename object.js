@@ -267,8 +267,6 @@ function(base, obj, non_strict){
 
 
 // like Object.create(..) but also handles callable objects correctly...
-//
-// XXX add ability to name the resulting function...
 var create =
 module.create =
 function(obj){
