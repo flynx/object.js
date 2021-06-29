@@ -619,6 +619,13 @@ create(<base>)
     -> <obj>
 ```
 
+For functions we can set `.name`
+```bnf
+create(<name>, <base-func>)
+    -> <func>
+```
+
+
 This is similar to [`Object.create(..)`] but handles callables correctly, i.e. if 
 `<base>` is a callable then `<obj>` will also be callable.
 

@@ -273,9 +273,12 @@ var create =
 module.create =
 function(obj){
 	// name given...
+	var name = ''
 	if(typeof(obj) == 'string' && arguments.length > 1){
-		var name
-		;[name, obj] = arguments }
+		;[name, obj] = arguments 
+		// sanity check...
+		if(!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(name)){
+			throw new Error(`create(..): invalid name: "${name}"`) } }
 	// calable...
 	if(typeof(obj) == 'function'){
 		var func = function(){
@@ -286,10 +289,12 @@ function(obj){
 				// NOTE: if obj does not inherit from Function .call 
 				// 		might not be available...
 				: Function.prototype.call.call(obj, func, ...arguments) }
-
-		// XXX set the name....
-		// XXX
-
+		func.name = name
+		func.name != name
+			&& (func = eval('('+ 
+				func
+					.toString()
+					.replace(/function\(/, `function ${name}(`) +')'))
 		func.__proto__ = obj
 		// XXX not sure about this yet...
 		Object.defineProperty(func, 'toString', {
@@ -937,6 +942,10 @@ module.C =
 function Constructor(name, a, b, c){
 	var args = [...arguments].slice(1, 4)
 
+	// sanity check...
+	if(!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(name)){
+		throw new Error(`Constructor(..): invalid name: "${name}"`) }
+
 	// parse args...
 	// 	Constructor(name[[, constructor[, mixin]], proto])
 	var proto = args.pop() || {}
@@ -1007,10 +1016,11 @@ function Constructor(name, a, b, c){
 	// NOTE: this eval(..) should not be a risk as its inputs are
 	// 		static and never infuenced by external inputs...
 	// NOTE: this will fail with non-identifier names...
-	_constructor.name == 'Constructor'
-		&& eval('_constructor = '+ _constructor
+	_constructor.name != name
+		&& (_constructor = eval('('+ 
+			_constructor
 				.toString()
-				.replace(/Constructor/g, name))
+				.replace(/Constructor/g, name) +')'))
 	// set .toString(..)...
 	// NOTE: this test is here to enable mixinFlat(..) to overwrite 
 	// 		.toString(..) below...
