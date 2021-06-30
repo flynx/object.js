@@ -285,7 +285,7 @@ function(obj){
 	if(typeof(obj) == 'string' && arguments.length > 1){
 		;[name, obj] = arguments 
 		// sanity check...
-		if(!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(name)){
+		if(!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(name.trim())){
 			throw new Error(`create(..): invalid name: "${name}"`) } }
 	// calable...
 	if(typeof(obj) == 'function'){
@@ -298,6 +298,9 @@ function(obj){
 				// 		might not be available directly...
 				: Function.prototype.call.call(obj, func, ...arguments) }
 		// rename...
+		// NOTE: we just created func(..) so no need to sanitize it, the 
+		// 		only potential vector of atack (AFAIK) here is name and 
+		// 		that is checked above...
 		func.name = name
 		func.name != name
 			&& (func = eval('('+ 
@@ -954,7 +957,7 @@ function Constructor(name, a, b, c){
 	var args = [...arguments].slice(1, 4)
 
 	// sanity check...
-	if(!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(name)){
+	if(!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(name.trim())){
 		throw new Error(`Constructor(..): invalid name: "${name}"`) }
 
 	// parse args...
