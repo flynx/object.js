@@ -312,18 +312,7 @@ function(obj){
 					.toString()
 					.replace(/function\(/, `function ${name}(`) +')'))
 		func.__proto__ = obj
-		//* XXX DOC
-		__mirror_doc(func)
-		/*/
-		Object.defineProperty(func, 'toString', {
-			value: function(){
-				//return Object.hasOwnProperty.call(func, '__call__') ?
-				return Object.hasOwnProperty.call(this, '__call__') ?
-					this.__call__.toString()
-					: this.__proto__.toString() },
-			enumerable: false,
-		})
-		//*/
+		__toStringProxy(func)
 		return func }
 	// normal object...
 	return Object.create(obj) }
@@ -703,14 +692,15 @@ function(a, b){
 //---------------------------------------------------------------------
 // Constructor...
 
-// helper...
-// create a .toString(..) proxy...
-var __mirror_doc = 
-//module.__mirror_doc =
-function(func, constructor=null){
+// Create a .toString(..) proxy
+//
+// This is needed to show the user code instead of the library code that 
+// callas it...
+var __toStringProxy = 
+//module.__toStringProxy =
+function(func){
 	Object.defineProperty(func, 'toString', {
 		value: function(...args){
-			//* XXX DOC
 			var f = (
 				// explicitly defined .toString(..)
 				this.__proto__.toString !== Function.prototype.toString 
@@ -720,14 +710,6 @@ function(func, constructor=null){
 				: '__call__' in this ?
 					this.__call__
 				: this.__proto__)
-			/*/
-			// user-defined .toString...
-			if(constructor.prototype.toString !== Function.prototype.toString){
-				return constructor.prototype.toString.call(this, ...args) }
-			var f = typeof(constructor.prototype) == 'function' ? 
-				constructor.prototype
-				: constructor.prototype.__call__
-			//*/
 			return typeof(f) == 'function' ?
 				module.normalizeIndent(f.toString(...args))
 				: undefined },
@@ -795,7 +777,7 @@ function(context, constructor, ...args){
 	// XXX autogenerate/set .name ...
 		: (typeof(constructor.prototype) == 'function'
 				|| constructor.prototype.__call__ instanceof Function) ?
-			__mirror_doc(
+			__toStringProxy(
 				function(){
 					return (
 						// .prototype is a function...
@@ -809,8 +791,7 @@ function(context, constructor, ...args){
 								constructor.prototype, obj, [this, ...arguments])
 						// .__call__(..) or fail semi-gracefully...
 						: constructor.prototype.__call__
-							.call(obj, this, ...arguments)) },
-				constructor)
+							.call(obj, this, ...arguments)) })
 		// recursively call .__rawinstance__(..)
 		: constructor.__proto__.__rawinstance__ ?
 			constructor.__proto__.__rawinstance__(context, ...args)
