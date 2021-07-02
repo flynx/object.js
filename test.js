@@ -413,12 +413,12 @@ var modifiers = test.Modifiers({
 	gen3: function(assert, setup){
 		return this.gen2(assert, this.gen2(assert, setup), '3') },
 
-	// create instance clones via Object.create(..)
+	// create instance clones via create(..)
 	//
 	clones: function(assert, setup){
 		return instances(setup)
 			.reduce(function(res, [k, o]){
-				res[k] = Object.create(o) 
+				res[k] = object.create(o) 
 				return res }, {}) },
 
 	// generate instances...

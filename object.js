@@ -276,6 +276,9 @@ function(base, obj, non_strict){
 // 		-> func
 //
 //
+// XXX would be nice to re-use RawInstance... or use create(..) from 
+// 		RawInstance...
+// XXX should we autogenerate a descriptive name???
 // XXX revise .toString(..) creation...
 var create =
 module.create =
@@ -295,8 +298,9 @@ function(obj){
 				: 'call' in obj ?
 					obj.call(func, ...arguments)
 				// NOTE: if obj does not inherit from Function .call(..)
-				// 		might not be available directly...
-				: Function.prototype.call.call(obj, func, ...arguments) }
+				// 		might not be available directly so it is saver to
+				// 		use Reflect.apply(..)...
+				: Reflect.apply(obj, func, [...arguments]) }
 		// rename...
 		// NOTE: we just created func(..) so no need to sanitize it, the 
 		// 		only potential vector of atack (AFAIK) here is name and 
@@ -308,13 +312,18 @@ function(obj){
 					.toString()
 					.replace(/function\(/, `function ${name}(`) +')'))
 		func.__proto__ = obj
+		//* XXX DOC
+		__mirror_doc(func)
+		/*/
 		Object.defineProperty(func, 'toString', {
 			value: function(){
-				return Object.hasOwnProperty.call(func, '__call__') ?
+				//return Object.hasOwnProperty.call(func, '__call__') ?
+				return Object.hasOwnProperty.call(this, '__call__') ?
 					this.__call__.toString()
 					: this.__proto__.toString() },
 			enumerable: false,
 		})
+		//*/
 		return func }
 	// normal object...
 	return Object.create(obj) }
@@ -694,7 +703,39 @@ function(a, b){
 //---------------------------------------------------------------------
 // Constructor...
 
-// Make an uninitialized instance object...
+// helper...
+// create a .toString(..) proxy...
+var __mirror_doc = 
+//module.__mirror_doc =
+function(func, constructor=null){
+	Object.defineProperty(func, 'toString', {
+		value: function(...args){
+			//* XXX DOC
+			var f = (
+				// explicitly defined .toString(..)
+				this.__proto__.toString !== Function.prototype.toString 
+						&& this.__proto__.toString !== Object.prototype.toString ?
+					this.__proto__
+				// use .__call__...
+				: '__call__' in this ?
+					this.__call__
+				: this.__proto__)
+			/*/
+			// user-defined .toString...
+			if(constructor.prototype.toString !== Function.prototype.toString){
+				return constructor.prototype.toString.call(this, ...args) }
+			var f = typeof(constructor.prototype) == 'function' ? 
+				constructor.prototype
+				: constructor.prototype.__call__
+			//*/
+			return typeof(f) == 'function' ?
+				module.normalizeIndent(f.toString(...args))
+				: undefined },
+		enumerable: false,
+	})
+	return func }
+
+// Make an uninitialized instance from a constructor...
 //
 // 	RawInstance(context, constructor, ...)
 // 		-> instance
@@ -734,25 +775,12 @@ function(a, b){
 // 		being a function while the second is an object with a call 
 // 		method...
 // NOTE: essentially this is an extended version of Reflect.construct(..)
+//
+// XXX need a way to set .name of a callable instance...
+// XXX need to auto-generate .name for callable instances...
 var RawInstance = 
 module.RawInstance =
 function(context, constructor, ...args){
-	var _mirror_doc = function(func, target){
-		Object.defineProperty(func, 'toString', {
-			value: function(...args){
-				// user-defined .toString...
-				if(target.prototype.toString !== Function.prototype.toString){
-					return target.prototype.toString.call(this, ...args) }
-				var f = typeof(target.prototype) == 'function' ? 
-					target.prototype
-					: target.prototype.__call__
-				return typeof(f) == 'function' ?
-					module.normalizeIndent(f.toString(...args))
-					: undefined },
-			enumerable: false,
-		})
-		return func }
-
 	var obj =
 		// prototype defines .__new__(..)...
 		constructor.prototype.__new__ instanceof Function ?
@@ -764,9 +792,10 @@ function(context, constructor, ...args){
 		// NOTE: we need to isolate the callable from instances, thus we
 		// 		reference 'constructor' directly rather than using 
 		// 		'this.constructor'...
+	// XXX autogenerate/set .name ...
 		: (typeof(constructor.prototype) == 'function'
 				|| constructor.prototype.__call__ instanceof Function) ?
-			_mirror_doc(
+			__mirror_doc(
 				function(){
 					return (
 						// .prototype is a function...
@@ -947,8 +976,6 @@ function(context, constructor, ...args){
 // 		though the typeof(..) == 'function' will always work.
 // NOTE: this will fail with non-identifier names...
 // 		XXX is this a bug or a feature??? =)
-//
-// XXX need a way to set .name of a callable instance...
 var Constructor = 
 module.Constructor =
 // shorthand...
