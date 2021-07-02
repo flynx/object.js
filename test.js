@@ -619,14 +619,18 @@ var tests = test.Tests({
 
 var cases = test.Cases({
 	'edge-cases': function(assert){
+		// bad names...
+		assert.error('Constructor(..): malformed name', 
+			function(){
+				var X = object.Constructor('bad name', {}) })
+		assert.error('create(..): malformed name',
+			function(){
+				object.create('bad name', function(){}) })
 
 		assert.error('double __extends__ fail', function(){
-			var X = object.C('X', {
-				__extends__: Object,
-			}, {
-				__extends__: Function,
-			})
-		})
+			var X = object.C('X', 
+				{ __extends__: Object }, 
+				{ __extends__: Function }) })
 
 		// native constructor...
 		assert.array(
@@ -674,6 +678,7 @@ var cases = test.Cases({
 			object.values(obj, 'x', function(){ return object.STOP(555) }, true)[0] == 555,
 			// XXX assert ignores the order here -- this should fail...
 			'.values(.., func, true) with explicit stop value')
+
 	},
 	deepKeys: function(assert){
 		var a = {
@@ -812,6 +817,61 @@ var cases = test.Cases({
 		assert.array(a(), ['A'], 'call')
 		assert.array(b(), ['A', 'B'], 'call')
 		assert.array(c(), ['A', 'B', 'C'], 'call')
+	},
+
+	'docs': function(assert){
+
+		var func = function(){
+			console.log('some string...') }
+		var func_w_tostring = Object.assign(
+			function(){
+				console.log('some string...') },
+				{ toString: function(){ 
+					return 'func_w_tostring(){ .. }' } })
+
+		assert(
+			object.create(func).toString() == object.normalizeIndent(func.toString()),
+			'create(..): function .toString() proxy (builtin).')
+		assert(
+			object.create(func_w_tostring).toString() == func_w_tostring.toString(),
+			'create(..): function .toString() proxy (custom).')
+
+		var callable_a = 
+			object.Constructor('callable_a', 
+				function(){
+					console.log(this.constructor.name) })()
+		var callable_b = 
+			object.Constructor('callable_b', {
+				__call__: function(){
+					console.log(this.constructor.name) },
+			})()
+		var callable_c = 
+			object.Constructor('callable_c', {
+				__call__: function(){
+					console.log(this.constructor.name) },
+				toString: function(){
+					return this.constructor.name + '.toString()' },
+			})()
+
+		assert(
+			callable_b.toString() == object.normalizeIndent(callable_b.__call__.toString()),
+			'toString(..) proxy to .__call__(..)')
+		assert(
+			callable_b.toString() != object.normalizeIndent(callable_b.__proto__.toString()),
+			'toString(..) proxy not to .__proto__.toString(..)')
+		assert(
+			callable_c.toString() == callable_c.__proto__.toString(),
+			'toString(..) proxy to .toString(..)')
+
+		assert(
+			object.create(callable_a).toString() == callable_a.toString(),
+			'create(..): callable .toString() proxy (func).')
+		assert(
+			object.create(callable_b).toString() == callable_b.toString(),
+			'create(..): callable .toString() proxy (__call__).')
+		assert(
+			object.create(callable_c).toString() == callable_c.toString(),
+			'create(..): callable .toString() proxy (__call__ w. custom toString).')
 	},
 })
 

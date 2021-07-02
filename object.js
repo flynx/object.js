@@ -292,6 +292,7 @@ function(obj){
 			throw new Error(`create(..): invalid name: "${name}"`) } }
 	// calable...
 	if(typeof(obj) == 'function'){
+        /* c8 ignore next 9 */
 		var func = function(){
 			return '__call__' in func ?
 					func.__call__(this, ...arguments)
@@ -710,9 +711,12 @@ function(func){
 				: '__call__' in this ?
 					this.__call__
 				: this.__proto__)
+			return module.normalizeIndent(f.toString(...args)) },
+			/*/
 			return typeof(f) == 'function' ?
 				module.normalizeIndent(f.toString(...args))
 				: undefined },
+			//*/
 		enumerable: false,
 	})
 	return func }
