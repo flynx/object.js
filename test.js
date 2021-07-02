@@ -829,13 +829,6 @@ var cases = test.Cases({
 				{ toString: function(){ 
 					return 'func_w_tostring(){ .. }' } })
 
-		assert(
-			object.create(func).toString() == object.normalizeIndent(func.toString()),
-			'create(..): function .toString() proxy (builtin).')
-		assert(
-			object.create(func_w_tostring).toString() == func_w_tostring.toString(),
-			'create(..): function .toString() proxy (custom).')
-
 		var callable_a = 
 			object.Constructor('callable_a', 
 				function(){
@@ -853,6 +846,7 @@ var cases = test.Cases({
 					return this.constructor.name + '.toString()' },
 			})()
 
+		// .toString(..)
 		assert(
 			callable_b.toString() == object.normalizeIndent(callable_b.__call__.toString()),
 			'toString(..) proxy to .__call__(..)')
@@ -862,6 +856,14 @@ var cases = test.Cases({
 		assert(
 			callable_c.toString() == callable_c.__proto__.toString(),
 			'toString(..) proxy to .toString(..)')
+
+		// create(..)...
+		assert(
+			object.create(func).toString() == object.normalizeIndent(func.toString()),
+			'create(..): function .toString() proxy (builtin).')
+		assert(
+			object.create(func_w_tostring).toString() == func_w_tostring.toString(),
+			'create(..): function .toString() proxy (custom).')
 
 		assert(
 			object.create(callable_a).toString() == callable_a.toString(),

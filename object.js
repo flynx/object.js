@@ -701,7 +701,7 @@ var __toStringProxy =
 //module.__toStringProxy =
 function(func){
 	Object.defineProperty(func, 'toString', {
-		value: function(...args){
+		value: function toString(...args){
 			var f = (
 				// explicitly defined .toString(..)
 				this.__proto__.toString !== Function.prototype.toString 
@@ -712,11 +712,6 @@ function(func){
 					this.__call__
 				: this.__proto__)
 			return module.normalizeIndent(f.toString(...args)) },
-			/*/
-			return typeof(f) == 'function' ?
-				module.normalizeIndent(f.toString(...args))
-				: undefined },
-			//*/
 		enumerable: false,
 	})
 	return func }
@@ -1058,7 +1053,7 @@ function Constructor(name, a, b, c){
 	;((constructor_mixin || {}).toString === Function.prototype.toString
 			|| (constructor_mixin || {}).toString === Object.prototype.toString)
 		&& Object.defineProperty(_constructor, 'toString', {
-			value: function(){ 
+			value: function toString(){ 
 				var args = proto.__init__ ?
 					proto.__init__
 						.toString()
@@ -1076,7 +1071,7 @@ function Constructor(name, a, b, c){
 	// set generic raw instance constructor...
 	_constructor.__rawinstance__ instanceof Function
 		|| Object.defineProperty(_constructor, '__rawinstance__', {
-				value: function(context, ...args){
+				value: function __rawinstance__(context, ...args){
 					return RawInstance(context, this, ...args) },
 				enumerable: false,
 			})
