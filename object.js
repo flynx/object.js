@@ -292,6 +292,8 @@ function(obj){
 			throw new Error(`create(..): invalid name: "${name}"`) } }
 	// calable...
 	if(typeof(obj) == 'function'){
+		// NOTE: this is ignored by c8 as we will never run this directly 
+		// 		as it will immediately get eval(..)'ed...
         /* c8 ignore next 9 */
 		var func = function(){
 			return '__call__' in func ?
@@ -955,7 +957,47 @@ function(context, constructor, ...args){
 // 		to be rooted in Function.
 // 		though the typeof(..) == 'function' will always work.
 // NOTE: this will fail with non-identifier names...
-// 		XXX is this a bug or a feature??? =)
+// NOTE: a bit more obvious syntax could be something like:
+// 			var A = Constructor('A', {
+// 				__proto__: B,
+//
+// 				// constructor stuff...
+//
+// 				prototype: {
+// 					// instance stuff...
+// 				}
+// 			})
+// 		vs:
+// 			var A = Constructor('A', B, {
+// 				// constructor stuff...
+//
+// 			}, {
+// 				// instance stuff...
+// 			})
+// 		this though a bit more obvious is in the general case can be 
+// 		more verbose, i.e. on the top level we define the constructor 
+// 		stuff which in the general case secondary while .prototype is a 
+// 		level below that while in use it's the main functionality... so,
+// 		this is a question of ease of use vs. mirroring the JS structure,
+// 		the answer chosen here is to prioritize simplicity and conciseness
+// 		over verbose mirroring...
+//		XXX needs revision from time to time...
+//		XXX might be a good idea to implement the above syntax and test 
+//			it out...
+//				Constructor(<name>[, <parent>], <mirror-block>)
+//				Constructor(<name>[, <parent>], <prototype-block>)
+//				Constructor(<name>[, <parent>], <prototype-block>, <prototype-block>)
+//
+//				<mirror-block> ::=
+//					{
+//						...
+//
+//						prototype: {
+//							...
+//						},
+//					}
+//			The only questions here is weather a set .prototype is a good 
+//			enough indicator and should we use .__proto__?
 var Constructor = 
 module.Constructor =
 // shorthand...
@@ -1015,6 +1057,8 @@ function Constructor(name, a, b, c){
 			&& (proto.__proto__ = constructor_proto.prototype) }
 
 	// the constructor base... 
+	// NOTE: this is ignored by c8 as we will never run this directly as
+	// 		it will immediately get eval(..)'ed...
 	/* c8 ignore next 9 */
 	var _constructor = function Constructor(){
 		// create raw instance...
