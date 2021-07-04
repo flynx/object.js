@@ -1003,22 +1003,32 @@ module.Constructor =
 // shorthand...
 module.C =
 function Constructor(name, a, b, c){
-	var args = [...arguments].slice(1, 4)
-
 	// sanity check...
 	if(!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(name.trim())){
 		throw new Error(`Constructor(..): invalid name: "${name}"`) }
 
 	// parse args...
+	var args = [...arguments].slice(1, 4)
+
 	// 	Constructor(name[[, constructor[, mixin]], proto])
 	var proto = args.pop() || {}
-	var constructor_proto = typeof(args[0]) == 'function' ?
-		args.shift()
-		: undefined
+	var constructor_proto = 
+		typeof(args[0]) == 'function' ?
+			args.shift()
+			: undefined
 	var constructor_mixin = args.pop()
 
-	// handle: 
-	// 	Constructor(name, constructor, ..)
+	/* XXX EXPERIMENTAL...
+	// handle: Constructor(name[, constructor], { prototype: { .. }, .. })
+	//
+	if(proto.hasOwnProperty('prototype') 
+			&& proto.prototype){
+		console.log('>>>>', name)
+		constructor_mixin = proto
+		proto = proto.prototype }
+	//*/
+
+	// handle: Constructor(name, constructor, ..)
 	//
 	// NOTE: this is a bit too functional in style by an if-tree would 
 	// 		be more bulky and less readable...
