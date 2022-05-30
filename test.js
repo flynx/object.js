@@ -684,10 +684,16 @@ var cases = test.Cases({
 		var a = {
 			a: true
 		}
+
 		var b = {
 			__proto__: a,
 			b: true,
 		}
+		Object.defineProperty(b, 'h', {
+			enumerable: false,
+			value: true,
+		})
+
 		var c = {
 			__proto__: b,
 			c: true,
@@ -698,6 +704,11 @@ var cases = test.Cases({
 		assert.array(object.deepKeys(c, b), ['c', 'b'], 'partial chain')
 		assert.array(object.deepKeys(c, c), ['c'], 'partial chain')
 
+		var o = Object.keys(Object.getOwnPropertyDescriptors(Object.prototype))
+		assert.array(object.deepKeys(c, true), ['c', 'b', 'h', 'a', ...o], 'full chain (non-enumerable)')
+		assert.array(object.deepKeys(c, a, true), ['c', 'b', 'h', 'a'], 'full chain (non-enumerable)')
+		assert.array(object.deepKeys(c, b, true), ['c', 'b', 'h'], 'partial chain (non-enumerable)')
+		assert.array(object.deepKeys(c, c, true), ['c'], 'partial chain (non-enumerable)')
 	},
 	funcMethods: function(assert){
 		var X = object.C('X', {

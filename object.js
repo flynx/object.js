@@ -183,19 +183,34 @@ function(strings, ...values){
 
 // Get keys from prototype chain...
 //
-// 	deepKeys(obj)
-// 	deepKeys(obj, stop)
+// 	deepKeys(obj[, all])
+// 	deepKeys(obj, stop[, all])
+// 		-> keys
+//
+// 	List all keys incuding non-enumerable...
+// 	deepKeys(obj, true)
+// 	deepKeys(obj, stop, true)
 // 		-> keys
 //
 //
 // NOTE: this is like Object.keys(..) but will get keys for all levels 
 // 		till stop if given...
+// NOTE: by default this lists only enumerable keys...
 var deepKeys =
 module.deepKeys =
-function(obj, stop){
+function(obj, stop, all){
+	all = arguments[arguments.length-1]
+	all = (all === true || all === false) ?
+		all
+		: false
+	stop = (stop === true || stop === false) ? 
+		undefined 
+		: stop
 	var res = []
 	while(obj != null){
-		res.push(Object.keys(obj))
+		res.push(Object.keys(all ?
+			Object.getOwnPropertyDescriptors(obj)
+			: obj))
 		if(obj === stop){
 			break }
 		obj = obj.__proto__ }
