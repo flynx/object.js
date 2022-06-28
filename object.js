@@ -49,7 +49,9 @@ module.LINK_FUNCTION_METHODS = [
 //
 var BOOTSTRAP = 
 function(func){
-	var b = BOOTSTRAP.__delayed = BOOTSTRAP.__delayed || []
+	var b = BOOTSTRAP.__delayed = 
+		BOOTSTRAP.__delayed 
+			|| []
 	func ?
 		b.push(func)
 		: b.map(function(f){ f() }) }
@@ -250,7 +252,8 @@ function(base, obj, non_strict){
 		return false }
 	// attr count...
 	var o = Object.keys(Object.getOwnPropertyDescriptors(obj))
-	if(Object.keys(Object.getOwnPropertyDescriptors(base)).length != o.length){
+	if(Object.keys(Object.getOwnPropertyDescriptors(base)).length 
+			!= o.length){
 		return false }
 	// names and values...
 	o = o.map(function(k){
@@ -300,7 +303,8 @@ module.create =
 function(obj){
 	// name given...
 	var name = ''
-	if(typeof(obj) == 'string' && arguments.length > 1){
+	if(typeof(obj) == 'string' 
+			&& arguments.length > 1){
 		;[name, obj] = arguments 
 		// sanity check...
 		if(!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(name.trim())){
@@ -346,17 +350,19 @@ BOOTSTRAP(function(){
 	//
 	// XXX EXPERIMENTAL
 	module.Error =
-	Constructor('Error', Error, {
-		get name(){
-			return this.constructor.name },
+		Constructor('Error', Error, {
+			get name(){
+				return this.constructor.name },
 
-		// XXX BUG? is this an error that with this everything seems to work
-		// 		while without this instances of this work fine while instances 
-		// 		of "sub-classes" do not set the .stack correctly???
-		// 		...is this a JS quirk or am I missing something???
-		__new__: function(context, ...args){
-			return Reflect.construct(module.Error.__proto__, args, this.constructor) },
-			//return Reflect.construct(Error, args, this.constructor) },
+			// XXX BUG? is this an error that with this everything seems
+			// 		to work while without this instances of this work
+			// 		fine while instances of "sub-classes" do not set 
+			// 		the .stack correctly???
+			// 		...is this a JS quirk or am I missing something???
+			__new__: function(context, ...args){
+				return Reflect.construct(
+					module.Error.__proto__, args, this.constructor) },
+				//return Reflect.construct(Error, args, this.constructor) },
 	})
 
 })
@@ -370,14 +376,72 @@ BOOTSTRAP(function(){
 	// Value trigger iteration stop and to carry results...
 	//
 	module.STOP = 
-	Constructor('STOP', {
-		doc: 'stop iteration.',
-		__init__: function(value){
-			this.value = value },
-	})
+		Constructor('STOP', {
+			doc: 'stop iteration.',
+			__init__: function(value){
+				this.value = value },
+		})
 
 })
 
+
+// XXX should this be global???
+var Generator = 
+module.Generator =
+	(function*(){}).constructor
+
+
+// XXX should this be global???
+var AsyncGenerator =
+module.AsyncGenerator =
+	(async function*(){}).constructor
+
+// XXX should we have a generic generator that cand return STOP???
+
+// XXX
+var stoppable =
+module.stoppable =
+function(func){
+	return Object.assign(
+		func instanceof Generator ?
+			// NOTE: the only difference between Generator/AsyncGenerator 
+			// 		versions of this is the async keyword -- keep them 
+			// 		in sync...
+			function*(){
+				try{
+					yield* func.call(this, ...arguments)
+				} catch(err){
+					if(err === STOP){
+						return
+					} else if(err instanceof STOP){
+						yield err.value
+						return }
+					throw err } }
+		: func instanceof AsyncGenerator ?
+			// NOTE: the only difference between Generator/AsyncGenerator 
+			// 		versions of this is the async keyword -- keep them 
+			// 		in sync...
+			async function*(){
+				try{
+					yield* func.call(this, ...arguments)
+				} catch(err){
+					if(err === STOP){
+						return
+					} else if(err instanceof STOP){
+						yield err.value
+						return }
+					throw err } }
+		: function(){
+			try{
+				return func.call(this, ...arguments)
+			} catch(err){
+				if(err === STOP){
+					return
+				} else if(err instanceof STOP){
+					return err.value }
+				throw err } },
+		{ toString: function(){
+			return func.toString() }, }) }
 
 
 // Get a list of source objects for a prop/attr name...
@@ -421,7 +485,7 @@ BOOTSTRAP(function(){
 // 	- other			- return a value instead of the triggering object.
 //
 //
-// NOTE: this gos up the prototype chain, not caring about any role (
+// NOTE: this goes up the prototype chain, not caring about any role (
 // 		instance/class or instance/prototype) bounderies and depends 
 // 		only on the object given as the starting point.
 // 		It is possible to start the search from this, thus checking
