@@ -390,7 +390,39 @@ BOOTSTRAP(function(){
 })
 
 
-// XXX
+// Wrap a callable in a STOP handler
+//
+// 	stoppable(func)
+// 		-> func
+//
+// 	stoppable(gen)
+// 		-> gen
+//
+// 	stoppable(asyncgen)
+// 		-> asyncgen
+//
+//
+// The client callable can be one of:
+// 	- function
+// 	- generator
+// 	- async generator
+//
+// The returned callable will be of the same type as the input callable.
+//
+// The wrapper handles STOP slightly differently if the client is a 
+// function or if it is a generator / async generator:
+// 	- function
+// 		STOP returned / thrown
+// 			-> return undefined
+// 		STOP(value) returned / thrown
+// 			-> return value
+// 	- generator / async generator
+// 		STOP yielded / thrown
+// 			-> iteration stops
+// 		STOP(value) yielded / thrown
+// 			-> value yielded and iteration stops
+//
+// XXX should we use this for sources(..) and friends...
 var stoppable =
 module.stoppable =
 function(func){
