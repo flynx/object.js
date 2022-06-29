@@ -397,9 +397,6 @@ module.AsyncGenerator =
 	(async function*(){}).constructor
 
 
-// XXX should we have a generic generator that cand return STOP???
-
-
 // XXX
 var stoppable =
 module.stoppable =
