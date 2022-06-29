@@ -491,10 +491,12 @@ function(func){
 //---------------------------------------------------------------------
 // Prototype chain content access...
 
+// XXX EXPEREMENTAL...
+// 		should we support multple names???
 // XXX
 var _sources =
 module._sources =
-function*(obj, name){
+function*(obj, name=undefined){
 	while(obj != null){
 		if(name === undefined
 				|| obj.hasOwnProperty(name)
