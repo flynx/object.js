@@ -344,6 +344,18 @@ function(obj){
 //---------------------------------------------------------------------
 // Helper objects/constructors...
 
+// NOTE: these are missing from JavaScript for some reason...
+//
+// XXX should these be global???
+var Generator = 
+module.Generator =
+	(function*(){}).constructor
+
+var AsyncGenerator =
+module.AsyncGenerator =
+	(async function*(){}).constructor
+
+
 BOOTSTRAP(function(){
 
 	// Error with some JS quirks fixed...
@@ -365,13 +377,6 @@ BOOTSTRAP(function(){
 				//return Reflect.construct(Error, args, this.constructor) },
 	})
 
-})
-
-
-//---------------------------------------------------------------------
-// Prototype chain content access...
-
-BOOTSTRAP(function(){
 
 	// Value trigger iteration stop and to carry results...
 	//
@@ -385,18 +390,6 @@ BOOTSTRAP(function(){
 })
 
 
-// XXX should this be global???
-var Generator = 
-module.Generator =
-	(function*(){}).constructor
-
-
-// XXX should this be global???
-var AsyncGenerator =
-module.AsyncGenerator =
-	(async function*(){}).constructor
-
-
 // XXX
 var stoppable =
 module.stoppable =
@@ -408,9 +401,6 @@ function(func){
 			// 		in sync...
 			function*(){
 				try{
-					/* XXX should we return STOP???
-					yield* func.call(this, ...arguments)
-					/*/
 					for(var res of func.call(this, ...arguments)){
 						if(res === STOP){
 							return }
@@ -418,7 +408,6 @@ function(func){
 							yield res.value
 							return }
 						yield res }
-					//*/
 				} catch(err){
 					if(err === STOP){
 						return
@@ -432,9 +421,6 @@ function(func){
 			// 		in sync...
 			async function*(){
 				try{
-					/* XXX should we return STOP???
-					yield* func.call(this, ...arguments)
-					/*/
 					for(var res of func.call(this, ...arguments)){
 						if(res === STOP){
 							return }
@@ -442,7 +428,6 @@ function(func){
 							yield res.value
 							return }
 						yield res }
-					//*/
 				} catch(err){
 					if(err === STOP){
 						return
@@ -452,16 +437,13 @@ function(func){
 					throw err } }
 		: function(){
 			try{
-				/* XXX should we return STOP???
-				return func.call(this, ...arguments)
-				/*/
 				var res = func.call(this, ...arguments)
+				// NOTE: this is here for uniformity...
 				if(res === STOP){
 					return }
 				if(res instanceof STOP){
 					return res.value }
 				return res
-				//*/
 			} catch(err){
 				if(err === STOP){
 					return
@@ -470,6 +452,11 @@ function(func){
 				throw err } },
 		{ toString: function(){
 			return func.toString() }, }) }
+
+
+
+//---------------------------------------------------------------------
+// Prototype chain content access...
 
 
 // Get a list of source objects for a prop/attr name...
@@ -1596,4 +1583,4 @@ BOOTSTRAP()
 
 
 /**********************************************************************
-* vim:set ts=4 sw=4 :                               */ return module })
+* vim:set ts=4 sw=4 nowrap :                        */ return module })
