@@ -396,7 +396,9 @@ var AsyncGenerator =
 module.AsyncGenerator =
 	(async function*(){}).constructor
 
+
 // XXX should we have a generic generator that cand return STOP???
+
 
 // XXX
 var stoppable =
@@ -409,7 +411,17 @@ function(func){
 			// 		in sync...
 			function*(){
 				try{
+					/* XXX should we return STOP???
 					yield* func.call(this, ...arguments)
+					/*/
+					for(var res of func.call(this, ...arguments)){
+						if(res === STOP){
+							return }
+						if(res instanceof STOP){
+							yield res.value
+							return }
+						yield res }
+					//*/
 				} catch(err){
 					if(err === STOP){
 						return
@@ -423,7 +435,17 @@ function(func){
 			// 		in sync...
 			async function*(){
 				try{
+					/* XXX should we return STOP???
 					yield* func.call(this, ...arguments)
+					/*/
+					for(var res of func.call(this, ...arguments)){
+						if(res === STOP){
+							return }
+						if(res instanceof STOP){
+							yield res.value
+							return }
+						yield res }
+					//*/
 				} catch(err){
 					if(err === STOP){
 						return
@@ -433,7 +455,16 @@ function(func){
 					throw err } }
 		: function(){
 			try{
+				/* XXX should we return STOP???
 				return func.call(this, ...arguments)
+				/*/
+				var res = func.call(this, ...arguments)
+				if(res === STOP){
+					return }
+				if(res instanceof STOP){
+					return res.value }
+				return res
+				//*/
 			} catch(err){
 				if(err === STOP){
 					return
