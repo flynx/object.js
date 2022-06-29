@@ -422,6 +422,7 @@ BOOTSTRAP(function(){
 // 		STOP(value) yielded / thrown
 // 			-> value yielded and iteration stops
 //
+// XXX doc!!!
 // XXX should we use this for sources(..) and friends...
 var stoppable =
 module.stoppable =
@@ -490,6 +491,43 @@ function(func){
 //---------------------------------------------------------------------
 // Prototype chain content access...
 
+// XXX
+var _sources =
+module._sources =
+function*(obj, name){
+	while(obj != null){
+		if(name === undefined
+				|| obj.hasOwnProperty(name)
+				|| (name == '__call__' 
+					&& typeof(obj) == 'function')){
+			yield obj }
+		obj = obj.__proto__ } }
+
+// XXX
+var _entries =
+module._entries =
+function*(obj, name, props=false){
+	for(var o of _sources(obj, name)){
+		yield [
+			obj, 
+			props ?
+				Object.getOwnPropertyDescriptor(obj, name)
+			// handle callable instance...
+			: !(name in obj) 
+					&& name == '__call__' 
+					&& typeof(obj) == 'function' ?
+				obj
+			: obj[name]
+		] }}
+
+// XXX
+var _values =
+module._values =
+function*(obj, name, props=false){
+	for(var [_, value] of _entries(...arguments)){
+		yield value }}
+
+
 
 // Get a list of source objects for a prop/attr name...
 //
@@ -545,8 +583,7 @@ function(obj, name, callback){
 	// get full chain...
 	if(typeof(name) == 'function'){
 		callback = name
-		name = undefined
-	}
+		name = undefined }
 	var i = 0
 	var o
 	var res = []
@@ -571,6 +608,7 @@ function(obj, name, callback){
 				return res.flat() } }
 		obj = obj.__proto__ }
 	return res.flat() }
+
 
 
 // Get a list of values/props set in source objects for a prop/attr name...
