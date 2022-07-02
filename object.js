@@ -422,7 +422,11 @@ BOOTSTRAP(function(){
 // 		STOP(value) yielded / thrown
 // 			-> value yielded and iteration stops
 //
-// XXX doc!!!
+//
+// NOTE: this repeats the same code at lest twice, not sure yet how to avoid 
+// 		this...
+//
+// XXX user doc!!!
 // XXX should we use this for sources(..) and friends...
 var stoppable =
 module.stoppable =
