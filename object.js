@@ -499,7 +499,7 @@ function(func){
 // 		should we support multple names???
 // XXX replace the current version with these..c
 // 		...this will lead to breaking API..
-ear _sources =
+var _sources =
 module._sources =
 function*(obj, name=undefined){
 	while(obj != null){
