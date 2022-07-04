@@ -375,7 +375,7 @@ BOOTSTRAP(function(){
 				return Reflect.construct(
 					module.Error.__proto__, args, this.constructor) },
 				//return Reflect.construct(Error, args, this.constructor) },
-	})
+		})
 
 
 	// Value trigger iteration stop and to carry results...
@@ -422,7 +422,11 @@ BOOTSTRAP(function(){
 // 		STOP(value) yielded / thrown
 // 			-> value yielded and iteration stops
 //
-// XXX doc!!!
+//
+// NOTE: this repeats the same code at lest twice, not sure yet how to avoid 
+// 		this...
+//
+// XXX user doc!!!
 // XXX should we use this for sources(..) and friends...
 var stoppable =
 module.stoppable =
@@ -495,8 +499,7 @@ function(func){
 // 		should we support multple names???
 // XXX replace the current version with these...
 // 		...this will lead to breaking API..
-// XXX
-ear _sources =
+var _sources =
 module._sources =
 function*(obj, name=undefined){
 	while(obj != null){
