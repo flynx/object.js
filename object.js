@@ -493,8 +493,9 @@ function(func){
 
 // XXX EXPEREMENTAL...
 // 		should we support multple names???
-// XXX replace the current version with these..c
+// XXX replace the current version with these...
 // 		...this will lead to breaking API..
+// XXX
 ear _sources =
 module._sources =
 function*(obj, name=undefined){
