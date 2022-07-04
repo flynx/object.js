@@ -375,7 +375,7 @@ BOOTSTRAP(function(){
 				return Reflect.construct(
 					module.Error.__proto__, args, this.constructor) },
 				//return Reflect.construct(Error, args, this.constructor) },
-	})
+		})
 
 
 	// Value trigger iteration stop and to carry results...
