@@ -235,8 +235,8 @@ function(obj, stop, all){
 // 	Non-strict match...
 // 	match(a, b, true)
 //
-// 	This is similar to the default case but uses equality rather than 
-// 	identity to match values.
+// This is similar to the default case but uses equality rather than 
+// identity to match values.
 //
 //
 // NOTE: this will do a shallow test using Object.keys(..) thus .__proto__
@@ -422,7 +422,11 @@ BOOTSTRAP(function(){
 // 		STOP(value) yielded / thrown
 // 			-> value yielded and iteration stops
 //
-// XXX doc!!!
+//
+// NOTE: this repeats the same code at lest twice, not sure yet how to avoid 
+// 		this...
+//
+// XXX user doc!!!
 // XXX should we use this for sources(..) and friends...
 var stoppable =
 module.stoppable =
@@ -493,7 +497,8 @@ function(func){
 
 // XXX EXPEREMENTAL...
 // 		should we support multple names???
-// XXX
+// XXX replace the current version with these..c
+// 		...this will lead to breaking API..
 var _sources =
 module._sources =
 function*(obj, name=undefined){
