@@ -328,20 +328,20 @@ var setups = test.Setups({
 				method: function(){
 					var x, y
 					assert.array(
-						[...object._values(c, 'x')], 
+						[...object.values(c, 'x')], 
 						['c', 'a', 'b'], 
 							'reach all values of attr')
 					assert.array(
-						[...object._values(c, 'x')]
+						[...object.values(c, 'x')]
 							.map(function(v){
 								return v.toUpperCase() }), 
 						['C', 'A', 'B'], 
 							'reach all values of attr')
 					assert.array(
-						[...object._sources(c, 'method')],
+						[...object.sources(c, 'method')],
 						// NOTE: not passing an explicit list as we need 
 						// 		to account for mixins...
-						[...object._sources(c)]
+						[...object.sources(c)]
 							.filter(function(s){ 
 								return s.hasOwnProperty('method') }), 
 							'reach all values of method')
@@ -377,17 +377,17 @@ var setups = test.Setups({
 				method(){
 					// XXX this is almost the same as for js_prototype...
 					assert.array(
-						[...object._values(c, 'x')], 
+						[...object.values(c, 'x')], 
 						['z', 'y', 'x'], 
 							'reach all values of attr (class)')
 					assert.array(
-						[...object._values(c, 'x')]
+						[...object.values(c, 'x')]
 							.map(function(v){
 								return v.toUpperCase() }), 
 						['C', 'A', 'B'], 
 							'reach all values of attr (class)')
 					assert.array(
-						[...object._sources(c, 'method')], 
+						[...object.sources(c, 'method')], 
 						[Z.prototype, X.prototype], 
 							'reach all values of method (class)')
 					assert(
@@ -580,12 +580,12 @@ var tests = test.Tests({
 		var test = function(obj, name){
 			var a, b
 			return assert(arrayCmp(
-				a = [...object._values(obj, '__call__')]
+				a = [...object.values(obj, '__call__')]
 					.map(function(func){
 						return func.call(obj) })
 					.flat(), 
 				// get all callables in prototype chain and call them...
-				b = [...object._sources(obj)]
+				b = [...object.sources(obj)]
 					.filter(function(o){ 
 						return typeof(o) == 'function' 
 							|| o.hasOwnProperty('__call__') })
@@ -663,7 +663,7 @@ var cases = test.Cases({
 		obj.x = 321
 
 		assert.array(
-			[...object._values(obj, 'x', true)]
+			[...object.values(obj, 'x', true)]
 				.map(function(e){ return e.value }),
 			// XXX assert ignores the order here -- this should fail...
 			[123, 321], '.values(.., true) ')

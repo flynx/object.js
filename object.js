@@ -378,12 +378,29 @@ BOOTSTRAP(function(){
 //---------------------------------------------------------------------
 // Prototype chain content access...
 
-// XXX EXPEREMENTAL...
-// 		should we support multple names???
-// XXX replace the current version with these...
-// 		...this will lead to breaking API..
-var _sources =
-module._sources =
+// Get source objects for a prop/attr name...
+//
+// 	sources(obj, name)
+// 		-> iterator
+//
+// 	Get full chain...
+// 	sources(obj)
+// 		-> iterator
+//
+// 	Get callables or objects defining .__call__ (special-case)
+// 	sources(obj, '__call__')
+// 		-> iterator
+//
+//
+// NOTE: this goes up the prototype chain, not caring about any role (
+// 		instance/class or instance/prototype) bounderies and depends 
+// 		only on the object given as the starting point.
+// 		It is possible to start the search from this, thus checking
+// 		for any overloading in the instance, though this approach is 
+// 		not very reusable....
+// NOTE: this will not trigger any props...
+var sources =
+module.sources =
 function*(obj, name=undefined){
 	while(obj != null){
 		if(name === undefined
@@ -393,11 +410,34 @@ function*(obj, name=undefined){
 			yield obj }
 		obj = obj.__proto__ } }
 
-// XXX
-var _entries =
-module._entries =
+
+// Get object-value/prop pairs set in source objects for a prop/attr name...
+// 	
+// 	entries(obj, name)
+// 		-> iterator
+//
+// 	Get propery descriptors...
+// 	entries(obj, name, true)
+// 		-> iterator
+//
+//
+// Item format:
+// 	[
+// 		object,
+// 		value,
+// 	]
+//
+//
+// Special case: name is given as '__call__'
+// 		This will return either the value the object if it is callable 
+// 		or the value of .__call__ attribute...
+//
+//
+// NOTE: for more docs see sources(..)
+var entries =
+module.entries =
 function*(obj, name, props=false){
-	for(var o of _sources(obj, name)){
+	for(var o of sources(obj, name)){
 		yield [
 			obj, 
 			props ?
@@ -410,155 +450,23 @@ function*(obj, name, props=false){
 			: obj[name],
 		] }}
 
-// XXX
-var _values =
-module._values =
-function*(obj, name, props=false){
-	for(var [_, value] of _entries(...arguments)){
-		yield value }}
 
-
-
-// Get a list of source objects for a prop/attr name...
+// Get values/props set in source objects for a prop/attr name...
 //
-// 	sources(obj, name)
-// 	sources(obj, name, callback)
-// 		-> list
-// 		-> []
-// 		
-// 	Get callables or objects defining .__call__ (special-case)
-// 	sources(obj, '__call__')
-// 	sources(obj, '__call__', callback)
-// 		-> list
-// 		-> []
-//
-// 	Get full chain...
-// 	sources(obj)
-// 	sources(obj, callback)
-// 		-> list
-//
-// 		
-// 	callback(obj, i)
-// 		-> STOP
-// 		-> STOP(value)
-// 		-> ..
-// 		
-//
-// The callback(..) is called with each matching object.
-//
-// callback(..) return values:
-// 	- STOP			- stop the search and return the match list terminated
-// 						with the object triggering the stop.
-// 	- STOP(value)	- stop the search and return the match list terminated
-// 						with the value passed to STOP(..)
-// 	- undefined		- return the triggering object as-is
-// 						NOTE: this is the same as returning [obj]
-// 	- array			- merge array content into the result insteaad of 
-// 						the triggering value.
-// 						NOTE: an ampty array will effectively omit the 
-// 							triggering object from the results.
-// 	- other			- return a value instead of the triggering object.
-//
-//
-// NOTE: this goes up the prototype chain, not caring about any role (
-// 		instance/class or instance/prototype) bounderies and depends 
-// 		only on the object given as the starting point.
-// 		It is possible to start the search from this, thus checking
-// 		for any overloading in the instance, though this approach is 
-// 		not very reusable....
-// NOTE: this will not trigger any props...
-var sources =
-module.sources =
-function(obj, name, callback){
-	// get full chain...
-	if(typeof(name) == 'function'){
-		callback = name
-		name = undefined }
-	var i = 0
-	var o
-	var res = []
-	while(obj != null){
-		//if(obj.hasOwnProperty(name)){
-		if(name === undefined
-				|| obj.hasOwnProperty(name) 
-				|| (name == '__call__' && typeof(obj) == 'function')){
-			// handle callback...
-			o = callback
-				&& callback(obj, i++)
-			// manage results...
-			res.push(
-				(o === undefined || o === module.STOP) ?
-					[obj]
-				: o instanceof module.STOP ?
-					o.value
-				: o )
-			// stop...
-			if(o === module.STOP 
-					|| o instanceof module.STOP){
-				return res.flat() } }
-		obj = obj.__proto__ }
-	return res.flat() }
-
-
-
-// Get a list of values/props set in source objects for a prop/attr name...
-//
-// 	Get values...
 // 	values(obj, name)
-// 	values(obj, name, callback)
-// 		-> list
-// 		-> []
-// 		
+// 		-> iterator
+//
 // 	Get propery descriptors...
 // 	values(obj, name, true)
-// 	values(obj, name, callback, true)
-// 		-> list
-// 		-> []
-// 		
-// 	callback(value/prop, obj)
-// 		-> STOP
-// 		-> STOP(value)
-// 		-> ..
-// 		
-//
-// Special case: name is given as '__call__'
-// 		This will return either the value the object if it is callable 
-// 		or the value of .__call__ attribute...
+// 		-> iterator
 //
 //
-// NOTE: for more docs on the callback(..) see sources(..)
+// NOTE: this is specialization of entries(..), see that for more info.
 var values =
 module.values =
-function(obj, name, callback, props){
-	props = callback === true ? 
-		callback 
-		: props
-	var _get = function(obj, name){
-		return props ?
-				Object.getOwnPropertyDescriptor(obj, name)
-			// handle callable instance...
-			: !(name in obj) 
-					&& name == '__call__' 
-					&& typeof(obj) == 'function' ?
-				obj
-			// normal attr...
-			: obj[name] }
-	// wrap the callback if given...
-	var c = typeof(callback) == 'function'
-		&& function(obj, i){
-			var val = _get(obj, name)
-			var res = callback(val, obj, i) 
-			return res === module.STOP ?
-				// wrap the expected stop result if the user did not do it...
-				module.STOP(val)
-				: res }
-	return c ?
-		// NOTE: we do not need to handle the callback return values as
-		// 		this is fully done by c(..) in sources(..)
-		sources(obj, name, c)
-		: sources(obj, name)
-			.map(function(obj){ 
-				return _get(obj, name) }) }
+function*(obj, name, props=false){
+	for(var [_, value] of entries(...arguments)){
+		yield value }}
 
 
 // Find the next parent attribute in the prototype chain.
@@ -645,7 +553,7 @@ function(proto, name){
 			throw new  Error('parent(..): need a method with non-empty .name') }
 		// get first matching source...
 		var i = 0
-		for(var obj of _sources(that, name)){
+		for(var obj of sources(that, name)){
 			// NOTE: the .hasOwnProperty(..) test is here so as 
 			// 		to skip the base callable when searching for 
 			// 		.__call__ that is returned as a special case 
@@ -657,7 +565,7 @@ function(proto, name){
 				proto = obj
 				break }}}
 	// get first source...
-	var res = _sources(proto, name)
+	var res = sources(proto, name)
 	res.next()
 	res = res.next().value
 	return !res ?
@@ -678,7 +586,7 @@ var parentProperty =
 module.parentProperty =
 function(proto, name){
 	// get second source...
-	var res = _sources(proto, name)
+	var res = sources(proto, name)
 	res.next()
 	res = res.next().value
 	return res ?
@@ -726,7 +634,7 @@ function(proto, name, that, ...args){
 var parentOf =
 module.parentOf =
 function(parent, child){
-	return new Set([..._sources(child)]).has(parent) }
+	return new Set([...sources(child)]).has(parent) }
 
 // Reverse of parentOf(..)
 var childOf =
@@ -1381,7 +1289,7 @@ function(base, object){
 		mixins(base, object, function(){ return module.STOP })
 			.length > 0
 		// flat mixin search...
-		|| [..._sources(base)]
+		|| [...sources(base)]
 			.some(function(p){ 
 				return matchPartial(p, object) }) )}
 
