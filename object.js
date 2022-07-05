@@ -427,7 +427,6 @@ BOOTSTRAP(function(){
 // 		this...
 //
 // XXX user doc!!!
-// XXX should we use this for sources(..) and friends...
 var stoppable =
 module.stoppable =
 function(func){
@@ -761,24 +760,22 @@ function(proto, name){
 		if(name == ''){
 			throw new  Error('parent(..): need a method with non-empty .name') }
 		// get first matching source...
-		proto = sources(that, name, 
-				function(obj, i){ 
-					// NOTE: the .hasOwnProperty(..) test is here so as 
-					// 		to skip the base callable when searching for 
-					// 		.__call__ that is returned as a special case 
-					// 		by sourcei(..) and this should have no effect 
-					// 		or other cases...
-					// NOTE: this will only skip the root callable...
-					return (i > 0 || obj.hasOwnProperty(name))
-						&& obj[name] === proto
-						&& module.STOP })
-			.pop() }
+		var i = 0
+		for(var obj of _sources(that, name)){
+			// NOTE: the .hasOwnProperty(..) test is here so as 
+			// 		to skip the base callable when searching for 
+			// 		.__call__ that is returned as a special case 
+			// 		by source(..) and this should have no effect 
+			// 		or other cases...
+			// NOTE: this will only skip the root callable...
+			if((i++ > 0 || obj.hasOwnProperty(name))
+					&& obj[name] === proto){
+				proto = obj
+				break }}}
 	// get first source...
-	var res = sources(proto, name, 
-			function(obj, i){ 
-				return i == 1 
-					&& module.STOP })
-		.pop() 
+	var res = _sources(proto, name)
+	res.next()
+	res = res.next().value
 	return !res ?
 			undefined
 		:(!(name in res) && typeof(res) == 'function') ?
@@ -797,11 +794,9 @@ var parentProperty =
 module.parentProperty =
 function(proto, name){
 	// get second source...
-	var res = sources(proto, name, 
-			function(obj, i){ 
-				return i == 1 
-					&& module.STOP })
-		.pop() 
+	var res = _sources(proto, name)
+	res.next()
+	res = res.next().value
 	return res ?
 		// get next value...
 		Object.getOwnPropertyDescriptor(res, name)
@@ -847,7 +842,7 @@ function(proto, name, that, ...args){
 var parentOf =
 module.parentOf =
 function(parent, child){
-	return new Set(sources(child)).has(parent) }
+	return new Set([..._sources(child)]).has(parent) }
 
 // Reverse of parentOf(..)
 var childOf =
@@ -1500,11 +1495,9 @@ function(base, object){
 		mixins(base, object, function(){ return module.STOP })
 			.length > 0
 		// flat mixin search...
-		|| sources(base, function(p){ 
-			return matchPartial(p, object) ? 
-				module.STOP
-				: [] })
-   			.length > 0 )}
+		|| [..._sources(base)]
+			.some(function(p){ 
+				return matchPartial(p, object) }) )}
 
 
 // Mix-out sets of methods/props/attrs out of an object prototype chain...
