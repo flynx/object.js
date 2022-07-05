@@ -380,7 +380,7 @@ BOOTSTRAP(function(){
 
 // XXX EXPEREMENTAL...
 // 		should we support multple names???
-// XXX replace the current version with these..c
+// XXX replace the current version with these...
 // 		...this will lead to breaking API..
 var _sources =
 module._sources =
