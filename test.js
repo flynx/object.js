@@ -328,21 +328,22 @@ var setups = test.Setups({
 				method: function(){
 					var x, y
 					assert.array(
-						object.values(c, 'x'), 
+						[...object._values(c, 'x')], 
 						['c', 'a', 'b'], 
 							'reach all values of attr')
 					assert.array(
-						object.values(c, 'x', function(v, o){
-							return v.toUpperCase() }), 
+						[...object._values(c, 'x')]
+							.map(function(v){
+								return v.toUpperCase() }), 
 						['C', 'A', 'B'], 
 							'reach all values of attr')
 					assert.array(
-						object.sources(c, 'method'),
+						[...object._sources(c, 'method')],
 						// NOTE: not passing an explicit list as we need 
 						// 		to account for mixins...
-						object.sources(c)
-								.filter(function(s){ 
-									return s.hasOwnProperty('method') }), 
+						[...object._sources(c)]
+							.filter(function(s){ 
+								return s.hasOwnProperty('method') }), 
 							'reach all values of method')
 					assert(
 						(x = object.parent(c, 'x')) == 'b', 
@@ -376,16 +377,17 @@ var setups = test.Setups({
 				method(){
 					// XXX this is almost the same as for js_prototype...
 					assert.array(
-						object.values(c, 'x'), 
+						[...object._values(c, 'x')], 
 						['z', 'y', 'x'], 
 							'reach all values of attr (class)')
 					assert.array(
-						object.values(c, 'x', function(v, o){
-							return v.toUpperCase() }), 
+						[...object._values(c, 'x')]
+							.map(function(v){
+								return v.toUpperCase() }), 
 						['C', 'A', 'B'], 
 							'reach all values of attr (class)')
 					assert.array(
-						object.sources(c, 'method'), 
+						[...object._sources(c, 'method')], 
 						[Z.prototype, X.prototype], 
 							'reach all values of method (class)')
 					assert(
@@ -578,12 +580,12 @@ var tests = test.Tests({
 		var test = function(obj, name){
 			var a, b
 			return assert(arrayCmp(
-				a = object.values(obj, '__call__')
+				a = [...object._values(obj, '__call__')]
 					.map(function(func){
 						return func.call(obj) })
 					.flat(), 
 				// get all callables in prototype chain and call them...
-				b = object.sources(obj)
+				b = [...object._sources(obj)]
 					.filter(function(o){ 
 						return typeof(o) == 'function' 
 							|| o.hasOwnProperty('__call__') })
@@ -661,11 +663,12 @@ var cases = test.Cases({
 		obj.x = 321
 
 		assert.array(
-			object.values(obj, 'x', true)
+			[...object._values(obj, 'x', true)]
 				.map(function(e){ return e.value }),
 			// XXX assert ignores the order here -- this should fail...
 			[123, 321], '.values(.., true) ')
 
+		/* XXX GENERATOR not relevant...
 		assert(
 			object.values(obj, 'x', function(){ return object.STOP })[0] == 321,
 			// XXX assert ignores the order here -- this should fail...
@@ -678,6 +681,7 @@ var cases = test.Cases({
 			object.values(obj, 'x', function(){ return object.STOP(555) }, true)[0] == 555,
 			// XXX assert ignores the order here -- this should fail...
 			'.values(.., func, true) with explicit stop value')
+		//*/
 
 	},
 	deepKeys: function(assert){

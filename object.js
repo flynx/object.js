@@ -21,6 +21,12 @@
 (function(require){ var module={} // make module AMD/node compatible...
 /*********************************************************************/
 
+var STOP =
+module.STOP = 
+	require('ig-stoppable').STOP
+
+
+//---------------------------------------------------------------------
 
 // Function methods to link into a constructor producing a callable 
 // defined via .__call__(..)
@@ -344,18 +350,6 @@ function(obj){
 //---------------------------------------------------------------------
 // Helper objects/constructors...
 
-// NOTE: these are missing from JavaScript for some reason...
-//
-// XXX should these be global???
-var Generator = 
-module.Generator =
-	(function*(){}).constructor
-
-var AsyncGenerator =
-module.AsyncGenerator =
-	(async function*(){}).constructor
-
-
 BOOTSTRAP(function(){
 
 	// Error with some JS quirks fixed...
@@ -377,117 +371,7 @@ BOOTSTRAP(function(){
 				//return Reflect.construct(Error, args, this.constructor) },
 		})
 
-
-	// Value trigger iteration stop and to carry results...
-	//
-	module.STOP = 
-		Constructor('STOP', {
-			doc: 'stop iteration.',
-			__init__: function(value){
-				this.value = value },
-		})
-
 })
-
-
-// Wrap a callable in a STOP handler
-//
-// 	stoppable(func)
-// 		-> func
-//
-// 	stoppable(gen)
-// 		-> gen
-//
-// 	stoppable(asyncgen)
-// 		-> asyncgen
-//
-//
-// The client callable can be one of:
-// 	- function
-// 	- generator
-// 	- async generator
-//
-// The returned callable will be of the same type as the input callable.
-//
-// The wrapper handles STOP slightly differently if the client is a 
-// function or if it is a generator / async generator:
-// 	- function
-// 		STOP returned / thrown
-// 			-> return undefined
-// 		STOP(value) returned / thrown
-// 			-> return value
-// 	- generator / async generator
-// 		STOP yielded / thrown
-// 			-> iteration stops
-// 		STOP(value) yielded / thrown
-// 			-> value yielded and iteration stops
-//
-//
-// NOTE: this repeats the same code at lest twice, not sure yet how to avoid 
-// 		this...
-//
-// XXX user doc!!!
-var stoppable =
-module.stoppable =
-function(func){
-	return Object.assign(
-		func instanceof Generator ?
-			// NOTE: the only difference between Generator/AsyncGenerator 
-			// 		versions of this is the async keyword -- keep them 
-			// 		in sync...
-			function*(){
-				try{
-					for(var res of func.call(this, ...arguments)){
-						if(res === STOP){
-							return }
-						if(res instanceof STOP){
-							yield res.value
-							return }
-						yield res }
-				} catch(err){
-					if(err === STOP){
-						return
-					} else if(err instanceof STOP){
-						yield err.value
-						return }
-					throw err } }
-		: func instanceof AsyncGenerator ?
-			// NOTE: the only difference between Generator/AsyncGenerator 
-			// 		versions of this is the async keyword -- keep them 
-			// 		in sync...
-			async function*(){
-				try{
-					for(var res of func.call(this, ...arguments)){
-						if(res === STOP){
-							return }
-						if(res instanceof STOP){
-							yield res.value
-							return }
-						yield res }
-				} catch(err){
-					if(err === STOP){
-						return
-					} else if(err instanceof STOP){
-						yield err.value
-						return }
-					throw err } }
-		: function(){
-			try{
-				var res = func.call(this, ...arguments)
-				// NOTE: this is here for uniformity...
-				if(res === STOP){
-					return }
-				if(res instanceof STOP){
-					return res.value }
-				return res
-			} catch(err){
-				if(err === STOP){
-					return
-				} else if(err instanceof STOP){
-					return err.value }
-				throw err } },
-		{ toString: function(){
-			return func.toString() }, }) }
 
 
 
@@ -523,7 +407,7 @@ function*(obj, name, props=false){
 					&& name == '__call__' 
 					&& typeof(obj) == 'function' ?
 				obj
-			: obj[name]
+			: obj[name],
 		] }}
 
 // XXX
@@ -1448,6 +1332,8 @@ function(base, ...objects){
 // NOTE: this will also match base...
 // NOTE: if base matches directly callback(..) will get undefined as parent
 // NOTE: for more docs on the callback(..) see sources(..)
+//
+// XXX should this be a generator???
 var mixins =
 module.mixins =
 function(base, object, callback){

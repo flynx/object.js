@@ -28,5 +28,8 @@
     "c8": "^7.3.5",
     "colors": "1.4.0",
     "ig-test": "^1.4.8"
+  },
+  "dependencies": {
+    "ig-stoppable": "^2.0.0"
   }
 }
