@@ -133,6 +133,7 @@ class B extends A {
     - [`Constructor(..)` / `C(..)`](#constructor--c)
     - [`create(..)` / `Constructor.create(..)`](#create--constructorcreate)
     - [`sources(..)` / `Constructor.sources(..)`](#sources--constructorsources)
+    - [`entries(..)` / `Constructor.entries(..)`](#entries--constructorentries)
     - [`values(..)` / `Constructor.values(..)`](#values--constructorvalues)
     - [`parent(..)` / `Constructor.parent(..)`](#parent--constructorparent)
     - [`parentProperty(..)` / `Constructor.parentProperty(..)`](#parentproperty--constructorparentproperty)
@@ -638,92 +639,71 @@ This is similar to [`Object.create(..)`] but handles callables correctly, i.e. i
 
 ### `sources(..)` / `Constructor.sources(..)` 
 
-Get sources for attribute
+Iterate the sources for attribute
 ```
+sources(<object>)
 sources(<object>, <name>)
-sources(<object>, <name>, <callback>)
-	-> <list>
+	-> <iterator>
 ```
 
-```
-callback(<source>, <index>)
-	-> STOP 
-	-> STOP(<value>)
-	-> undefined
-	-> <value>
-```
-
-The `callback(..)` controls the output of `sources(..)` by returning 
-one of the following:
-
-- `object.STOP`  
-  This will make `sources(..)` stop and return the `<list>` up to and 
-  including the object that triggered the _stop_.
-- `object.STOP(<value>)`  
-  Same as returning `object.STOP` but will put the `<value>` at the end of 
-  the returned list instead of the input object.
-- `undefined`  
-  Add the object triggering `callback(..)` in `<list>` as-is and continue. 
-- array  
-  The containing values will be merged into the result list and continue.
-  This is a way to either skip an object by returning `[]` or multiple 
-  values instead of one.
-- `<value>`  
-  Add to the resulting `<list>` as-is instead of the object triggering 
-  `callback(..)` and continue.
-
+If no name is given iterate through all the parents.
 
 Special case: get callable implementations
 ```
-sources(<object>, '__call__', ..)
-	-> <list>
+sources(<object>, '__call__')
+	-> <iterator>
 ```
 
-This will get the callable implementations regardless of the actual
+This will iterate the callable implementations regardless of the actual
 implementation details, i.e. both function prototype or `.__call__(..)` 
 methods will be matched.
 
 
-### `values(..)` / `Constructor.values(..)` 
+### `entries(..)` / `Constructor.entries(..)` 
 
-Get values for attribute in prototype chain
+Iterate `<soruce>`-`<value>` pairs for attribute in the prototype chain.
 ```
-values(<object>, <name>)
-values(<object>, <name>, <callback>)
-	-> <list>
-```
-
-```
-callback(<value>, <source>, <index>)
-	-> STOP 
-	-> undefined
-	-> <value>
+entries(<object>, <name>)
+	-> <iterator>
 ```
 
 
-Get property descriptors for attribute in prototype chain
+Iterate property descriptors for attribute in prototype chain
 ```
-values(<object>, <name>, true)
-values(<object>, <name>, <callback>, true)
-	-> <list>
+entries(<object>, <name>, true)
+	-> <iterator>
 ```
-
-```
-callback(<descriptor>, <source>)
-	-> STOP 
-	-> STOP(value)
-	-> undefined
-	-> <value>
-```
-
 
 Special case: get callable implementations
 ```
-values(<object>, '__call__', ..)
+entries(<object>, '__call__')
+	-> <iterator>
+```
+
+This will yield the callable objects themselves or the value of `.__call__`.
+
+
+### `values(..)` / `Constructor.values(..)` 
+
+Iterate values for attribute in prototype chain
+```
+values(<object>, <name>)
+	-> <iterator>
+```
+
+Iterate property descriptors for attribute in prototype chain
+```
+values(<object>, <name>, true)
 	-> <list>
 ```
 
-This will return the callable objects themselves or the value of `.__call__`.
+Special case: get callable implementations
+```
+values(<object>, '__call__')
+	-> <list>
+```
+
+This will yield the callable objects themselves or the value of `.__call__`.
 
 
 See [`sources(..)`](#sources--constructorsources) for docs on `callback(..)` 

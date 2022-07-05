@@ -423,7 +423,7 @@ function*(obj, name=undefined){
 //
 // Item format:
 // 	[
-// 		object,
+// 		source,
 // 		value,
 // 	]
 //
@@ -452,14 +452,6 @@ function*(obj, name, props=false){
 
 
 // Get values/props set in source objects for a prop/attr name...
-//
-// 	values(obj, name)
-// 		-> iterator
-//
-// 	Get propery descriptors...
-// 	values(obj, name, true)
-// 		-> iterator
-//
 //
 // NOTE: this is specialization of entries(..), see that for more info.
 var values =
