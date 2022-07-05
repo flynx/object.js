@@ -437,7 +437,7 @@ function*(obj, name=undefined){
 var entries =
 module.entries =
 function*(obj, name, props=false){
-	for(var o of sources(obj, name)){
+	for(var obj of sources(obj, name)){
 		yield [
 			obj, 
 			props ?
