@@ -26,6 +26,8 @@ var colors = require('colors')
 
 var test = require('ig-test')
 
+var doc = require('ig-doc')
+
 var object = require('./object')
 
 
@@ -863,10 +865,10 @@ var cases = test.Cases({
 
 		// .toString(..)
 		assert(
-			callable_b.toString() == object.normalizeIndent(callable_b.__call__.toString()),
+			callable_b.toString() == doc.normalizeIndent(callable_b.__call__.toString()),
 			'toString(..) proxy to .__call__(..)')
 		assert(
-			callable_b.toString() != object.normalizeIndent(callable_b.__proto__.toString()),
+			callable_b.toString() != doc.normalizeIndent(callable_b.__proto__.toString()),
 			'toString(..) proxy not to .__proto__.toString(..)')
 		assert(
 			callable_c.toString() == callable_c.__proto__.toString(),
@@ -874,7 +876,7 @@ var cases = test.Cases({
 
 		// create(..)...
 		assert(
-			object.create(func).toString() == object.normalizeIndent(func.toString()),
+			object.create(func).toString() == doc.normalizeIndent(func.toString()),
 			'create(..): function .toString() proxy (builtin).')
 		assert(
 			object.create(func_w_tostring).toString() == func_w_tostring.toString(),

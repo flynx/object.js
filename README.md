@@ -151,7 +151,6 @@ class B extends A {
     - [`mixins(..)` / `Mixin.mixins(..)`](#mixins--mixinmixins)
     - [`hasMixin(..)` / `Mixin.hasMixin(..)`](#hasmixin--mixinhasmixin)
   - [Utilities](#utilities)
-    - [`normalizeIndent(..)` / `normalizeTextIndent(..)` / `doc` / `text`](#normalizeindent--normalizetextindent--doc--text)
     - [`deepKeys(..)` / `Constructor.deepKeys(..)`](#deepkeys--constructordeepkeys)
     - [`match(..)` / `Constructor.match(..)`](#match--constructormatch)
     - [`matchPartial(..)` / `Constructor.matchPartial(..)`](#matchpartial--constructormatchpartial)
@@ -1021,36 +1020,6 @@ hasMixin(<base>, <mixin>)
 
 
 ## Utilities
-
-### `normalizeIndent(..)` / `normalizeTextIndent(..)` / `doc` / `text`
-
-Align _code_ to shortest leading white-space
-```
-normalizeIndent(<text>)
-normalizeIndent(<text>, <tab-size>)
-normalizeIndent(<text>, <tab-size>, <leading-tabs>)
-	-> <text>
-```
-
-This is used to format `.toString(..)` return values for nested functions
-to make source printing in console more pleasant to read.
-
-`tab_size` defaults to `object.TAB_SIZE`
-
-`leading_tabs` defaults to `object.LEADING_TABS`
-
-
-A shorthand to `normalizeIndent(..)` optimized for text rather than code
-```
-normalizeTextIndent(..)
-	-> <text>
-```
-
-This ignores `object.LEADING_TABS` and `leading_tabs` is 0 by default.
-
-
-`doc` and `text` are template string versions of `normalizeIndent(..)` and `normalizeTextIndent(..)` respectively.
-
 
 ### `deepKeys(..)` / `Constructor.deepKeys(..)`
 

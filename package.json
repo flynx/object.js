@@ -1,6 +1,6 @@
 {
   "name": "ig-object",
-  "version": "6.0.1",
+  "version": "6.1.1",
   "description": "",
   "main": "object.js",
   "scripts": {
@@ -30,6 +30,7 @@
     "ig-test": "^1.4.8"
   },
   "dependencies": {
+    "ig-doc": "*",
     "ig-stoppable": "^2.0.0"
   }
 }
