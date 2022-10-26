@@ -737,13 +737,13 @@ var cases = test.Cases({
 		var A = assert(object.Mixin('A', {
 			a: 'aaa',
 		}), 'Mixin("A", ...)')
-		assert(A.data.a == 'aaa', 'A content')
+		assert(A.proto.a == 'aaa', 'A content')
 		assert(A.mode == 'proto', 'A mode')
 
 		var B = assert(object.Mixin('B', 'flat', {
 			b: 'bbb'
 		}), 'Mixin("B", "flat", ..)')
-		assert(B.data.b == 'bbb', 'B content')
+		assert(B.proto.b == 'bbb', 'B content')
 		assert(B.mode == 'flat', 'B mode')
 
 		var C = assert(object.Mixin('C', 
@@ -753,9 +753,9 @@ var cases = test.Cases({
 				get c(){
 					return 'ccc' },
 			}), 'Mixin("C", A, B, ...)')
-		assert(C.data.a == 'aaa', 'C content from A')
-		assert(C.data.b == 'bbb', 'C content from B')
-		assert(C.data.c == 'ccc', 'C content local')
+		assert(C.proto.a == 'aaa', 'C content from A')
+		assert(C.proto.b == 'bbb', 'C content from B')
+		assert(C.proto.c == 'ccc', 'C content local')
 
 		var x = assert(C({}), 'C({})')
 

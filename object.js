@@ -1208,11 +1208,11 @@ function(base, ...objects){
 // Mixin wrapper/object...
 //
 //	Create a new mixin...
-//	Mixin(name, data, ..)
+//	Mixin(name, proto, ..)
 //		-> mixin
 //
 //	Create a new mixin setting the default mode...
-//	Mixin(name, mode, data, ..)
+//	Mixin(name, mode, proto, ..)
 //		-> mixin
 //
 //
@@ -1242,7 +1242,7 @@ function(base, ...objects){
 //		BasicMixin(o)
 //
 //
-// NOTE: the constructor will allways create a new .data object but will 
+// NOTE: the constructor will allways create a new .proto object but will 
 // 		not do a deep copy into it -- see mixin(..) / mixinFlat(..)
 //
 // XXX should this move to its own modue???
@@ -1262,38 +1262,38 @@ Constructor('Mixin', {
 }, {
 	name: null,
 
-	// mixin data...
-	data: null,
+	// mixin proto...
+	proto: null,
 
-	// data "copy" mode...
+	// proto "copy" mode...
 	//
 	// This can be:
-	// 	'proto'		- mix data into prototype chain (default)
-	// 	'flat'		- use mixinFlat(..) to copy data
+	// 	'proto'		- mix proto into prototype chain (default)
+	// 	'flat'		- use mixinFlat(..) to copy proto
 	// 	'soft'	- like 'flat' but uses mixinFlat('soft', ..)
 	mode: 'proto',
 
 	// base API...
 	//
 	isMixed: function(target){
-		return this.constructor.hasMixin(target, this.data) },
+		return this.constructor.hasMixin(target, this.proto) },
 	mixout: function(target){
-		return this.constructor.mixout(target, this.data) },
+		return this.constructor.mixout(target, this.proto) },
 
 	// mix into target...
 	__call__: function(_, target, mode=this.mode){
 		typeof(target) == typeof('str')
 			&& ([_, mode, target] = arguments)
 		return mode == 'flat' ?
-				this.constructor.mixinFlat(target, this.data)
+				this.constructor.mixinFlat(target, this.proto)
 			: mode == 'soft' ?
-				this.constructor.mixinFlat('soft', target, this.data)
-			: this.constructor.mixin(target, this.data) },
+				this.constructor.mixinFlat('soft', target, this.proto)
+			: this.constructor.mixin(target, this.proto) },
 
-	__init__: function(name, ...data){
+	__init__: function(name, ...proto){
 		// Mixin(name, mode, ...) -- handle default mode...
-		typeof(data[0]) == typeof('str')
-			&& (this.mode = data.shift())
+		typeof(proto[0]) == typeof('str')
+			&& (this.mode = proto.shift())
 		// name...
 		// NOTE: .defineProperty(..) is used because this is a function
 		// 		and function's .name is not too configurable...
@@ -1303,12 +1303,12 @@ Constructor('Mixin', {
 		// XXX is this effective???
 		// 		...will this show up in DevTools???
 		Object.defineProperty(this, 'name', { value: name })
-		// create/merge .data...
-		this.data = this.constructor.mixinFlat({}, 
-			...data.map(function(e){ 
+		// create/merge .proto...
+		this.proto = this.constructor.mixinFlat({}, 
+			...proto.map(function(e){ 
 				// handle bare objects and mixins differently...
 				return e instanceof Mixin ? 
-					e.data 
+					e.proto 
 					: e })) },
 })
 
