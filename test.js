@@ -205,7 +205,7 @@ var setups = test.Setups({
 
 	// initialization...
 	init: function(assert){
-		var A, B, C
+		var A, B, C, D
 		return {
 			// init...
 			A: A = assert(object.C('A', {
@@ -225,6 +225,7 @@ var setups = test.Setups({
 					return o
 				},
 				test_new: function(){
+					assert(this instanceof B, 'instanceof correct') 
 					assert(this.new_has_run, '.__new__() run') },
 			}), 'basic .__new__(..)'),
 			// new + init...
@@ -622,6 +623,33 @@ var tests = test.Tests({
 
 
 var cases = test.Cases({
+	'as-is-new': function(assert){
+		var A = object.C('A', {
+			__init__: function(){
+				this.init_A_did_run = true },
+		})
+		var B = object.C('B', {
+			__new__: function(){
+				return object.ASIS(A()) },
+		})
+
+		var b = B()
+
+		assert(b instanceof A, 'not instance of A')
+		assert(!(b instanceof B), 'not instance of B')
+
+		var C = object.C('C', {
+			__new__: function(){
+				return object.ASIS(A()) },
+			__init__: function(){
+				this.init_C_did_run = true },
+		})
+
+		var c = C()
+
+		assert(c.init_A_did_run, 'base .__init__() ran')
+		assert(c.init_C_did_run, 'constructor .__init__() ran')
+	},
 	'edge-cases': function(assert){
 		// bad names...
 		assert.error('Constructor(..): malformed name', 

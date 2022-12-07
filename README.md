@@ -130,6 +130,7 @@ class B extends A {
     - [`<object>.__call__(..)`](#object__call__)
   - [Components](#components)
     - [`STOP` / `STOP(..)`](#stop--stop)
+    - [`ASIS(..)`](#asis)
     - [`Constructor(..)` / `C(..)`](#constructor--c)
     - [`create(..)` / `Constructor.create(..)`](#create--constructorcreate)
     - [`sources(..)` / `Constructor.sources(..)`](#sources--constructorsources)
@@ -508,6 +509,13 @@ no instance exists yet.
 `<context>` is the _outer_ context of the call, i.e. the object from which 
 `<constructor>` was referenced before it was called.
 
+Any value returned by `.__new__(..)` will be integrated into the prototype 
+chain of `<object>`, if this is not desired then wrap it in 
+[`object.ASIS(..)`](#asis) before returning, but note that this will 
+not prevent `<object>.__init__(..)` from being called. The `ASIS(..)`-wrapped 
+value will be unwrapped before being returned by the constructor.
+
+
 For more info see: 
 - [Low level constructor](#low-level-constructor), 
 - [Inheriting from native constructor objects](#inheriting-from-native-constructor-objects)
@@ -563,6 +571,11 @@ Used in [`sources(..)`](#sources--constructorsources),
 to stop the search before it reaches the top of 
 the prototype chain.
 
+
+### `ASIS(..)`
+
+Can be used in [`.__new__(..)`](#object__new__) to wrap the returned object to 
+prevent changing it's prototype by [`RawInstance()`](#rawinstance).
 
 
 ### `Constructor(..)` / `C(..)`

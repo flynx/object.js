@@ -241,6 +241,15 @@ function(obj){
 //---------------------------------------------------------------------
 // Helper objects/constructors...
 
+var ASIS =
+module.ASIS = 
+function ASIS(value){
+	return {
+		__proto__: ASIS.prototype,
+		value, 
+	} }
+
+
 BOOTSTRAP(function(){
 
 	// Error with some JS quirks fixed...
@@ -647,6 +656,10 @@ function(context, constructor, ...args){
 		// default object base...
 		: Reflect.construct(Object, [], constructor)
 
+	// return wrapped object as-is...
+	if(obj instanceof module.ASIS){
+		return obj.value }
+
 	// link to prototype chain, if not done already...
 	obj.__proto__ !== constructor.prototype
 		&& (obj.__proto__ = constructor.prototype)
@@ -917,8 +930,11 @@ function Constructor(name, a, b, c){
 			_constructor.__rawinstance__(this, ...arguments)
 			: RawInstance(this, _constructor, ...arguments)
 		// initialize...
-		obj.__init__ instanceof Function
-			&& obj.__init__(...arguments)
+		// NOTE: we are using _constructor.prototype.__init__ here instead 
+		// 		of obj.__init__ as at this point object may be of a different 
+		// 		type (see RawInstance + ASIS)...
+		_constructor.prototype.__init__ instanceof Function
+			&& _constructor.prototype.__init__.call(obj, ...arguments)
 		return obj }
 	// rename the consructor...
 	// NOTE: we are not using:
